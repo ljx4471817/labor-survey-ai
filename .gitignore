@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+ENV/
+env/
+
+# 虚拟环境
+.venv
+venv
+
+# 环境变量（绝不提交）
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# API Key / 凭证
+*.key
+*.pem
+secrets/
+credentials/
+
+# 数据
+backend/data/chroma/
+backend/data/*.db
+backend/data/*.sqlite
+
+# 上传与缓存
+backend/uploads/
+backend/logs/
+*.log
+
+# Node（如果未来用 npm 构建工具）
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 微信小程序
+miniprogram/.miniprogram/
+miniprogram/dist/
+miniprogram/node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# 系统
+$RECYCLE.BIN/
+
+# 知识库原始素材（量大，不入仓）
+knowledge-base/raw/*.pdf
+knowledge-base/raw/*.docx
+knowledge-base/raw/*.doc
+knowledge-base/raw/*.pptx
+!knowledge-base/raw/.gitkeep
+
+# CodeGraph
+.codegraph/cache/
