@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1E3A5F">
+  <title>劳动力调查 AI 助手</title>
+  <style>
+    /* ============================================================
+     * 设计 tokens
+     * 主色：墨蓝 #1E3A5F（信任、政务、克制）
+     * 背景：米白 #F7F4EE（柔和、低对比，长时间阅读不刺眼）
+     * 文字：#1F2937 / #4B5563 / #6B7280 / #9CA3AF 四级灰阶
+     * ============================================================ */
+    :root {
+      --c-ink:        #1F2937;
+      --c-ink-2:      #4B5563;
+      --c-ink-3:      #6B7280;
+      --c-ink-4:      #9CA3AF;
+      --c-bg:         #F7F4EE;
+      --c-bg-elev:    #FFFFFF;
+      --c-bg-tint:    #F1EEE7;
+      --c-line:       #E7E2D8;
+      --c-line-soft:  #EDE9DF;
+
+      --c-brand:      #1E3A5F;
+      --c-brand-2:    #2C5282;
+      --c-brand-soft: #E8EEF5;
+
+      --c-ok:         #2F855A;
+      --c-ok-soft:    #E6F3EC;
+      --c-warn:       #B7791F;
+      --c-warn-soft:  #FBF1DD;
+      --c-danger:     #B54545;
+      --c-danger-soft:#F7E4E2;
+      --c-info:       #5B6B8C;
+      --c-info-soft:  #ECEFF4;
+
+      --shadow-1: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.04);
+      --shadow-2: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+      --radius-bubble: 14px;
+      --radius-card:   12px;
+      --radius-btn:    8px;
+      --radius-pill:   999px;
+
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --t-fast: 160ms;
+      --t-base: 220ms;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overscroll-behavior: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--c-bg);
+      color: var(--c-ink);
+      display: flex;
+      flex-direction: column;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0;
+      font-size: 15px;
+      line-height: 1.65;
+      letter-spacing: 0.01em;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      /* iOS safe area */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* ===== Header ===== */
+    header {
+      flex-shrink: 0;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--c-line);
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: saturate(180%) blur(14px);
+      -webkit-backdrop-filter: saturate(180%) blur(14px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .brand-mark {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--c-brand) 0%, var(--c-brand-2) 100%);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-1);
+    }
+    .brand-mark svg { width: 18px; height: 18px; display: block; }
+    .brand-text { display: flex; flex-direction: column; min-width: 0; }
+    .brand-org {
+      font-size: 10.5px;
+      color: var(--c-brand);
+      letter-spacing: 0.06em;
+      font-weight: 500;
+      line-height: 1.3;
+      opacity: 0.85;
+    }
+    header h1 {
+      font-size: 15px; font-weight: 600; color: var(--c-ink);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand-sub {
+      font-size: 11px; color: var(--c-ink-3);
+      letter-spacing: 0.04em;
+      margin-top: 1px;
+    }
+    header .status {
+      font-size: 12px; color: var(--c-ink-3);
+      display: flex; align-items: center; gap: 6px;
+      flex-shrink: 0;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--c-bg-tint);
+      transition: background var(--t-base) var(--ease), color var(--t-base) var(--ease);
+    }
+    header .status .dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+      background: var(--c-ink-4);
+      transition: background var(--t-base) var(--ease);
+      box-shadow: 0 0 0 0 rgba(47, 133, 90, 0.4);
+    }
+    header .status.ok {
+      color: var(--c-ok);
+      background: var(--c-ok-soft);
+    }
+    header .status.ok .dot {
+      background: var(--c-ok);
+      animation: breath 2.4s var(--ease) infinite;
+    }
+    header .status.err {
+      color: var(--c-danger);
+      background: var(--c-danger-soft);
+    }
+    header .status.err .dot { background: var(--c-danger); }
+
+    /* ===== 主区域 ===== */
+    main {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 18px 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ===== 一轮问答 ===== */
+    .turn {
+      display: flex; flex-direction: column; gap: 8px;
+      animation: msg-in 280ms var(--ease) both;
+    }
+    .turn + .turn { margin-top: 2px; }
+
+    /* AI 消息行：左对齐，[吉祥物头像] + [回答气泡] */
+    .msg-row.assistant {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      max-width: 92%;
+      align-self: flex-start;
+    }
+    .msg-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      align-self: flex-end;
+      margin-bottom: 2px;
+      background: #fff;
+      box-shadow: var(--shadow-1);
+      object-fit: cover;
+      animation: mascot-enter 380ms var(--ease) both;
+    }
+    .msg-row.assistant .bubble.answer-block {
+      max-width: 100%;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    @keyframes mascot-enter {
+      from { transform: translateY(6px) scale(0.85); opacity: 0; }
+      to   { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .bubble {
+      padding: 12px 16px;
+      border-radius: var(--radius-bubble);
+      line-height: 1.65;
+      font-size: 15px;
+      word-break: break-word;
+      max-width: 86%;
+      position: relative;
+    }
+    .question {
+      background: var(--c-brand);
+      color: #FFFFFF;
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+      box-shadow: var(--shadow-1);
+      letter-spacing: 0.01em;
+    }
+    .answer-block {
+      background: var(--c-bg-elev);
+      border: 1px solid var(--c-line);
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+      max-width: 92%;
+      box-shadow: var(--shadow-1);
+      padding: 14px 16px 12px;
+    }
+
+    /* ===== Mode 标签 ===== */
+    .mode-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      margin-bottom: 8px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      border: 1px solid transparent;
+    }
+    .mode-rag           { background: var(--c-brand-soft); color: var(--c-brand); border-color: rgba(30, 58, 95, 0.12); }
+    .mode-out_of_kb     { background: var(--c-warn-soft); color: var(--c-warn); border-color: rgba(183, 121, 31, 0.16); }
+    .mode-out_of_scope  { background: var(--c-info-soft); color: var(--c-info); border-color: rgba(91, 107, 140, 0.16); }
+    .mode-ambiguous     { background: #F1ECF7; color: #6B4E8E; border-color: rgba(107, 78, 142, 0.16); }
+    .mode-badge::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: currentColor; opacity: 0.7;
+    }
+
+    .answer-text {
+      white-space: pre-wrap;
+      font-size: 15px;
+      color: var(--c-ink);
+      line-height: 1.7;
+    }
+
+    /* ===== 参考资料 ===== */
+    details.sources {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--c-ink-2);
+    }
+    details.sources summary {
+      cursor: pointer;
+      padding: 8px 12px;
+      user-select: none;
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: var(--radius-btn);
+      background: var(--c-bg-tint);
+      border: 1px solid var(--c-line-soft);
+      transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+    }
+    details.sources summary::-webkit-details-marker { display: none; }
+    details.sources summary::before {
+      content: '';
+      width: 0; height: 0;
+      border-left: 4px solid currentColor;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      transition: transform var(--t-base) var(--ease);
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+    details.sources[open] summary::before { transform: rotate(90deg); }
+    details.sources summary:hover {
+      background: var(--c-brand-soft);
+      color: var(--c-brand);
+      border-color: rgba(30, 58, 95, 0.18);
+    }
+    details.sources[open] summary {
+      background: var(--c-brand-soft);
+      color: var(--c-brand);
+      border-color: rgba(30, 58, 95, 0.18);
+      margin-bottom: 6px;
+    }
+    details.sources ol {
+      margin-top: 4px;
+      padding-left: 0;
+      list-style: none;
+      max-height: 260px;
+      overflow-y: auto;
+      border-left: 2px solid var(--c-line);
+      padding-left: 12px;
+    }
+    details.sources li {
+      margin: 0;
+      padding: 8px 10px;
+      line-height: 1.55;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    details.sources li + li { margin-top: 4px; }
+    details.sources li strong {
+      color: var(--c-brand);
+      font-weight: 600;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .source-meta {
+      display: block;
+      font-size: 11px;
+      color: var(--c-ink-4);
+      margin-top: 3px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ===== 反馈区 ===== */
+    .feedback-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--c-line-soft);
+      align-items: center;
+      font-size: 13px;
+    }
+    .feedback-btn {
+      background: var(--c-bg-elev);
+      border: 1px solid var(--c-line);
+      border-radius: var(--radius-btn);
+      padding: 6px 14px;
+      cursor: pointer;
+      color: var(--c-ink-2);
+      font-size: 13px;
+      font-family: inherit;
+      transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+      min-height: 32px;
+      letter-spacing: 0.02em;
+    }
+    .feedback-btn:hover {
+      border-color: var(--c-ink-4);
+      color: var(--c-ink);
+    }
+    .feedback-btn:active { transform: scale(0.97); }
+    .feedback-btn.active-up {
+      background: var(--c-ok-soft);
+      border-color: rgba(47, 133, 90, 0.4);
+      color: var(--c-ok);
+      font-weight: 500;
+    }
+    .feedback-btn.active-down {
+      background: var(--c-danger-soft);
+      border-color: rgba(181, 69, 69, 0.4);
+      color: var(--c-danger);
+      font-weight: 500;
+    }
+    .feedback-status {
+      font-size: 12px;
+      color: var(--c-ink-3);
+      margin-left: auto;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+    }
+    .comment-input {
+      margin-top: 8px;
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--c-line);
+      border-radius: var(--radius-btn);
+      font-size: 14px;
+      font-family: inherit;
+      display: none;
+      min-height: 36px;
+      background: var(--c-bg-elev);
+      color: var(--c-ink);
+      transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+    }
+    .comment-input.show { display: block; }
+    .comment-input:focus {
+      outline: none;
+      border-color: var(--c-brand);
+      box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.08);
+    }
+    .comment-input::placeholder { color: var(--c-ink-4); }
+
+    /* ===== 输入栏 ===== */
+    form#input-form {
+      flex-shrink: 0;
+      display: flex;
+      gap: 10px;
+      padding: 12px 14px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      border-top: 1px solid var(--c-line);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: saturate(180%) blur(14px);
+      -webkit-backdrop-filter: saturate(180%) blur(14px);
+      align-items: flex-end;
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+    }
+    #question-input {
+      flex: 1;
+      padding: 11px 16px;
+      border: 1px solid var(--c-line);
+      border-radius: 22px;
+      font-size: 16px;  /* 16px prevents iOS zoom */
+      font-family: inherit;
+      background: var(--c-bg-tint);
+      resize: none;
+      max-height: 120px;
+      line-height: 1.5;
+      color: var(--c-ink);
+      transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+    }
+    #question-input::placeholder { color: var(--c-ink-4); }
+    #question-input:focus {
+      outline: none;
+      border-color: var(--c-brand);
+      background: var(--c-bg-elev);
+      box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.08);
+    }
+    #send-btn {
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      background: var(--c-brand);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      font-size: 19px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-1);
+      transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+    }
+    #send-btn:hover { background: var(--c-brand-2); }
+    #send-btn:active {
+      transform: scale(0.94);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+    #send-btn:disabled {
+      background: var(--c-line);
+      color: var(--c-ink-4);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    #send-btn svg { width: 18px; height: 18px; display: block; }
+
+    /* ===== 麦克风（保留样式以防恢复）===== */
+    #mic-btn {
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      background: var(--c-bg-elev);
+      color: var(--c-ink);
+      border: 1px solid var(--c-line);
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-touch-callout: none;
+      transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+    }
+    #mic-btn.recording {
+      background: var(--c-danger);
+      color: white;
+      border-color: var(--c-danger);
+      animation: pulse 1s infinite;
+    }
+    #mic-btn:disabled { background: var(--c-bg-tint); cursor: not-allowed; }
+    /* DISABLED(voice) 2026-06-21: 输入法自带语音转写，麦克风 UI 隐藏。恢复：删除此行 */
+    #mic-btn { display: none !important; }
+
+    /* ===== Thinking / 加载 ===== */
+    .thinking {
+      color: var(--c-ink-3);
+      font-size: 14px;
+      padding: 2px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .thinking-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .thinking-dots span {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--c-ink-4);
+      animation: dot 1.2s var(--ease) infinite;
+    }
+    .thinking-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .thinking-dots span:nth-child(3) { animation-delay: 0.3s; }
+    /* 兼容旧模板：保留 .thinking::before 形态，但不渲染圆点 */
+    .thinking::before { content: none; }
+    @keyframes dot {
+      0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+      30%           { opacity: 1;    transform: translateY(-2px); }
+    }
+
+    /* ===== 空状态 / 引导 ===== */
+    .empty-state {
+      text-align: center;
+      color: var(--c-ink-2);
+      padding: 56px 24px 32px;
+      font-size: 14px;
+    }
+    .empty-state .empty-mascot {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 20px;
+      display: block;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 12px 28px rgba(30,58,95,0.12);
+      object-fit: cover;
+      animation: mascot-enter 600ms var(--ease) both;
+    }
+    /* 兼容老模板里的 .empty-icon（如有旧引用） */
+    .empty-state .empty-icon {
+      width: 56px; height: 56px;
+      margin: 0 auto 18px;
+      border-radius: 16px;
+      background: var(--c-brand-soft);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--c-brand);
+    }
+    .empty-state .empty-icon svg { width: 28px; height: 28px; display: block; }
+    .empty-state .empty-title {
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--c-ink);
+      letter-spacing: 0.02em;
+      margin-bottom: 8px;
+    }
+    .empty-state .empty-greeting {
+      margin: 0 auto 14px;
+      color: var(--c-ink-2);
+      font-size: 14px;
+      line-height: 1.65;
+      max-width: 320px;
+    }
+    .empty-state p {
+      margin-bottom: 6px;
+      color: var(--c-ink-3);
+      font-size: 13px;
+    }
+    .empty-state .empty-hint {
+      margin-top: 8px;
+      color: var(--c-ink-4);
+      font-size: 12px;
+      line-height: 1.6;
+      max-width: 340px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .empty-state .examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 22px;
+    }
+    .empty-state .example {
+      background: var(--c-bg-elev);
+      border: 1px solid var(--c-line);
+      border-radius: var(--radius-pill);
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 13px;
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      color: var(--c-ink-2);
+      font-family: inherit;
+      transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+      letter-spacing: 0.01em;
+    }
+    .empty-state .example:hover {
+      border-color: var(--c-brand);
+      color: var(--c-brand);
+      background: var(--c-brand-soft);
+    }
+    .empty-state .example:active { transform: scale(0.97); }
+
+    /* ===== 错误条 ===== */
+    .error-banner {
+      background: var(--c-danger-soft);
+      color: var(--c-danger);
+      padding: 10px 14px;
+      border-radius: var(--radius-card);
+      font-size: 14px;
+      margin-top: 6px;
+      border: 1px solid rgba(181, 69, 69, 0.18);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.5;
+    }
+    .error-banner::before {
+      content: '!';
+      flex-shrink: 0;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--c-danger);
+      color: #fff;
+      font-weight: 600;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    /* ===== 全局动效 ===== */
+    @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+    @keyframes breath {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(47, 133, 90, 0.0); }
+      50%      { box-shadow: 0 0 0 4px rgba(47, 133, 90, 0.18); }
+    }
+    @keyframes msg-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== 桌面端微调 ===== */
+    @media (min-width: 600px) {
+      body { padding: 0 16px; }
+      header {
+        padding: 18px 20px;
+        border-radius: 14px 14px 0 0;
+        margin-top: 12px;
+      }
+      main { padding: 20px 12px; }
+      .bubble { font-size: 15.5px; }
+      form#input-form {
+        border-radius: 0 0 14px 14px;
+        padding: 14px 16px;
+        padding-bottom: calc(14px + env(safe-area-inset-bottom));
+      }
+    }
+    @media (min-width: 720px) {
+      header h1 { font-size: 16px; }
+    }
+
+    /* ===== 减少动效偏好 ===== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 4h10l4 4v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M15 4v4h4" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M8 12h8M8 15.5h6M8 18.5h4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-org">国家统计局贵阳调查队开发</span>
+        <h1>劳动力调查 AI 助手</h1>
+        <span class="brand-sub">辅助调查员专用 · 制度即时查询</span>
+      </div>
+    </div>
+    <span class="status" id="status"><span class="dot"></span><span id="status-text">连接中…</span></span>
+  </header>
+
+  <main id="chat">
+    <div class="empty-state" id="empty-state">
+      <img class="empty-mascot" src="/static/mascot.png" alt="贵阳调查队吉祥物·筑小调" width="96" height="96">
+      <div class="empty-title">你好，我是筑小调</div>
+      <p class="empty-greeting">我是贵阳调查队筑小调，可以解答所有劳动力调查指标填报的问题。</p>
+      <p class="empty-hint">回答基于本地 297 条制度 QA 知识库；未命中的题目会明确提示「未找到」，不会编造。</p>
+      <div class="examples" id="examples"></div>
+    </div>
+  </main>
+
+  <form id="input-form" autocomplete="off">
+    <textarea id="question-input" rows="1" placeholder="例如：每周工作15小时算就业吗？" maxlength="500"></textarea>
+    <!-- DISABLED(voice) 2026-06-21: 麦克风按钮停用。恢复：删除本注释并取消 mic-btn CSS 隐藏 -->
+    <!-- <button id="mic-btn" type="button" aria-label="语音输入" title="语音输入（录音将传至讯飞识别）">🎙️</button> -->
+    <button id="send-btn" type="submit" aria-label="发送">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 19V5m0 0-6 6m6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </form>
+
+  <script>
+    const chatEl = document.getElementById('chat');
+    const formEl = document.getElementById('input-form');
+    const inputEl = document.getElementById('question-input');
+    const sendBtn = document.getElementById('send-btn');
+    const emptyEl = document.getElementById('empty-state');
+    const examplesEl = document.getElementById('examples');
+    const statusEl = document.getElementById('status');
+    const statusText = document.getElementById('status-text');
+
+    const EXAMPLE_QS = [
+      '每周工作15小时算就业吗？',
+      '退休人员再就业算就业吗？',
+      '一人在家打游戏帮别人账号练级赚钱',
+      'F16指标怎么填',
+      '入户时PAD没有网络信号怎么办',
+    ];
+
+    const MODE_LABEL = {
+      rag: 'RAG 命中',
+      out_of_kb: '未找到',
+      out_of_scope: '超出范围',
+      ambiguous: '需要补充',
+    };
+
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    function hideEmpty() {
+      if (emptyEl && emptyEl.parentNode) emptyEl.remove();
+    }
+
+    function scrollToBottom() {
+      // requestAnimationFrame 让 DOM 更新完再滚
+      requestAnimationFrame(() => {
+        chatEl.scrollTop = chatEl.scrollHeight;
+      });
+    }
+
+    function autoResize() {
+      inputEl.style.height = 'auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+    }
+
+    function addQuestion(text) {
+      hideEmpty();
+      const turn = document.createElement('div');
+      turn.className = 'turn';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble question';
+      bubble.textContent = text;
+      turn.appendChild(bubble);
+      chatEl.appendChild(turn);
+      scrollToBottom();
+      return turn;
+    }
+
+    function addAnswerPlaceholder(turn) {
+      const row = document.createElement('div');
+      row.className = 'msg-row assistant';
+      const avatar = document.createElement('img');
+      avatar.className = 'msg-avatar';
+      avatar.src = '/static/mascot.png';
+      avatar.alt = '筑小调';
+      avatar.loading = 'lazy';
+      avatar.decoding = 'async';
+      const block = document.createElement('div');
+      block.className = 'bubble answer-block';
+      block.innerHTML = '<div class="thinking"><span class="thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span><span>正在检索知识库…</span></div>';
+      row.appendChild(avatar);
+      row.appendChild(block);
+      turn.appendChild(row);
+      scrollToBottom();
+      return block;
+    }
+
+    function renderAnswer(block, data) {
+      const mode = data.mode || 'rag';
+      const modeLabel = MODE_LABEL[mode] || mode;
+      const sources = data.sources || [];
+      const score = data.retrieval_score;
+      const sourceHtml = sources.length === 0 ? '' : `
+        <details class="sources">
+          <summary>参考资料 (${sources.length})${score != null ? ` · 相似度 ${score.toFixed(3)}` : ''}</summary>
+          <ol>
+            ${sources.map(s => `
+              <li>
+                <strong>${escapeHtml(s.qa_id || '?')}</strong> · ${escapeHtml(s.category || '')}
+                <div>${escapeHtml(s.question || '')}</div>
+                <span class="source-meta">来源：${escapeHtml(s.source || '?')}${s.score != null ? ' · score=' + s.score.toFixed(3) : ''}</span>
+              </li>
+            `).join('')}
+          </ol>
+        </details>
+      `;
+      block.innerHTML = `
+        <span class="mode-badge mode-${mode}">${escapeHtml(modeLabel)}</span>
+        <div class="answer-text">${escapeHtml(data.answer || '')}</div>
+        ${sourceHtml}
+        <div class="feedback-row" data-rating-state="none">
+          <button class="feedback-btn" data-rating="up" type="button">采纳</button>
+          <button class="feedback-btn" data-rating="down" type="button">不采纳</button>
+          <input class="comment-input" placeholder="不采纳原因（可选）" maxlength="500">
+          <span class="feedback-status"></span>
+        </div>
+      `;
+      block.dataset.question = currentQuestion;
+      block.dataset.answer = data.answer || '';
+      block.dataset.mode = mode;
+      block.dataset.sources = JSON.stringify(sources);
+      wireFeedback(block);
+      scrollToBottom();
+    }
+
+    function renderError(block, message) {
+      block.innerHTML = `<div class="error-banner">请求失败：${escapeHtml(message)}</div>`;
+      scrollToBottom();
+    }
+
+    function wireFeedback(block) {
+      const row = block.querySelector('.feedback-row');
+      const status = row.querySelector('.feedback-status');
+      const commentInput = row.querySelector('.comment-input');
+      const buttons = row.querySelectorAll('.feedback-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const rating = btn.dataset.rating;
+          const currentState = row.dataset.ratingState;
+          if (currentState === rating) {
+            row.dataset.ratingState = 'none';
+            buttons.forEach(b => b.classList.remove('active-up', 'active-down'));
+            commentInput.classList.remove('show');
+            status.textContent = '';
+            return;
+          }
+          buttons.forEach(b => b.classList.remove('active-up', 'active-down'));
+          btn.classList.add(rating === 'up' ? 'active-up' : 'active-down');
+          row.dataset.ratingState = rating;
+          if (rating === 'down') {
+            commentInput.classList.add('show');
+            setTimeout(() => commentInput.focus(), 100);
+          } else {
+            commentInput.classList.remove('show');
+          }
+          status.textContent = '记录中…';
+          try {
+            const resp = await fetch('/api/feedback', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                question: block.dataset.question,
+                answer: block.dataset.answer,
+                mode: block.dataset.mode,
+                rating,
+                comment: commentInput.value || '',
+                sources: JSON.parse(block.dataset.sources || '[]'),
+              }),
+            });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const j = await resp.json();
+            status.textContent = `已记录 (${j.record_id})`;
+          } catch (e) {
+            status.textContent = '记录失败';
+          }
+        });
+      });
+      commentInput.addEventListener('input', () => {
+        clearTimeout(commentInput._t);
+        commentInput._t = setTimeout(() => {
+          if (row.dataset.ratingState !== 'none') {
+            fetch('/api/feedback', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                question: block.dataset.question,
+                answer: block.dataset.answer,
+                mode: block.dataset.mode,
+                rating: row.dataset.ratingState,
+                comment: commentInput.value,
+                sources: JSON.parse(block.dataset.sources || '[]'),
+              }),
+            }).catch(() => {});
+          }
+        }, 1500);
+      });
+    }
+
+    let currentQuestion = '';
+    let busy = false;
+
+    /* DISABLED(voice) 2026-06-21: 语音 JS 整段停用。输入法自带语音转写。恢复：删除本块注释
+    // ===== 语音输入（讯飞实时语音转写大模型）=====
+    const micBtn = document.getElementById('mic-btn');
+    let micState = {
+      ws: null,
+      audioCtx: null,
+      processor: null,
+      source: null,
+      stream: null,
+      recording: false,
+      lastText: '',
+    };
+
+    function setMicUi(recording) {
+      micState.recording = recording;
+      micBtn.classList.toggle('recording', recording);
+      micBtn.textContent = recording ? '■' : '🎙️';
+    }
+
+    function safe(fn) {
+      try { fn(); } catch (e) { // safe wrap: 静默吞错
+      }
+    }
+
+    async function startMic() {
+      if (micState.recording) return;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
+        });
+        micState.stream = stream;
+        // 强制 16kHz（浏览器可能给 44.1/48k，AudioContext 内部会重采样）
+        const AC = window.AudioContext || window.webkitAudioContext;
+        micState.audioCtx = new AC({ sampleRate: 16000 });
+        micState.source = micState.audioCtx.createMediaStreamSource(stream);
+        // bufferSize=4096：~256ms 一帧（16kHz 下），远低于讯飞 15s 超时
+        micState.processor = micState.audioCtx.createScriptProcessor(4096, 1, 1);
+
+        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const ws = new WebSocket(`${proto}//${location.host}/api/voice/stream`);
+        ws.binaryType = 'arraybuffer';
+        micState.ws = ws;
+
+        ws.onopen = () => {
+          setMicUi(true);
+          statusText.textContent = '正在录音…';
+        };
+        ws.onmessage = (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.type === 'partial' && data.text) {
+              micState.lastText = data.text;
+              inputEl.value = data.text;
+              autoResize();
+              statusText.textContent = data.final
+                ? `在线 · 知识库 ${data.text.length} 字`
+                : '识别中…';
+            } else if (data.type === 'error') {
+              statusText.textContent = `识别失败: ${data.msg || data.code}`;
+              stopMic();
+            }
+          } catch (err) { // 忽略非 JSON
+          }
+        };
+        ws.onerror = () => {
+          statusText.textContent = '语音连接失败';
+          stopMic();
+        };
+        ws.onclose = () => {
+          if (micState.recording) {
+            statusText.textContent = '语音已断开';
+            setMicUi(false);
+          }
+        };
+
+        // 预分配 buffer，每帧复用避免 GC
+        const pcmBuffer = new Int16Array(4096);
+        micState.processor.onaudioprocess = (e) => {
+          if (!micState.ws || micState.ws.readyState !== WebSocket.OPEN) return;
+          const channel = e.inputBuffer.getChannelData(0);
+          const n = Math.min(channel.length, pcmBuffer.length);
+          for (let i = 0; i < n; i++) {
+            const s = Math.max(-1, Math.min(1, channel[i]));
+            pcmBuffer[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+          }
+          // 只发实际样本数（channel.length 通常等于 4096，但保险起见用 n）
+          micState.ws.send(pcmBuffer.buffer.slice(0, n * 2));
+        };
+
+        micState.source.connect(micState.processor);
+        // 用 gain=0 的 GainNode 作为「静默出口」触发 onaudioprocess，避免回放
+        const sink = micState.audioCtx.createGain();
+        sink.gain.value = 0;
+        micState.processor.connect(sink);
+        micState.sink = sink;
+      } catch (err) {
+        console.error('录音启动失败', err);
+        statusText.textContent = err.name === 'NotAllowedError' ? '麦克风权限被拒' : `录音失败: ${err.message}`;
+        cleanupMic();
+        setMicUi(false);
+      }
+    }
+
+    function stopMic() {
+      if (!micState.recording && !micState.ws) {
+        cleanupMic();
+        return;
+      }
+      if (micState.ws && micState.ws.readyState === WebSocket.OPEN) {
+        safe(() => micState.ws.send('__end__'));
+      }
+      setMicUi(false);
+      // 等 1.5s 让最终识别结果回来，再彻底清理
+      setTimeout(cleanupMic, 1500);
+    }
+
+    function cleanupMic() {
+      safe(() => micState.processor && micState.processor.disconnect());
+      safe(() => micState.sink && micState.sink.disconnect());
+      safe(() => micState.source && micState.source.disconnect());
+      safe(() => micState.audioCtx && micState.audioCtx.close());
+      safe(() => micState.stream && micState.stream.getTracks().forEach(t => t.stop()));
+      safe(() => micState.ws && micState.ws.close());
+      micState.processor = null;
+      micState.source = null;
+      micState.sink = null;
+      micState.audioCtx = null;
+      micState.stream = null;
+      micState.ws = null;
+    }
+
+    micBtn.addEventListener('click', () => {
+      if (micState.recording) stopMic();
+      else startMic();
+    });
+    // 离开页面时关掉
+    window.addEventListener('beforeunload', cleanupMic);
+    */ /* DISABLED(voice) 2026-06-21 块注释结束。恢复：删除 509 行的开头 + 本行 */
+
+    inputEl.addEventListener('input', autoResize);
+    inputEl.addEventListener('keydown', (e) => {
+      // Enter 发送，Shift+Enter 换行
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+        e.preventDefault();
+        formEl.requestSubmit();
+      }
+    });
+
+    formEl.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (busy) return;
+      const q = inputEl.value.trim();
+      if (!q) return;
+      inputEl.value = '';
+      autoResize();
+      busy = true;
+      sendBtn.disabled = true;
+      currentQuestion = q;
+      const turn = addQuestion(q);
+      const block = addAnswerPlaceholder(turn);
+      try {
+        const t0 = performance.now();
+        const resp = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: q }),
+        });
+        if (!resp.ok) {
+          const errText = await resp.text();
+          throw new Error(errText || 'HTTP ' + resp.status);
+        }
+        const data = await resp.json();
+        const ms = Math.round(performance.now() - t0);
+        renderAnswer(block, data);
+        const status = block.querySelector('.feedback-status');
+        if (status) status.textContent = `${ms}ms`;
+      } catch (err) {
+        renderError(block, err.message);
+      } finally {
+        busy = false;
+        sendBtn.disabled = false;
+        inputEl.focus();
+      }
+    });
+
+    // 示例问题
+    examplesEl.innerHTML = EXAMPLE_QS.map(q =>
+      `<span class="example" data-q="${escapeHtml(q)}">${escapeHtml(q)}</span>`
+    ).join('');
+    examplesEl.querySelectorAll('.example').forEach(el => {
+      el.addEventListener('click', () => {
+        inputEl.value = el.dataset.q;
+        autoResize();
+        inputEl.focus();
+      });
+    });
+
+    // 健康检查
+    fetch('/health').then(r => r.json()).then(j => {
+      if (j.status === 'ok') {
+        statusEl.classList.add('ok');
+        statusText.textContent = `在线 · 知识库 ${j.chroma_count} 条`;
+      } else {
+        statusEl.classList.add('err');
+        statusText.textContent = '降级运行';
+      }
+    }).catch(() => {
+      statusEl.classList.add('err');
+      statusText.textContent = '不可达';
+    });
+
+    inputEl.focus();
+  </script>
+</body>
+</html>

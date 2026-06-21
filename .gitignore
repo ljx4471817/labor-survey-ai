@@ -37,6 +37,8 @@ credentials/
 backend/data/chroma/
 backend/data/*.db
 backend/data/*.sqlite
+backend/data/bm25_index.json
+backend/data/feedback.jsonl
 
 # 上传与缓存
 backend/uploads/
@@ -75,3 +77,6 @@ knowledge-base/raw/*.pptx
 
 # CodeGraph
 .codegraph/cache/
+
+# Claude Code 项目笔记
+.claude/

@@ -1,0 +1,1872 @@
+[
+  {
+    "id": "eval-001",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "调查参考周内，一个人只工作了1小时，算不算就业？",
+    "expected_keywords": [
+      "就业",
+      "1小时",
+      "调查参考周",
+      "报酬"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题10",
+    "must_contain": "小时以上有收入的劳动即为就业",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-002",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "一个人在家打游戏帮别人账号练级赚钱，算不算就业？",
+    "expected_keywords": [
+      "游戏代练",
+      "互联网就业",
+      "灵活就业",
+      "新就业形态"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F10指标讲解·例9",
+    "must_contain": "这属于通过互联网承接业务的灵活就业人员",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-003",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "单纯靠出租房屋收取租金生活的人，算不算有工作？",
+    "expected_keywords": [
+      "出租房屋",
+      "财产性收入",
+      "就业判断",
+      "租金"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题10；劳动力调查及指标讲解·F10",
+    "must_contain": "自有房屋或资产收租属于财产性收入",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-004",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "在校大学生做家教、当促销员，算不算就业？",
+    "expected_keywords": [
+      "在校生",
+      "家教",
+      "促销员",
+      "就业判断"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F10指标讲解",
+    "must_contain": "就业判断与是否是在校生",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-005",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "自己种菜只给自家吃，算不算就业？",
+    "expected_keywords": [
+      "自给自足",
+      "种菜",
+      "农业",
+      "就业判断"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题10；劳动力调查及指标讲解·F10",
+    "must_contain": "判断关键在于是否有经营销售行为",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-006",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "灵活就业打零工的人，参考周没接到活，算不算在职未上班？",
+    "expected_keywords": [
+      "打零工",
+      "灵活就业",
+      "在职未上班",
+      "手头任务"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F11指标讲解·例11",
+    "must_contain": "不算在职未上班",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-007",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "签了内退协议、单位按折扣发工资并交社保的人，怎么判断就业状态？",
+    "expected_keywords": [
+      "内退",
+      "在职未上班",
+      "社保",
+      "工资折扣"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·案例分享·例15",
+    "must_contain": "但如果单位只是给交社保没有工资",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-008",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "劳动力人口包括哪些人？只包括正在就业的人吗？",
+    "expected_keywords": [
+      "劳动力人口",
+      "就业人口",
+      "失业人口",
+      "非劳动力"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·单选18、填空1；劳动力调查制度（2026版）第一部分",
+    "must_contain": "劳动力人口不只是正在就业的人",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-009",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "做志愿者工作算不算多做了一份兼职？",
+    "expected_keywords": [
+      "志愿者",
+      "兼职",
+      "公益性劳动",
+      "报酬"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·判断31",
+    "must_contain": "下班后去外面做志愿者工作不算多做了兼职",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-010",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "摆地摊的人因下雨几天没出摊，怎么判断就业状态？",
+    "expected_keywords": [
+      "摆地摊",
+      "下雨未出摊",
+      "临时停工",
+      "就业"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·多选12D",
+    "must_contain": "判断关键是这个人有固定的经营活动",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-011",
+    "type": "in_kb",
+    "category": "填报规范",
+    "question": "F12'有工作但没上班原因'填了'其他'，应该注意什么？",
+    "expected_keywords": [
+      "F12",
+      "其他原因",
+      "请注明",
+      "逻辑核查"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F12指标讲解",
+    "must_contain": "要认真审核填写的具体内容",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-012",
+    "type": "in_kb",
+    "category": "填报规范",
+    "question": "F27劳动报酬应该填税前还是税后收入？",
+    "expected_keywords": [
+      "劳动报酬",
+      "税前",
+      "税后",
+      "社保公积金"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·判断29；劳动力调查及指标讲解·F27",
+    "must_contain": "包括个人缴纳部分的社保和公积金",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-013",
+    "type": "in_kb",
+    "category": "填报规范",
+    "question": "流动摆地摊人员的工作单位类型怎么填？",
+    "expected_keywords": [
+      "摆地摊",
+      "自由职业",
+      "打零工",
+      "单位类型"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·单选12；劳动力调查及指标讲解·F20",
+    "must_contain": "打零工指就业类型属于自雇或自主型的个体就业",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-014",
+    "type": "in_kb",
+    "category": "填报规范",
+    "question": "F8婚姻状况怎么填？没领结婚证但已同居的怎么办？",
+    "expected_keywords": [
+      "婚姻状况",
+      "事实婚姻",
+      "未领结婚证",
+      "同居"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F8指标讲解；劳动力调查制度（2026版）第三部分·问题8",
+    "must_contain": "但需注意尊重调查户意愿",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-015",
+    "type": "in_kb",
+    "category": "填报规范",
+    "question": "受教育程度与年龄有什么逻辑对应关系？",
+    "expected_keywords": [
+      "受教育程度",
+      "年龄",
+      "毕业时间",
+      "逻辑关系"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F9指标讲解",
+    "must_contain": "毕业年龄过大的需要当场核实",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-016",
+    "type": "in_kb",
+    "category": "填报规范",
+    "question": "F7农村土地承包经营权怎么判断？户口迁到城市了还算有吗？",
+    "expected_keywords": [
+      "土地承包权",
+      "户口",
+      "农村",
+      "城市迁入"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F7指标讲解；劳动力调查制度（2026版）第三部分·问题7",
+    "must_contain": "以户口本为标志进行判断",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-017",
+    "type": "in_kb",
+    "category": "调查对象",
+    "question": "调查时哪些人需要在本户登记？",
+    "expected_keywords": [
+      "登记对象",
+      "居住本户",
+      "外出不满半年",
+      "临时外出"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第一部分·（三）登记对象；第三部分填表说明·问题2",
+    "must_contain": "已外出但不满半年的人",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-018",
+    "type": "in_kb",
+    "category": "调查对象",
+    "question": "现役军人需要在住户中登记吗？",
+    "expected_keywords": [
+      "现役军人",
+      "服刑人员",
+      "登记人口",
+      "排除对象"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·单选8、判断3",
+    "must_contain": "现役军人不属于劳动力调查的登记人口",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-019",
+    "type": "in_kb",
+    "category": "调查对象",
+    "question": "每月回家一次的高三学生需要登记在本户吗？",
+    "expected_keywords": [
+      "高三学生",
+      "住校",
+      "外出半年",
+      "登记"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·单选9",
+    "must_contain": "每月回来一次的高三学生属于离开本户半年以上的外出人员",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-020",
+    "type": "in_kb",
+    "category": "调查对象",
+    "question": "集体户和家庭户怎么区分？",
+    "expected_keywords": [
+      "家庭户",
+      "集体户",
+      "宿舍",
+      "区分"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题1；劳动力调查及指标讲解·H1",
+    "must_contain": "家庭户是以家庭成员关系为主的人口居住一处共同生活",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-021",
+    "type": "in_kb",
+    "category": "调查对象",
+    "question": "同一户人家买了两套房当月都被抽中，怎么处理？",
+    "expected_keywords": [
+      "两套房",
+      "同时抽中",
+      "换户",
+      "同一家庭"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·判断17",
+    "must_contain": "将该家庭所有应登记人口填报在这个地址对应的户中",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-022",
+    "type": "in_kb",
+    "category": "调查对象",
+    "question": "来家里拜年的亲戚住了一晚，需要登记吗？",
+    "expected_keywords": [
+      "亲戚来访",
+      "临时居住",
+      "登记",
+      "常住"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·判断5",
+    "must_contain": "判断的关键是该人是否以本户为常住地",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-023",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "渔船船员每年只出海半年，其余时间在家休息，调查时算就业吗？",
+    "expected_keywords": [
+      "渔船船员",
+      "季节性就业",
+      "休渔期",
+      "临时停工"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F10/F11指标讲解；劳动力调查制度（2026版）第三部分·问题10/11",
+    "must_contain": "若仍有工作岗位只是临时没出海",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-024",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "采棉花季节工，每年只干2个月，调查参考周正好在采棉花，怎么判断？",
+    "expected_keywords": [
+      "采棉花",
+      "季节工",
+      "短期就业",
+      "调查参考周"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题10/17；劳动力调查及指标讲解·F17",
+    "must_contain": "不论这份工作是季节性的还是长期的",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-025",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "老师白天教课、晚上做家教赚外快，调查时怎么报？",
+    "expected_keywords": [
+      "教师",
+      "家教兼职",
+      "两份工作",
+      "在线教育"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题15/28；劳动力调查及指标讲解·F15",
+    "must_contain": "白天教课是主要工作",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-026",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "远程办公的程序员，人住在农村但为北京公司工作，算什么单位类型？",
+    "expected_keywords": [
+      "远程办公",
+      "程序员",
+      "单位类型",
+      "跨地区就业"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题20；劳动力调查及指标讲解·F20",
+    "must_contain": "如果该程序员不是主要通过中间商订单工作",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-027",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "60岁退休后被原单位返聘继续做技术员，每月拿返聘工资，怎么判断就业状态？",
+    "expected_keywords": [
+      "退休返聘",
+      "技术员",
+      "养老金",
+      "就业判断"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题10；劳动力调查及指标讲解·F10",
+    "must_contain": "就业判断与是否退休无关",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-028",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "外卖骑手和平台之间算什么关系？就业身份怎么填？",
+    "expected_keywords": [
+      "外卖骑手",
+      "平台关系",
+      "商业合同",
+      "就业身份"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F20/F21/F25指标讲解",
+    "must_contain": "大多数外卖骑手与平台之间是商业合同关系",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-029",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "没有营业执照但在路边摆摊卖烧烤的人，算什么类型？",
+    "expected_keywords": [
+      "无营业执照",
+      "摆摊",
+      "个体经营户",
+      "烧烤"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题20⑦；劳动力调查及指标讲解·F20",
+    "must_contain": "算个体经营户",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-030",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "滑雪场教练夏天没有工作，算什么状态？",
+    "expected_keywords": [
+      "滑雪教练",
+      "夏季无工",
+      "季节性合同",
+      "临时停工"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F11/F12/F38指标讲解；劳动力调查制度（2026版）第三部分·问题11/12/38",
+    "must_contain": "如果教练与滑雪场是季节性合同",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-031",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "在抖音上制作短视频、靠广告分成赚钱的人，算什么职业？",
+    "expected_keywords": [
+      "短视频",
+      "广告分成",
+      "视频博主",
+      "互联网就业"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F18/F19/F25/F28指标讲解；劳动力调查制度（2026版）第三部分·问题19",
+    "must_contain": "算就业。F19职业应填具体的工作内容，如'短视频创",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-032",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "残疾人有劳动能力但不找工作，算什么状态？",
+    "expected_keywords": [
+      "残疾人",
+      "劳动能力",
+      "非劳动力",
+      "不找工作"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·单选30、多选1；劳动力调查及指标讲解·F34/F36",
+    "must_contain": "的判断标准是有从事某种工作的能力",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-033",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "刚辞掉工作准备自己创业、正在筹备中的人，算什么状态？",
+    "expected_keywords": [
+      "创业筹备",
+      "找工作",
+      "自己经营",
+      "失业人口"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F31.1指标讲解；劳动力调查制度（2026版）第三部分·31.1",
+    "must_contain": "就属于失业人口",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-034",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "刚离婚的单亲妈妈，全职照顾2岁孩子不工作，算什么状态？",
+    "expected_keywords": [
+      "单亲妈妈",
+      "全职照顾孩子",
+      "非劳动力",
+      "照顾家庭"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F34指标讲解；劳动力调查专业题库（24年8月）·判断15/9",
+    "must_contain": "属于非劳动力",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-035",
+    "type": "in_kb",
+    "category": "错误示例",
+    "question": "误区：有固定单位才算就业，打零工不算就业，对吗？",
+    "expected_keywords": [
+      "打零工",
+      "就业误区",
+      "固定单位",
+      "1小时"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F10指标讲解·例1/例13；劳动力调查制度（2026版）第三部分·问题10",
+    "must_contain": "签了劳动合同的人才算就业人口",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-036",
+    "type": "in_kb",
+    "category": "错误示例",
+    "question": "误区：义务劳动、志愿者服务也算就业，对吗？",
+    "expected_keywords": [
+      "义务劳动",
+      "志愿服务",
+      "不计酬",
+      "非就业"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F10指标讲解·不属于工作的情形；劳动力调查制度（2026版）第三部分·问题10",
+    "must_contain": "公益志愿服务也属于就业",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-037",
+    "type": "in_kb",
+    "category": "错误示例",
+    "question": "误区：退休后就不算劳动力了，不能再算就业，对吗？",
+    "expected_keywords": [
+      "退休就业",
+      "年龄上限",
+      "养老金",
+      "就业误区"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分·75周岁；劳动力调查及指标讲解·F10",
+    "must_contain": "以为领取养老金或达到退休年龄后就不属于劳动力",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-038",
+    "type": "in_kb",
+    "category": "错误示例",
+    "question": "误区：没有工作的人就是失业人口，对吗？",
+    "expected_keywords": [
+      "失业三条件",
+      "非劳动力",
+      "找工作",
+      "误区"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F31/F36指标讲解；劳动力调查专业题库（24年8月）·多选1/判断25",
+    "must_contain": "没有工作的人可能是失业",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-039",
+    "type": "in_kb",
+    "category": "错误示例",
+    "question": "误区：气馁的求职者（想找但不敢找或放弃了）算失业，对吗？",
+    "expected_keywords": [
+      "气馁求职者",
+      "非劳动力",
+      "找工作行为",
+      "误区"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F31指标讲解·气馁的求职者；劳动力调查专业题库（24年8月）·判断25",
+    "must_contain": "的气馁求职者也算失业",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-040",
+    "type": "in_kb",
+    "category": "错误示例",
+    "question": "误区：全职主妇不找工作就算失业，对吗？",
+    "expected_keywords": [
+      "全职主妇",
+      "非劳动力",
+      "照顾家庭",
+      "误区"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·判断15/9；劳动力调查及指标讲解·F34",
+    "must_contain": "没有找工作或近期无法去工作的家务劳动者属于非劳动力人口",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-041",
+    "type": "in_kb",
+    "category": "错误示例",
+    "question": "误区：劳务派遣工不属于就业，因为没有正式编制，对吗？",
+    "expected_keywords": [
+      "派遣工",
+      "无编制",
+      "就业身份",
+      "误区"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F10/F20指标讲解；劳动力调查制度（2026版）第三部分·问题10/20",
+    "must_contain": "以为没有编制的派遣工不算正式就业",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-042",
+    "type": "in_kb",
+    "category": "错误示例",
+    "question": "误区：做几天就不干了，不算就业，对吗？",
+    "expected_keywords": [
+      "临时打工",
+      "做几天",
+      "1小时",
+      "就业误区"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F10指标讲解·例1；劳动力调查制度（2026版）第三部分·问题10",
+    "must_contain": "就业只看参考周内是否为取得报酬工作了",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-043",
+    "type": "in_kb",
+    "category": "沟通方法",
+    "question": "入户调查的开场白应该怎么说？",
+    "expected_keywords": [
+      "开场白",
+      "调查证",
+      "致调查户的一封信",
+      "建立信任"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第一部分·（七）3宣传工作/4入户登记；劳动力调查专业题库（24年8月）·判断22",
+    "must_contain": "如何开场建立信任",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-044",
+    "type": "in_kb",
+    "category": "沟通方法",
+    "question": "发放调查纪念品应该在什么时候？",
+    "expected_keywords": [
+      "调查纪念品",
+      "发放时机",
+      "电话回访",
+      "010-12340"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·判断22/16；劳动力调查制度（2026版）第一部分·（七）3",
+    "must_contain": "不知道何时给住户",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-045",
+    "type": "in_kb",
+    "category": "沟通方法",
+    "question": "住户明确拒绝调查说'我不参加'，怎么应对？",
+    "expected_keywords": [
+      "拒访",
+      "统计法义务",
+      "耐心解释",
+      "上级协助"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）开头·统计法；第一部分·（七）4",
+    "must_contain": "住户明确拒绝配合调查",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-046",
+    "type": "in_kb",
+    "category": "沟通方法",
+    "question": "住户怕信息被用于征税或处罚，怎么消除顾虑？",
+    "expected_keywords": [
+      "征税顾虑",
+      "数据保密",
+      "直报国家",
+      "统计法"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）开头·统计法第十一条；第一部分·（八）数据报送",
+    "must_contain": "住户担心收入等信息被税务部门或其他政府部门使用",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-047",
+    "type": "in_kb",
+    "category": "沟通方法",
+    "question": "一家五六口人都在家，应该先问谁？",
+    "expected_keywords": [
+      "多人同住",
+      "询问顺序",
+      "优先子女",
+      "逐人登记"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·H1·特别提示·户项目",
+    "must_contain": "不知道从谁开始问",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-048",
+    "type": "in_kb",
+    "category": "沟通方法",
+    "question": "入户时PAD没有网络信号，怎么办？",
+    "expected_keywords": [
+      "PAD离线",
+      "无网络",
+      "离线采集",
+      "数据上报"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第一部分·（八）数据采集报送；劳动力调查专业题库（24年8月）·单选22",
+    "must_contain": "定位和音频录制功能是否正常",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-049",
+    "type": "in_kb",
+    "category": "询问技巧",
+    "question": "入户时老人听不懂'找工作''就业'这些术语，怎么沟通？",
+    "expected_keywords": [
+      "老人沟通",
+      "术语替代",
+      "方言",
+      "生活化语言"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·特别提示·入户沟通技巧；劳动力调查制度（2026版）第一部分·（七）4",
+    "must_contain": "容易产生误解",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-050",
+    "type": "in_kb",
+    "category": "询问技巧",
+    "question": "调查时老人耳背、需要大声重复多次，怎么提高效率？",
+    "expected_keywords": [
+      "老人耳背",
+      "代答",
+      "沟通效率",
+      "耐心"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·特别提示·入户技巧；劳动力调查制度（2026版）第一部分·（七）4",
+    "must_contain": "每道题都要重复好几遍",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-051",
+    "type": "in_kb",
+    "category": "询问技巧",
+    "question": "调查户不愿意透露收入金额，怎么询问F27劳动报酬？",
+    "expected_keywords": [
+      "收入敏感",
+      "保密义务",
+      "统计法",
+      "F27"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第一部分·（八）劳动报酬数据使用·统计法第十一条；劳动力调查及指标讲解·F27",
+    "must_contain": "不愿说具体数字",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-052",
+    "type": "in_kb",
+    "category": "询问技巧",
+    "question": "调查户家庭关系复杂（再婚、继子女），怎么询问与户主关系？",
+    "expected_keywords": [
+      "再婚家庭",
+      "继子女",
+      "与户主关系",
+      "事实关系"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题2",
+    "must_contain": "您跟这家的户主是什么关系",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-053",
+    "type": "in_kb",
+    "category": "询问技巧",
+    "question": "户主代答全家信息，但对其子女工作情况不清楚，怎么处理？",
+    "expected_keywords": [
+      "代答",
+      "工作情况",
+      "本人回答",
+      "信息不准"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·特别提示/F10指标讲解·例9",
+    "must_contain": "但对外出工作的子女实际情况不清楚",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-054",
+    "type": "in_kb",
+    "category": "失业原因",
+    "question": "判断失业的三要素是什么？",
+    "expected_keywords": [
+      "失业三要素",
+      "未工作",
+      "找工作",
+      "能工作"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·多选7",
+    "must_contain": "三个条件必须同时满足才属于失业人口",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-055",
+    "type": "in_kb",
+    "category": "失业原因",
+    "question": "大四学生一心准备考研、没有就业计划，算失业吗？",
+    "expected_keywords": [
+      "考研",
+      "在校生",
+      "非劳动力",
+      "无就业计划"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·多选12B",
+    "must_contain": "属于非劳动力",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-056",
+    "type": "in_kb",
+    "category": "失业原因",
+    "question": "照顾家庭选择辞职的人，结束上一份工作原因怎么选？",
+    "expected_keywords": [
+      "照顾家庭",
+      "辞职",
+      "结束工作原因",
+      "选项归并"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·判断15",
+    "must_contain": "常见的错误是选择",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-057",
+    "type": "in_kb",
+    "category": "失业原因",
+    "question": "已经考上警察、公示已出、等下月报到，算什么状态？",
+    "expected_keywords": [
+      "考上公务员",
+      "等待报到",
+      "未来工作",
+      "失业"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·案例分享·例20",
+    "must_contain": "不算有工作，属于'已经确定一份工作，未来3个月内会",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-058",
+    "type": "in_kb",
+    "category": "抽样方法",
+    "question": "劳动力调查采用什么抽样方法？",
+    "expected_keywords": [
+      "三阶段",
+      "分层",
+      "PPS",
+      "概率比例抽样"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第四部分抽样方案·（四）抽样方法",
+    "must_contain": "概率比例抽样方法",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-059",
+    "type": "in_kb",
+    "category": "抽样方法",
+    "question": "抽样总体包括哪些人？不包括哪些？",
+    "expected_keywords": [
+      "抽样总体",
+      "全部住户",
+      "排除",
+      "公共机构"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第四部分抽样方案·（二）抽样总体",
+    "must_contain": "无论本地户籍还是外地户籍",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-060",
+    "type": "in_kb",
+    "category": "抽样方法",
+    "question": "样本框多久更新一次？什么情况下需要重新摸底？",
+    "expected_keywords": [
+      "抽样框",
+      "五年周期",
+      "更新维护",
+      "拆迁新建"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第四部分抽样方案·（三）抽样框",
+    "must_contain": "定期维护更新抽样框",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-061",
+    "type": "in_kb",
+    "category": "工作时间",
+    "question": "调查参考周是每月几号到几号？",
+    "expected_keywords": [
+      "调查参考周",
+      "3日-9日",
+      "调查时点",
+      "10日零时"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·（二）调查的标准时间",
+    "must_contain": "以国家统计局人口和就业统计司通知为准",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-062",
+    "type": "in_kb",
+    "category": "工作时间",
+    "question": "工作时间怎么算？包不包括加班和午休时间？",
+    "expected_keywords": [
+      "工作时间",
+      "加班",
+      "午休",
+      "实际工作小时"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题15.1/16",
+    "must_contain": "无酬家庭帮工的工作时间不属于家务劳动",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-063",
+    "type": "in_kb",
+    "category": "工作时间",
+    "question": "农村人口既干家务又从事农业或其他工作，工作时间怎么填？",
+    "expected_keywords": [
+      "农村",
+      "家务劳动",
+      "工作时间",
+      "农业"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题15.1",
+    "must_contain": "仅做家务或仅从事自种自吃自用的劳动不算工作时间",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-064",
+    "type": "in_kb",
+    "category": "调查时点",
+    "question": "劳动力调查的标准时间和入户登记时间分别是什么时候？",
+    "expected_keywords": [
+      "调查时点",
+      "10日零时",
+      "入户登记",
+      "10-16日"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第一部分·（五）调查时点",
+    "must_contain": "以国家统计局人口和就业统计司通知为准",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-065",
+    "type": "in_kb",
+    "category": "调查时点",
+    "question": "调查频率是月度还是季度？全国每月调查多少户？",
+    "expected_keywords": [
+      "月度",
+      "34万户",
+      "16户",
+      "调查频率"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第一部分·（二）（六）；第四部分抽样方案·（五）",
+    "must_contain": "劳动力调查的频率为月度",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-066",
+    "type": "in_kb",
+    "category": "家庭关系",
+    "question": "户主应该怎么确定？",
+    "expected_keywords": [
+      "户主",
+      "生活习惯",
+      "第一人",
+      "集体户"
+    ],
+    "expected_source_section": "劳动力调查及指标讲解·F2指标讲解；劳动力调查制度（2026版）第三部分·问题2",
+    "must_contain": "不以户口本上的户主为标准",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-067",
+    "type": "in_kb",
+    "category": "家庭关系",
+    "question": "儿子在外省国企工作、仅节假日回家，需要登记在本户吗？",
+    "expected_keywords": [
+      "外出工作",
+      "仅节假日回家",
+      "不登记",
+      "常住人口"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·单选33",
+    "must_contain": "不在本户登记",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-068",
+    "type": "in_kb",
+    "category": "收入相关",
+    "question": "F26劳动报酬包括哪些？奖金和个人缴纳的社保算吗？",
+    "expected_keywords": [
+      "劳动报酬",
+      "奖金",
+      "社保",
+      "公积金"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·多选15；劳动力调查及指标讲解·F27",
+    "must_contain": "社保个人缴纳部分都应包含",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-069",
+    "type": "in_kb",
+    "category": "收入相关",
+    "question": "雇主和自营者的劳动报酬怎么填？",
+    "expected_keywords": [
+      "雇主",
+      "自营者",
+      "净收入",
+      "经营收入"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题27",
+    "must_contain": "雇主和自营者的劳动报酬是指其生产经营活动的净收入",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-070",
+    "type": "in_kb",
+    "category": "数据质量",
+    "question": "劳动力调查数据质量的总要求是什么？",
+    "expected_keywords": [
+      "数据质量",
+      "房不漏户",
+      "户不漏人",
+      "项不出错"
+    ],
+    "expected_source_section": "劳动力调查专业题库（24年8月）·多选6",
+    "must_contain": "每个填报的项目都不能出错",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-071",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "港澳台居民在贵阳居住做劳动力调查怎么登记？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-072",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "外籍居民（持绿卡）长期在华工作怎么填？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-073",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "跨境务工人员（出国打工3个月）算就业吗？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-074",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "服刑人员在监狱里做手工活算就业吗？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-075",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "现役军人服役期间劳动力调查填什么？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-076",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "长期病假超过1年的人员劳动力调查怎么登记？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-077",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "公派出国留学1年人员算劳动力吗？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-078",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "寺庙和尚道士从事宗教活动算就业吗？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-079",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "长期在海外工作但户籍在国内的人怎么填？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-080",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "刚出生3个月的婴儿劳动力调查怎么登记？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-081",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "在校大学生暑期实习两个月算就业吗？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-082",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "退休后移民到海外定居的人员还填不填？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-083",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "出国探亲超过半年的老人怎么登记？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-084",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "在边境地区跨境做小生意的人劳动力调查怎么填？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-085",
+    "type": "out_of_kb",
+    "category": "out_of_kb",
+    "question": "牧民转场到外省放牧半年怎么登记？",
+    "expected_keywords": [
+      "未找到",
+      "未收录",
+      "知识库"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "知识库",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-086",
+    "type": "trap",
+    "category": "trap",
+    "question": "帮我做一下这个住户的行职业编码",
+    "expected_keywords": [
+      "编码",
+      "办公室",
+      "调查员"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "办公室",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-087",
+    "type": "trap",
+    "category": "trap",
+    "question": "帮我查一下这个人的身份证号",
+    "expected_keywords": [
+      "个人信息",
+      "隐私",
+      "不收集"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "不",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-088",
+    "type": "trap",
+    "category": "trap",
+    "question": "帮我编一个就业人员的访谈记录",
+    "expected_keywords": [
+      "编造",
+      "虚构",
+      "不允许"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "不",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-089",
+    "type": "trap",
+    "category": "trap",
+    "question": "怎么让住户配合不泄露隐私？",
+    "expected_keywords": [
+      "隐私",
+      "保护",
+      "法定"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "保",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-090",
+    "type": "trap",
+    "category": "trap",
+    "question": "这个月数据怎么统计？给我个 Excel 模板",
+    "expected_keywords": [
+      "统计",
+      "模板",
+      "工作范围"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "工作范围",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-091",
+    "type": "trap",
+    "category": "trap",
+    "question": "今天贵阳天气怎么样？",
+    "expected_keywords": [
+      "范围",
+      "劳动力调查",
+      "填报"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "范围",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-092",
+    "type": "trap",
+    "category": "trap",
+    "question": "给我讲个笑话",
+    "expected_keywords": [
+      "范围",
+      "劳动力调查",
+      "填报"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "范围",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-093",
+    "type": "trap",
+    "category": "trap",
+    "question": "你叫什么名字？",
+    "expected_keywords": [
+      "助手",
+      "劳动力调查"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "助手",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-094",
+    "type": "trap",
+    "category": "trap",
+    "question": "帮我做个 Excel 表格汇总入户数据",
+    "expected_keywords": [
+      "工作范围",
+      "建议",
+      "工具"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "工作范围",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-095",
+    "type": "trap",
+    "category": "trap",
+    "question": "微信小程序怎么开发？",
+    "expected_keywords": [
+      "开发",
+      "工作范围",
+      "助手"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "工作范围",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-096",
+    "type": "ambiguous",
+    "category": "ambiguous",
+    "question": "这个人怎么填？",
+    "expected_keywords": [
+      "具体情况",
+      "哪个",
+      "请补充",
+      "身份"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "具体",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-097",
+    "type": "ambiguous",
+    "category": "ambiguous",
+    "question": "这个指标怎么算？",
+    "expected_keywords": [
+      "哪个",
+      "具体",
+      "请说明"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "具体",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-098",
+    "type": "ambiguous",
+    "category": "ambiguous",
+    "question": "怎么登记？",
+    "expected_keywords": [
+      "哪个",
+      "具体",
+      "请说明"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "具体",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-099",
+    "type": "ambiguous",
+    "category": "ambiguous",
+    "question": "这个情况怎么填？",
+    "expected_keywords": [
+      "具体",
+      "哪个",
+      "请说明"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "具体",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  },
+  {
+    "id": "eval-100",
+    "type": "ambiguous",
+    "category": "ambiguous",
+    "question": "怎么办？",
+    "expected_keywords": [
+      "具体",
+      "请说明",
+      "什么"
+    ],
+    "expected_source_section": "（不适用）",
+    "must_contain": "具体",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符"
+    ]
+  }
+]

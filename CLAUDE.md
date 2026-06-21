@@ -8,7 +8,9 @@
 - **名称**：劳动力调查 AI 助手（labor-survey-ai）
 - **目标**：为辅助调查员提供基于 RAG 的即时填报指导
 - **用户**：国家统计局贵阳调查队系统的辅助调查员（处室自用起步）
-- **载体**：微信小程序 + FastAPI 后端
+- **载体**：H5 单页应用 + FastAPI 后端 + Cloudflare Tunnel 暴露公网
+
+> 2026-06-21 反转：原"微信小程序"已改为 H5，详见 `docs/adr/0001-前端选型.md`。
 
 ## 用户身份
 
@@ -16,7 +18,7 @@
 
 ## 当前阶段
 
-**迭代 1 / Step 1.1：建项目骨架**（进行中）
+**迭代 1 / Step 1.2：内网穿透 + 公网验证**（进行中）
 
 参见 `docs/02-可行性审核.md` 第四节「已确认的决策」和 `D:\code\labor-survey-ai\..\plans\c-users-administrator-desktop-ai-md-1-2-velvety-feather.md` 第四节「推荐实施路线」。
 
@@ -28,13 +30,13 @@
 | `docs/adr/` | 架构决策记录（一旦写定不轻易改） | 增量追加，不改旧 ADR |
 | `knowledge-base/raw/` | 原始 PDF/Word 制度文档 | **不直接修改**，只读 |
 | `knowledge-base/qa/` | 结构化 QA JSON | 自由修改 |
-| `knowledge-base/scripts/` | 知识库构建脚本 | 自由修改 |
 | `backend/app/` | FastAPI 应用代码 | 自由修改 |
+| `backend/static/` | H5 前端（单页应用） | 自由修改 |
 | `backend/tests/` | 后端测试 | 自由修改 |
-| `miniprogram/pages/` | 小程序页面 | 自由修改 |
-| `miniprogram/utils/` | 小程序工具函数 | 自由修改 |
-| `deploy/` | 部署配置 | 谨慎修改，影响线上 |
 | `scripts/` | 跨子项目运维脚本 | 自由修改 |
+| `deploy/` | 部署配置 | 谨慎修改，影响线上 |
+
+> `miniprogram/` 保留空骨架（决策反转前已建），不使用。不再修改其内容。
 
 ## 关键命令
 
@@ -46,21 +48,24 @@ codegraph init -i
 
 # 知识库：构建向量索引
 python scripts/build_kb.py
+# 知识库：构建 BM25 索引（Hybrid 检索用，改 faq.json 后需重建）
+python scripts/build_bm25.py --full
 
 # 知识库：本地预览/检索测试
 python scripts/preview_kb.py
 
-# 后端：本地启动（开发模式）
+# 后端：本地启动（开发模式，不需要公网）
 cd backend && uvicorn app.main:app --reload --port 8000
+
+# 后端 + 公网穿透：一键启动（H5 + Cloudflare Tunnel）
+scripts\start_tunnel.bat
+# 输出里找 https://xxx.trycloudflare.com 链接，发给同事
 
 # 后端：测试
 cd backend && pytest
 
 # 后端：依赖安装
 cd backend && pip install -r requirements.txt
-
-# 小程序：本地预览（需微信开发者工具打开 miniprogram/）
-# 无 CLI 命令，开发者工具扫码即可
 ```
 
 ## 代码风格
@@ -73,14 +78,14 @@ cd backend && pip install -r requirements.txt
 - 配置从环境变量读，不硬编码
 - 公共函数加 docstring（一行说明 WHY）
 
-**JavaScript（小程序）**：
-- 微信小程序原生语法，不引入框架（Taro / uni-app）除非必要
-- 工具函数放 `utils/`，页面逻辑放 `pages/<page>/` 内
-- 不使用 ES6+ 不支持的语法（参考小程序基础库兼容表）
+**H5 前端（`backend/static/`）**：
+- 单文件优先，目前全部内联在 `index.html`
+- 工具函数 / API 调用就近写，不强求模块化
+- 浏览器原生 API 优先，不引入框架
 
 ## 合规红线（来自全局 CLAUDE.md）
 
-- 不收集居民个人信息（小程序不接触调查数据）
+- 不收集居民个人信息（H5 不接触调查数据）
 - 不把 API Key、token 写进代码或 commit
 - 修改 `.env`、CI/CD 配置、部署脚本前先问我
 - 单位主体备案流程启动前先确认
@@ -94,6 +99,12 @@ cd backend && pip install -r requirements.txt
 - `question` 和 `answer` 用正式书面语，不口语化
 - 关键词数组用于离线检索，至少 3 个
 - 不确定的答案宁可不录，不要编造
+
+## 安全注意
+
+- `.env` 包含真实 API Key（DeepSeek / DashScope；讯飞 2026-06-21 起停用），已被 `.gitignore` 排除
+- 任何会话**不打印、不复述 `.env` 真实值**
+- 如 .env 内容出现在对话日志里，事后必须轮换所有相关 Key
 
 ## 待办
 
