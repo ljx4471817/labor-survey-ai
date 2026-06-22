@@ -1868,5 +1868,27 @@
       "TODO",
       "占位符"
     ]
+  },
+  {
+    "id": "eval-101",
+    "type": "in_kb",
+    "category": "填报规范",
+    "question": "被访户本月才找到工作，还没领到一分钱工资，F27怎么填？",
+    "expected_keywords": [
+      "F27",
+      "合同",
+      "协议",
+      "预计",
+      "新工作"
+    ],
+    "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题27",
+    "must_contain": "合同、协议或预计",
+    "should_not_contain": [
+      "待核实",
+      "TODO",
+      "占位符",
+      "未找到",
+      "知识库中未找到"
+    ]
   }
 ]
