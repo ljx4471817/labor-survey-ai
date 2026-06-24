@@ -8,3 +8,6 @@ jieba>=0.42
 rank-bm25>=0.2
 loguru>=0.7
 websocket-client>=1.6
+
+# 测试（可选：QA/反馈/检索改完后跑）
+pytest>=8.0

@@ -1,10 +1,30 @@
 """Chroma 检索 + BM25 关键词检索 + RRF 融合。"""
 from __future__ import annotations
 
+import re
+from concurrent.futures import ThreadPoolExecutor
+
+import chromadb
 import requests
 from loguru import logger
 
 from app.core.config import settings
+from app.models.schemas import ChatMessage
+
+# 共享 Chroma client/collection 单例（每次请求新建会触发 SQLite + hnsw 初始化）
+_CHROMA_CLIENT = None
+_CHROMA_COLLECTION = None
+_EXECUTOR = ThreadPoolExecutor(max_workers=2)
+
+
+def get_collection():
+    """懒加载 Chroma client/collection 模块级单例。"""
+    global _CHROMA_CLIENT, _CHROMA_COLLECTION
+    if _CHROMA_COLLECTION is None:
+        _CHROMA_CLIENT = chromadb.PersistentClient(path=str(settings.chroma_dir))
+        _CHROMA_COLLECTION = _CHROMA_CLIENT.get_collection(settings.chroma_collection)
+        logger.info(f"Chroma collection 初始化：{settings.chroma_collection}")
+    return _CHROMA_COLLECTION
 
 
 def embed_query(text: str) -> list[float]:
@@ -23,10 +43,7 @@ def embed_query(text: str) -> list[float]:
 
 def _vector_search(query: str, top_k: int) -> list[dict]:
     """纯向量检索 Chroma Top-K。"""
-    import chromadb  # 延迟加载，避免启动时硬依赖
-
-    client = chromadb.PersistentClient(path=str(settings.chroma_dir))
-    collection = client.get_collection(settings.chroma_collection)
+    collection = get_collection()
     embedding = embed_query(query)
     result = collection.query(
         query_embeddings=[embedding],
@@ -49,17 +66,14 @@ def _rrf_fuse(
     vector_results: list[dict],
     bm25_results: list[dict],
     k: int,
-    rrf_k: int = 60,
-    bm25_boost: float = 1.0,
+    rrf_c: int = 60,
+    bm25_weight: float = 1.0,
 ) -> list[dict]:
-    """Reciprocal Rank Fusion：rank 归一化融合，向量与 BM25 等权。
-
-    朴素 RRF（双系统贡献相加）在中文短文本上会因通用词（"就业"等）
-    误把 vector 第 2 的 doc 挤出 Top-K。
+    """Reciprocal Rank Fusion：rank 归一化融合（Cormack 公式 rrf_c=60）。
 
     这里采用"信任加权 RRF"：vector 命中保留原始 RRF 全额，BM25 命中按
-    bm25_boost 加权（默认 1.0）。同一 doc 在双系统都被命中时，
-    总分 = vector_RRF + bm25_boost * bm25_RRF，自动获得"双系统命中"奖励。
+    bm25_weight 加权（默认 1.0）。同一 doc 在双系统都被命中时，
+    总分 = vector_RRF + bm25_weight * bm25_RRF，自动获得"双系统命中"奖励。
 
     返回项保留原始 vector cosine 相似度在 score 字段，
     threshold 仍按 cosine 比对。
@@ -70,14 +84,14 @@ def _rrf_fuse(
         qid = item["id"]
         fused[qid] = {
             **item,
-            "rrf_score": 1.0 / (rrf_k + rank),
+            "rrf_score": 1.0 / (rrf_c + rank),
             "vector_rank": rank,
             "bm25_rank": None,
         }
 
     for rank, item in enumerate(bm25_results, 1):
         qid = item["id"]
-        bm25_contrib = bm25_boost / (rrf_k + rank)
+        bm25_contrib = bm25_weight / (rrf_c + rank)
         if qid in fused:
             fused[qid]["rrf_score"] += bm25_contrib
             fused[qid]["bm25_rank"] = rank
@@ -95,20 +109,27 @@ def _rrf_fuse(
 
 
 def retrieve(query: str, top_k: int | None = None) -> list[dict]:
-    """Hybrid 检索：向量 + BM25 RRF 融合。
+    """Hybrid 检索：向量 + BM25 RRF 融合（两条路径并发跑）。
 
     返回 [{id, document, metadata, score, rrf_score, vector_rank, bm25_rank}, ...]
     score 字段保持为向量 cosine 相似度（threshold 0.6 比对不变）。
     """
-    from app.rag.bm25 import search as bm25_search  # 延迟导入
+    from app.rag.bm25 import search as bm25_search
 
     k = top_k or settings.top_k
     candidate_k = max(k * 2, 10)
 
-    vector_results = _vector_search(query, candidate_k)
+    # vector（远程 embedding + 本地 chroma）与 BM25（纯本地）并发
     bm25_results: list[dict] = []
+    vec_fut = _EXECUTOR.submit(_vector_search, query, candidate_k)
+    bm25_fut = _EXECUTOR.submit(bm25_search, query, candidate_k)
     try:
-        bm25_results = bm25_search(query, candidate_k)
+        vector_results = vec_fut.result()
+    except Exception:
+        logger.exception("向量检索失败")
+        raise
+    try:
+        bm25_results = bm25_fut.result()
     except Exception as e:
         logger.warning(f"BM25 检索失败，降级为纯向量: {e}")
 
@@ -140,6 +161,9 @@ def is_in_scope(query: str) -> bool:
 def is_ambiguous(query: str) -> bool:
     """粗略判断问题是否模糊。"""
     q = query.strip().rstrip("？?。.!！")
+    # 含 F 编号（如 "F27 劳动报酬"）—— 多轮补充场景，不算模糊
+    if re.search(r"\bF\d+\b", q):
+        return False
     # 短问题
     if len(q) <= 6:
         return True
@@ -150,3 +174,13 @@ def is_ambiguous(query: str) -> bool:
     if q.startswith("这个") or q.startswith("那个"):
         return True
     return False
+
+
+def merge_query_with_history(message: str, history: list[ChatMessage]) -> str:
+    """把历史 user 消息和当前 message 拼成一个检索 query。
+
+    只用历史的 user 消息（忽略 assistant 消息），保证 BM25/向量检索只看用户提问。
+    """
+    user_msgs = [m.content for m in history if m.role == "user"]
+    parts = user_msgs + [message]
+    return " ".join(parts)

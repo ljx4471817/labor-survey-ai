@@ -730,6 +730,10 @@
       '入户时PAD没有网络信号怎么办',
     ];
 
+    // 多轮对话：保留最近 4 轮（8 条消息）。超出时丢掉最早的。
+    const chatHistory = [];
+    const MAX_HISTORY_TURNS = 4;
+
     const MODE_LABEL = {
       rag: 'RAG 命中',
       out_of_kb: '未找到',
@@ -903,7 +907,6 @@
     }
 
     let currentQuestion = '';
-    let busy = false;
 
     /* DISABLED(voice) 2026-06-21: 语音 JS 整段停用。输入法自带语音转写。恢复：删除本块注释
     // ===== 语音输入（讯飞实时语音转写大模型）=====
@@ -1055,22 +1058,21 @@
 
     formEl.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (busy) return;
       const q = inputEl.value.trim();
       if (!q) return;
       inputEl.value = '';
       autoResize();
-      busy = true;
       sendBtn.disabled = true;
       currentQuestion = q;
       const turn = addQuestion(q);
       const block = addAnswerPlaceholder(turn);
+      const historyForRequest = chatHistory.slice(-MAX_HISTORY_TURNS * 2);
       try {
         const t0 = performance.now();
         const resp = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: q }),
+          body: JSON.stringify({ message: q, history: historyForRequest }),
         });
         if (!resp.ok) {
           const errText = await resp.text();
@@ -1081,10 +1083,14 @@
         renderAnswer(block, data);
         const status = block.querySelector('.feedback-status');
         if (status) status.textContent = `${ms}ms`;
+        chatHistory.push({ role: 'user', content: q });
+        chatHistory.push({ role: 'assistant', content: data.answer });
+        if (chatHistory.length > MAX_HISTORY_TURNS * 2) {
+          chatHistory.splice(0, chatHistory.length - MAX_HISTORY_TURNS * 2);
+        }
       } catch (err) {
         renderError(block, err.message);
       } finally {
-        busy = false;
         sendBtn.disabled = false;
         inputEl.focus();
       }

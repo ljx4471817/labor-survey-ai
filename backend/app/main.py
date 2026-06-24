@@ -42,10 +42,8 @@ def root() -> FileResponse:
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     try:
-        import chromadb
-        client = chromadb.PersistentClient(path=str(settings.chroma_dir))
-        col = client.get_collection(settings.chroma_collection)
-        count = col.count()
+        from app.rag.retriever import get_collection
+        count = get_collection().count()
         chroma_ok = True
     except Exception as e:
         logger.warning(f"chroma 健康检查失败: {e}")

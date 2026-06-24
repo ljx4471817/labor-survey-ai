@@ -68,6 +68,9 @@ A：行职业编码由办公室人员负责，不在调查员 AI 助手服务范
 USER_TEMPLATE = """# 知识库检索结果
 {kb_results}
 
+# 对话背景
+{history_context}
+
 # 用户问题
 {user_message}
 

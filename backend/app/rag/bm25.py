@@ -22,13 +22,12 @@ FAQ_PATH = PROJECT_ROOT / "knowledge-base" / "qa" / "faq.json"
 
 @lru_cache(maxsize=1)
 def _load_index() -> tuple[list[str], list[list[str]], dict[str, dict]]:
-    """加载 BM25 索引 + faq 元数据。启动时调用一次，之后走缓存。
+    """加载 BM25 索引 + faq 元数据 + 构建好的 BM25Okapi 对象。启动时调用一次，之后走缓存。"""
+    try:
+        from rank_bm25 import BM25Okapi
+    except ImportError:
+        raise RuntimeError("未安装 rank-bm25，先 pip install rank-bm25")
 
-    Returns:
-        qa_ids: 与 tokenized_corpus 一一对应
-        tokenized_corpus: BM25Okapi 需要的语料
-        meta_by_id: qa_id → {question, answer, category, source, keywords}
-    """
     if not INDEX_PATH.exists():
         raise FileNotFoundError(
             f"BM25 索引不存在：{INDEX_PATH}\n请先跑 python scripts/build_bm25.py --full"
@@ -36,6 +35,7 @@ def _load_index() -> tuple[list[str], list[list[str]], dict[str, dict]]:
     payload = json.loads(INDEX_PATH.read_text(encoding="utf-8"))
     qa_ids: list[str] = payload["qa_ids"]
     tokenized_corpus: list[list[str]] = payload["tokenized_corpus"]
+    bm25 = BM25Okapi(tokenized_corpus)  # 倒排索引构建一次性完成
 
     meta_by_id: dict[str, dict] = {}
     if FAQ_PATH.exists():
@@ -52,7 +52,7 @@ def _load_index() -> tuple[list[str], list[list[str]], dict[str, dict]]:
     logger.info(
         f"BM25 索引加载：{len(qa_ids)} 条，built_at={payload.get('built_at', '?')}"
     )
-    return qa_ids, tokenized_corpus, meta_by_id
+    return qa_ids, bm25, meta_by_id
 
 
 def _tokenize(text: str) -> list[str]:
@@ -64,13 +64,7 @@ def search(query: str, top_k: int) -> list[dict]:
 
     score 是 BM25 原始分数（不是相似度），越大越相关。0 表示无命中。
     """
-    try:
-        from rank_bm25 import BM25Okapi
-    except ImportError:
-        raise RuntimeError("未安装 rank-bm25，先 pip install rank-bm25")
-
-    qa_ids, tokenized_corpus, meta_by_id = _load_index()
-    bm25 = BM25Okapi(tokenized_corpus)
+    qa_ids, bm25, meta_by_id = _load_index()
     scores = bm25.get_scores(_tokenize(query))
     ranked = sorted(enumerate(scores), key=lambda x: x[1], reverse=True)[:top_k]
 

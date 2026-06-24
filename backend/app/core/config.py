@@ -40,6 +40,13 @@ class Settings:
     # xunfei_asr_domain: str  # 业务领域（gov=政务）
 
 
+def _resolve_path(env_key: str, default_relative: str) -> Path:
+    """读 env 路径：绝对则原样，相对则相对 PROJECT_ROOT。"""
+    raw = os.environ.get(env_key, default_relative)
+    p = Path(raw)
+    return p if p.is_absolute() else PROJECT_ROOT / raw
+
+
 def _load() -> Settings:
     provider = os.environ.get("EMBEDDING_PROVIDER", "dashscope").lower()
     if provider == "dashscope":
@@ -68,9 +75,7 @@ def _load() -> Settings:
         llm_url = ""
 
     return Settings(
-        chroma_dir=Path(os.environ.get("CHROMA_DIR", "backend/data/chroma"))
-        if Path(os.environ.get("CHROMA_DIR", "backend/data/chroma")).is_absolute()
-        else PROJECT_ROOT / os.environ.get("CHROMA_DIR", "backend/data/chroma"),
+        chroma_dir=_resolve_path("CHROMA_DIR", "backend/data/chroma"),
         chroma_collection=os.environ.get("CHROMA_COLLECTION", "labor_survey_qa"),
         embedding_provider=provider,
         dashscope_api_key=api_key,
