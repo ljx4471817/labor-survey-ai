@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 import chromadb
@@ -11,20 +12,25 @@ from loguru import logger
 from app.core.config import settings
 from app.models.schemas import ChatMessage
 
-# 共享 Chroma client/collection 单例（每次请求新建会触发 SQLite + hnsw 初始化）
-_CHROMA_CLIENT = None
 _CHROMA_COLLECTION = None
-_EXECUTOR = ThreadPoolExecutor(max_workers=2)
+_COLLECTION_LOCK = threading.Lock()
+_EXECUTOR = ThreadPoolExecutor(max_workers=4)
 
 
 def get_collection():
     """懒加载 Chroma client/collection 模块级单例。"""
-    global _CHROMA_CLIENT, _CHROMA_COLLECTION
+    global _CHROMA_COLLECTION
     if _CHROMA_COLLECTION is None:
-        _CHROMA_CLIENT = chromadb.PersistentClient(path=str(settings.chroma_dir))
-        _CHROMA_COLLECTION = _CHROMA_CLIENT.get_collection(settings.chroma_collection)
-        logger.info(f"Chroma collection 初始化：{settings.chroma_collection}")
+        with _COLLECTION_LOCK:
+            if _CHROMA_COLLECTION is None:
+                client = chromadb.PersistentClient(path=str(settings.chroma_dir))
+                _CHROMA_COLLECTION = client.get_collection(settings.chroma_collection)
+                logger.info(f"Chroma collection 初始化：{settings.chroma_collection}")
     return _CHROMA_COLLECTION
+
+
+def shutdown_executor():
+    _EXECUTOR.shutdown(wait=True)
 
 
 def embed_query(text: str) -> list[float]:
@@ -119,7 +125,6 @@ def retrieve(query: str, top_k: int | None = None) -> list[dict]:
     k = top_k or settings.top_k
     candidate_k = max(k * 2, 10)
 
-    # vector（远程 embedding + 本地 chroma）与 BM25（纯本地）并发
     bm25_results: list[dict] = []
     vec_fut = _EXECUTOR.submit(_vector_search, query, candidate_k)
     bm25_fut = _EXECUTOR.submit(bm25_search, query, candidate_k)
@@ -177,14 +182,10 @@ def is_ambiguous(query: str) -> bool:
 
 
 def merge_query_with_history(message: str, history: list[ChatMessage]) -> str:
-    """合并历史与当前消息作为检索 query（方案 X：A1 + 短追问兜底）。
+    """合并历史消息到检索 query。
 
-    - 当前 message ≥ 8 字：只返回 message（干净 query，最大化 corner case 召回；
-      历史约束由 LLM 用 history 消歧）。
-    - 当前 message < 8 字（追问型 "那 X 呢" / "F27 怎么填"）：拼最近 1 条
-      user 历史作为兜底约束，避免追问丢上下文。
-
-    history 只用于检索 query 拼接；LLM prompt 端的 history_context 由 chat.py 单独送。
+    msg ≥ 8 字：返回 message（干净 query；历史约束由 LLM 用 history_context 消歧）。
+    msg < 8 字（追问型 "那 X 呢" / "F27 怎么填"）：拼最近 1 条 user 历史兜底。
     """
     msg = message.strip()
     if len(msg) >= 8:

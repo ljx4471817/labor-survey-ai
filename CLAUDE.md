@@ -53,7 +53,7 @@ python scripts/build_kb.py
 python scripts/build_bm25.py --full
 # 知识库：QA 字段完整性校验（改 faq.json 后必跑）
 python scripts/validate_faq.py
-# 知识库：检索评估（BM25 / Vector / Hybrid 对比）
+# 知识库：检索评估（BM25 / Vector / Hybrid 对比；默认 URL 在脚本内，本机常用 --url http://127.0.0.1:8000）
 python scripts/run_eval.py
 # 知识库：检索方式对比
 python scripts/compare_retrieval.py
@@ -113,7 +113,7 @@ cd backend && pip install -r requirements.txt
 1. 查 `knowledge-base/raw/markdown/` 对应章节原文
 2. 按场景拆成独立条目（每条聚焦一个 corner case）
 3. 跑 `python scripts/validate_faq.py`（字段完整性）+ `python scripts/build_bm25.py --full`（索引重建）
-4. 在 `eval_set.json` 加 eval 锁定（含 must_contain + should_not_contain「未找到」防回归）
+4. 在 `eval_set.json` 加 eval 锁定（`must_contain_any` 列表任一命中 → 硬指标；`should_not_contain` 拦截典型错误措辞；多轮场景可配 `history` 字段）
 
 **每年 12 月初**：用 `git diff` 对比新旧《劳动力调查制度》文档，列出可能受影响的 KB 条目，业务人员 + 开发人员 review。
 
@@ -132,6 +132,9 @@ cd backend && pip install -r requirements.txt
 - **2026-06-22**：`/simplify` 性能/质量修复 —— Chroma collection 模块级单例、向量 + BM25 改 `ThreadPoolExecutor` 并发跑、`chat.py` 提取 `_to_source_items` + `REFUSAL_PATTERNS` 提到模块级、`config.py` 提取 `_resolve_path` helper
 - **2026-06-22**：成本预算报告 v2（`reports/cost-budget-20260622.md` + docx/pdf）—— 三档用量 × 三档人数，按行政层级测算，含采购建议档 ¥87/月
 - **2026-06-22**：F27 corner case KB 补全（commit `b46387b`）—— 5 条 corner case（id 298-302）+ 1 条 eval-101 锁定用户原问
+- **2026-06-24**：多轮对话上下文支持（最多 4 轮，commit `5b494a3`）—— `ChatMessage` + `history` 字段；history 非空跳过模糊追问；prompt 注入 `history_context`
+- **2026-06-24**：F27 自营+新开业 corner case 修复（commit `de75c90`）—— `merge_query_with_history` 改方案 X（≥8 字清检索、<8 字拼历史兜底）；KB 新增 id=303 自营豁免条目；eval-102 多轮 case 锁定「合同/协议/预计/预期」
+- **2026-06-24**：`/simplify` 质量/安全修复 —— `get_collection()` 加双检锁防 TOCTOU；删 `_CHROMA_CLIENT` 死代码；`bm25.tokenize()` 统一到 `build_bm25.py`；`ChatMessage.max_length` 500→4000 防 422；`_EXECUTOR` shutdown 注册；eval 新增 `must_contain_any` 硬指标
 
 ## 待办
 

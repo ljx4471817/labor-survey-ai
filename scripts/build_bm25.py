@@ -21,16 +21,13 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-import jieba
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_FAQ = PROJECT_ROOT / "knowledge-base" / "qa" / "faq.json"
 DEFAULT_OUT = PROJECT_ROOT / "backend" / "data" / "bm25_index.json"
 
 
-def tokenize(text: str) -> list[str]:
-    """jieba 精确模式。中文 1 字 1 token 噪声大，但 jieba 自带词典够用。"""
-    return [t for t in jieba.cut(text) if t.strip()]
+sys.path.insert(0, str(PROJECT_ROOT / "backend"))
+from app.rag.bm25 import tokenize
 
 
 def build(faq_path: Path, out_path: Path, force: bool) -> dict:

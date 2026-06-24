@@ -21,7 +21,7 @@ FAQ_PATH = PROJECT_ROOT / "knowledge-base" / "qa" / "faq.json"
 
 
 @lru_cache(maxsize=1)
-def _load_index() -> tuple[list[str], list[list[str]], dict[str, dict]]:
+def _load_index() -> tuple[list[str], "BM25Okapi", dict[str, dict]]:
     """加载 BM25 索引 + faq 元数据 + 构建好的 BM25Okapi 对象。启动时调用一次，之后走缓存。"""
     try:
         from rank_bm25 import BM25Okapi
@@ -35,7 +35,7 @@ def _load_index() -> tuple[list[str], list[list[str]], dict[str, dict]]:
     payload = json.loads(INDEX_PATH.read_text(encoding="utf-8"))
     qa_ids: list[str] = payload["qa_ids"]
     tokenized_corpus: list[list[str]] = payload["tokenized_corpus"]
-    bm25 = BM25Okapi(tokenized_corpus)  # 倒排索引构建一次性完成
+    bm25 = BM25Okapi(tokenized_corpus)
 
     meta_by_id: dict[str, dict] = {}
     if FAQ_PATH.exists():
@@ -55,8 +55,11 @@ def _load_index() -> tuple[list[str], list[list[str]], dict[str, dict]]:
     return qa_ids, bm25, meta_by_id
 
 
-def _tokenize(text: str) -> list[str]:
+def tokenize(text: str) -> list[str]:
     return [t for t in jieba.cut(text) if t.strip()]
+
+
+_tokenize = tokenize  # 保持兼容
 
 
 def search(query: str, top_k: int) -> list[dict]:

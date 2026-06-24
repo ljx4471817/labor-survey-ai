@@ -1084,10 +1084,8 @@
         const status = block.querySelector('.feedback-status');
         if (status) status.textContent = `${ms}ms`;
         chatHistory.push({ role: 'user', content: q });
-        chatHistory.push({ role: 'assistant', content: data.answer });
-        if (chatHistory.length > MAX_HISTORY_TURNS * 2) {
-          chatHistory.splice(0, chatHistory.length - MAX_HISTORY_TURNS * 2);
-        }
+        chatHistory.push({ role: 'assistant', content: data.answer.slice(0, 4000) });
+        chatHistory.splice(0, Math.max(0, chatHistory.length - MAX_HISTORY_TURNS * 2));
       } catch (err) {
         renderError(block, err.message);
       } finally {

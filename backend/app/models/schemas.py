@@ -8,12 +8,12 @@ from pydantic import BaseModel, Field
 
 class ChatMessage(BaseModel):
     role: Literal["user", "assistant"]
-    content: str = Field(..., min_length=1, max_length=500)
+    content: str = Field(..., min_length=1, max_length=4000)
 
 
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=500)
-    history: list[ChatMessage] = Field(default_factory=list, max_length=10)
+    history: list[ChatMessage] = Field(default_factory=list, max_length=8)
     top_k: int | None = Field(default=None, ge=1, le=20)
 
 

@@ -39,6 +39,12 @@ def root() -> FileResponse:
     return FileResponse(str(index))
 
 
+@app.on_event("shutdown")
+def shutdown():
+    from app.rag.retriever import shutdown_executor
+    shutdown_executor()
+
+
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     try:
