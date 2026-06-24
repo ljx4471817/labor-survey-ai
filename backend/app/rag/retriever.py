@@ -177,10 +177,17 @@ def is_ambiguous(query: str) -> bool:
 
 
 def merge_query_with_history(message: str, history: list[ChatMessage]) -> str:
-    """把历史 user 消息和当前 message 拼成一个检索 query。
+    """合并历史与当前消息作为检索 query（方案 X：A1 + 短追问兜底）。
 
-    只用历史的 user 消息（忽略 assistant 消息），保证 BM25/向量检索只看用户提问。
+    - 当前 message ≥ 8 字：只返回 message（干净 query，最大化 corner case 召回；
+      历史约束由 LLM 用 history 消歧）。
+    - 当前 message < 8 字（追问型 "那 X 呢" / "F27 怎么填"）：拼最近 1 条
+      user 历史作为兜底约束，避免追问丢上下文。
+
+    history 只用于检索 query 拼接；LLM prompt 端的 history_context 由 chat.py 单独送。
     """
-    user_msgs = [m.content for m in history if m.role == "user"]
-    parts = user_msgs + [message]
-    return " ".join(parts)
+    msg = message.strip()
+    if len(msg) >= 8:
+        return msg
+    last_user = next((m.content for m in reversed(history) if m.role == "user"), None)
+    return f"{last_user} {msg}".strip() if last_user else msg

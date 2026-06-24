@@ -68,6 +68,14 @@ def evaluate_item(item: dict, response: dict) -> dict:
         # 必含词（软指标：缺失不扣分，仅记录）
         if item.get("must_contain") and item["must_contain"] not in answer:
             checks.append((True, f"must_contain 措辞差异（不扣分）：{item['must_contain'][:20]}"))
+        # 必含词列表（硬指标：任一命中才算过，用于 corner case 正面锁定）
+        mca = item.get("must_contain_any")
+        if isinstance(mca, list) and mca:
+            hit = next((s for s in mca if s in answer), None)
+            if hit:
+                checks.append((True, f"must_contain_any 命中：{hit}"))
+            else:
+                checks.append((False, f"must_contain_any 全缺失：{mca}"))
 
     # 3. out_of_kb 题：只检查答案长度合理（避免 LLM 跑题或拒答）
     elif q_type == "out_of_kb":
@@ -126,9 +134,12 @@ def main() -> int:
     for i, item in enumerate(items, start=1):
         t0 = time.time()
         try:
+            payload: dict = {"message": item["question"]}
+            if item.get("history"):
+                payload["history"] = item["history"]
             r = requests.post(
                 f"{args.url}/api/chat",
-                json={"message": item["question"]},
+                json=payload,
                 timeout=60,
             )
             r.raise_for_status()
