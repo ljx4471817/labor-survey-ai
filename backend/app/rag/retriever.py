@@ -1,7 +1,9 @@
-"""Chroma 检索 + BM25 关键词检索 + RRF 融合。"""
+"""Chroma 检索 + BM25 关键词检索 + RRF 融合。
+
+纯函数已拆到 rag/pure.py；本文件保留 IO 层（Chroma client / embedding / 并发调度）。
+"""
 from __future__ import annotations
 
-import re
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
@@ -10,7 +12,7 @@ import requests
 from loguru import logger
 
 from app.core.config import settings
-from app.models.schemas import ChatMessage
+from app.rag.pure import rrf_fuse
 
 _CHROMA_COLLECTION = None
 _COLLECTION_LOCK = threading.Lock()
@@ -68,52 +70,6 @@ def _vector_search(query: str, top_k: int) -> list[dict]:
     return items
 
 
-def _rrf_fuse(
-    vector_results: list[dict],
-    bm25_results: list[dict],
-    k: int,
-    rrf_c: int = 60,
-    bm25_weight: float = 1.0,
-) -> list[dict]:
-    """Reciprocal Rank Fusion：rank 归一化融合（Cormack 公式 rrf_c=60）。
-
-    这里采用"信任加权 RRF"：vector 命中保留原始 RRF 全额，BM25 命中按
-    bm25_weight 加权（默认 1.0）。同一 doc 在双系统都被命中时，
-    总分 = vector_RRF + bm25_weight * bm25_RRF，自动获得"双系统命中"奖励。
-
-    返回项保留原始 vector cosine 相似度在 score 字段，
-    threshold 仍按 cosine 比对。
-    """
-    fused: dict[str, dict] = {}
-
-    for rank, item in enumerate(vector_results, 1):
-        qid = item["id"]
-        fused[qid] = {
-            **item,
-            "rrf_score": 1.0 / (rrf_c + rank),
-            "vector_rank": rank,
-            "bm25_rank": None,
-        }
-
-    for rank, item in enumerate(bm25_results, 1):
-        qid = item["id"]
-        bm25_contrib = bm25_weight / (rrf_c + rank)
-        if qid in fused:
-            fused[qid]["rrf_score"] += bm25_contrib
-            fused[qid]["bm25_rank"] = rank
-        else:
-            fused[qid] = {
-                **item,
-                "rrf_score": bm25_contrib,
-                "vector_rank": None,
-                "bm25_rank": rank,
-                "score": 0.0,  # 无向量分数，threshold 走兜底
-            }
-
-    ranked = sorted(fused.values(), key=lambda x: x["rrf_score"], reverse=True)
-    return ranked[:k]
-
-
 def retrieve(query: str, top_k: int | None = None) -> list[dict]:
     """Hybrid 检索：向量 + BM25 RRF 融合（两条路径并发跑）。
 
@@ -138,57 +94,12 @@ def retrieve(query: str, top_k: int | None = None) -> list[dict]:
     except Exception as e:
         logger.warning(f"BM25 检索失败，降级为纯向量: {e}")
 
-    fused = _rrf_fuse(vector_results, bm25_results, k=k)
+    fused = rrf_fuse(vector_results, bm25_results, k=k)
     top1_vector = vector_results[0]["score"] if vector_results else 0.0
     top1_bm25 = bm25_results[0]["score"] if bm25_results else 0.0
+    fused_top1 = fused[0]["rrf_score"] if fused else 0
     logger.info(
         f"retrieve: query='{query[:30]}' vec_top1={top1_vector:.3f} "
-        f"bm25_top1={top1_bm25:.3f} fused_top1_rrf={fused[0]['rrf_score'] if fused else 0:.4f}"
+        f"bm25_top1={top1_bm25:.3f} fused_top1_rrf={fused_top1:.4f}"
     )
     return fused
-
-
-def is_in_scope(query: str) -> bool:
-    """粗略判断是否在助手服务范围内（关键词过滤）。"""
-    q = query.lower()
-    out_of_scope = [
-        "行职业编码", "编码",
-        "身份证", "电话号码", "个人信息",
-        "笑话", "天气", "你好", "你叫什么",
-        "excel", "表格汇总", "表格模板", "做个表格",
-        "小程序怎么开发", "怎么开发",
-        "编访谈", "编一个", "编造", "虚构", "代签",
-        "隐私泄露", "泄露隐私",
-    ]
-    return not any(kw in q for kw in out_of_scope)
-
-
-def is_ambiguous(query: str) -> bool:
-    """粗略判断问题是否模糊。"""
-    q = query.strip().rstrip("？?。.!！")
-    # 含 F 编号（如 "F27 劳动报酬"）—— 多轮补充场景，不算模糊
-    if re.search(r"\bF\d+\b", q):
-        return False
-    # 短问题
-    if len(q) <= 6:
-        return True
-    # 短问句（"怎么办/怎么填/怎么算"）
-    if q in {"怎么办", "怎么填", "怎么算", "怎么登", "什么意思"}:
-        return True
-    # "这个X" 类指代不明（"这个指标/情况/指标/数据/问题"）
-    if q.startswith("这个") or q.startswith("那个"):
-        return True
-    return False
-
-
-def merge_query_with_history(message: str, history: list[ChatMessage]) -> str:
-    """合并历史消息到检索 query。
-
-    msg ≥ 8 字：返回 message（干净 query；历史约束由 LLM 用 history_context 消歧）。
-    msg < 8 字（追问型 "那 X 呢" / "F27 怎么填"）：拼最近 1 条 user 历史兜底。
-    """
-    msg = message.strip()
-    if len(msg) >= 8:
-        return msg
-    last_user = next((m.content for m in reversed(history) if m.role == "user"), None)
-    return f"{last_user} {msg}".strip() if last_user else msg

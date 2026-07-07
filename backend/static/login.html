@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>登录 · 劳动力调查 AI 助手</title>
+<style>
+:root {
+  --ink-blue: #1E3A5F;
+  --ink-blue-soft: #2d4f7a;
+  --paper: #F7F4EE;
+  --line: #d9d2c2;
+  --text: #1c1c1c;
+  --text-dim: #6b6b6b;
+  --good: #4f7a4f;
+  --bad: #a04545;
+  --bad-soft: #f5dada;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--paper);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.banner {
+  background: var(--ink-blue);
+  color: var(--paper);
+  padding: 10px 20px;
+  font-size: 0.82rem;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 4px 20px rgba(30, 58, 95, 0.08);
+}
+.logo {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.logo h1 {
+  font-size: 1.25rem;
+  color: var(--ink-blue);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.logo .sub {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+.field { margin-bottom: 16px; }
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+.field input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  font-family: inherit;
+  color: var(--text);
+  transition: border-color 0.15s;
+  letter-spacing: 0.02em;
+}
+.field input:focus {
+  outline: none;
+  border-color: var(--ink-blue);
+}
+.field input:disabled { opacity: 0.6; }
+button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  background: var(--ink-blue);
+  color: white;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button:hover:not(:disabled) { background: var(--ink-blue-soft); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.error {
+  background: var(--bad-soft);
+  color: var(--bad);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  margin-bottom: 16px;
+  display: none;
+  word-break: break-all;
+}
+.error.show { display: block; }
+
+.hint {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 16px;
+  line-height: 1.6;
+}
+footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+</style>
+</head>
+<body>
+<div class="banner">内部使用 · 手机号白名单访问</div>
+<main>
+  <div class="card">
+    <div class="logo">
+      <h1>劳动力调查 AI 助手</h1>
+      <div class="sub">辅助调查员专用 · 制度即时查询</div>
+    </div>
+    <div class="error" id="err"></div>
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label for="phone">手机号</label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          inputmode="numeric"
+          autocomplete="tel"
+          pattern="^1[3-9]\d{9}$"
+          maxlength="11"
+          placeholder="请输入 11 位手机号"
+          required
+          autofocus
+        >
+      </div>
+      <button type="submit" id="submit-btn">登录</button>
+    </form>
+    <div class="hint">
+      仅供已授权调查员使用。<br>
+      如手机号未授权，请联系管理员。
+    </div>
+  </div>
+</main>
+<footer>国家统计局贵阳调查队 · 内部工具</footer>
+
+<script src="/static/common.js"></script>
+<script>
+const phoneEl = $('phone');
+const formEl = $('login-form');
+const btnEl = $('submit-btn');
+const errEl = $('err');
+
+function showError(msg) {
+  errEl.textContent = msg;
+  errEl.classList.add('show');
+}
+function clearError() {
+  errEl.classList.remove('show');
+  errEl.textContent = '';
+}
+
+if (getToken()) {
+  location.replace('/');
+}
+
+phoneEl.addEventListener('input', () => {
+  phoneEl.value = phoneEl.value.replace(/\D/g, '').slice(0, 11);
+  clearError();
+});
+
+formEl.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearError();
+  const phone = phoneEl.value.trim();
+  if (!/^1[3-9]\d{9}$/.test(phone)) {
+    showError('请输入 11 位有效手机号');
+    return;
+  }
+  btnEl.disabled = true;
+  btnEl.textContent = '登录中…';
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone }),
+    });
+    if (r.ok) {
+      const { token, expires_at } = await r.json();
+      localStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem(EXP_KEY, String(expires_at));
+      location.replace('/');
+    } else {
+      const err = await r.json().catch(() => ({}));
+      showError(err.detail || `登录失败（HTTP ${r.status}）`);
+      btnEl.disabled = false;
+      btnEl.textContent = '登录';
+    }
+  } catch (err) {
+    showError('网络错误：' + err.message);
+    btnEl.disabled = false;
+    btnEl.textContent = '登录';
+  }
+});
+</script>
+</body>
+</html>

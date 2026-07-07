@@ -147,7 +147,6 @@
       background: var(--c-danger-soft);
     }
     header .status.err .dot { background: var(--c-danger); }
-
     /* ===== 主区域 ===== */
     main {
       flex: 1 1 auto;
@@ -696,7 +695,7 @@
       <img class="empty-mascot" src="/static/mascot.png" alt="贵阳调查队吉祥物·筑小调" width="96" height="96">
       <div class="empty-title">你好，我是筑小调</div>
       <p class="empty-greeting">我是贵阳调查队筑小调，可以解答所有劳动力调查指标填报的问题。</p>
-      <p class="empty-hint">回答基于本地 297 条制度 QA 知识库；未命中的题目会明确提示「未找到」，不会编造。</p>
+      <p class="empty-hint">回答基于本地制度 QA 知识库；未命中的题目会明确提示「未找到」，不会编造。</p>
       <div class="examples" id="examples"></div>
     </div>
   </main>
@@ -712,6 +711,7 @@
     </button>
   </form>
 
+  <script src="/static/common.js"></script>
   <script>
     const chatEl = document.getElementById('chat');
     const formEl = document.getElementById('input-form');
@@ -730,6 +730,9 @@
       '入户时PAD没有网络信号怎么办',
     ];
 
+    // 未登录直接跳登录页
+    requireLoginOrRedirect();
+
     // 多轮对话：保留最近 4 轮（8 条消息）。超出时丢掉最早的。
     const chatHistory = [];
     const MAX_HISTORY_TURNS = 4;
@@ -740,12 +743,6 @@
       out_of_scope: '超出范围',
       ambiguous: '需要补充',
     };
-
-    function escapeHtml(s) {
-      return (s || '').replace(/[&<>"']/g, c => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      }[c]));
-    }
 
     function hideEmpty() {
       if (emptyEl && emptyEl.parentNode) emptyEl.remove();
@@ -829,6 +826,7 @@
       block.dataset.answer = data.answer || '';
       block.dataset.mode = mode;
       block.dataset.sources = JSON.stringify(sources);
+      block.dataset.requestId = data.request_id || '';
       wireFeedback(block);
       scrollToBottom();
     }
@@ -867,7 +865,7 @@
           try {
             const resp = await fetch('/api/feedback', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', ...authHeader() },
               body: JSON.stringify({
                 question: block.dataset.question,
                 answer: block.dataset.answer,
@@ -875,8 +873,10 @@
                 rating,
                 comment: commentInput.value || '',
                 sources: JSON.parse(block.dataset.sources || '[]'),
+                request_id: block.dataset.requestId || null,
               }),
             });
+            if (await handle401(resp)) return;
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
             const j = await resp.json();
             status.textContent = `已记录 (${j.record_id})`;
@@ -891,7 +891,7 @@
           if (row.dataset.ratingState !== 'none') {
             fetch('/api/feedback', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', ...authHeader() },
               body: JSON.stringify({
                 question: block.dataset.question,
                 answer: block.dataset.answer,
@@ -899,6 +899,7 @@
                 rating: row.dataset.ratingState,
                 comment: commentInput.value,
                 sources: JSON.parse(block.dataset.sources || '[]'),
+                request_id: block.dataset.requestId || null,
               }),
             }).catch(() => {});
           }
@@ -1071,9 +1072,10 @@
         const t0 = performance.now();
         const resp = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeader() },
           body: JSON.stringify({ message: q, history: historyForRequest }),
         });
+        if (await handle401(resp)) return;
         if (!resp.ok) {
           const errText = await resp.text();
           throw new Error(errText || 'HTTP ' + resp.status);

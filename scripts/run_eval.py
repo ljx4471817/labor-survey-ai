@@ -25,6 +25,16 @@ DEFAULT_URL = "http://127.0.0.1:8765"
 DEFAULT_OUT = ROOT / "reports" / "eval-latest.json"
 
 
+def login(url: str, phone: str) -> str:
+    r = requests.post(
+        f"{url}/api/auth/login",
+        json={"phone": phone},
+        timeout=10,
+    )
+    r.raise_for_status()
+    return r.json()["token"]
+
+
 def evaluate_item(item: dict, response: dict) -> dict:
     """对单题评估，返回 {passed, reason, details}。"""
     q_type = item["type"]
@@ -119,7 +129,17 @@ def main() -> int:
     p.add_argument("--eval", type=Path, default=EVAL_PATH)
     p.add_argument("--out", type=Path, default=DEFAULT_OUT)
     p.add_argument("--limit", type=int, default=None, help="只跑前 N 题（调试用）")
+    p.add_argument("--phone", default=None,
+                   help="白名单内手机号，用于登录拿 token（门禁启用后必填）")
     args = p.parse_args()
+
+    headers: dict[str, str] = {}
+    if args.phone:
+        token = login(args.url, args.phone)
+        headers["Authorization"] = f"Bearer {token}"
+        print(f"已登录：phone={args.phone[:3]}****")
+    else:
+        print("未传 --phone，将以匿名调用（仅适用于未启门禁的环境）")
 
     items = json.loads(args.eval.read_text(encoding="utf-8"))
     if args.limit:
@@ -140,6 +160,7 @@ def main() -> int:
             r = requests.post(
                 f"{args.url}/api/chat",
                 json=payload,
+                headers=headers,
                 timeout=60,
             )
             r.raise_for_status()

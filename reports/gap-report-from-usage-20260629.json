@@ -1,0 +1,101 @@
+{
+  "generated_at": "2026-06-29T19:36:19",
+  "since_days": 7,
+  "min_freq": 3,
+  "threshold": 0.7,
+  "summary": {
+    "high_freq_out_of_scope": 10,
+    "kb_hit_but_down": 1,
+    "high_freq_low_match": 0
+  },
+  "high_freq_out_of_scope": [
+    {
+      "query": "这个月数据怎么统计？给我个 Excel 模板",
+      "freq": 12,
+      "user_count": 2,
+      "last_seen": "2026-06-29T16:07:13+08:00",
+      "action": "考虑新增 KB 条目"
+    },
+    {
+      "query": "给我讲个笑话",
+      "freq": 12,
+      "user_count": 2,
+      "last_seen": "2026-06-29T16:07:13+08:00",
+      "action": "考虑新增 KB 条目"
+    },
+    {
+      "query": "怎么让住户配合不泄露隐私？",
+      "freq": 12,
+      "user_count": 2,
+      "last_seen": "2026-06-29T16:07:13+08:00",
+      "action": "考虑新增 KB 条目"
+    },
+    {
+      "query": "微信小程序怎么开发？",
+      "freq": 12,
+      "user_count": 2,
+      "last_seen": "2026-06-29T16:07:14+08:00",
+      "action": "考虑新增 KB 条目"
+    },
+    {
+      "query": "帮我编一个就业人员的访谈记录",
+      "freq": 12,
+      "user_count": 2,
+      "last_seen": "2026-06-29T16:07:13+08:00",
+      "action": "考虑新增 KB 条目"
+    },
+    {
+      "query": "帮我查一下这个人的身份证号",
+      "freq": 12,
+      "user_count": 2,
+      "last_seen": "2026-06-29T16:07:13+08:00",
+      "action": "考虑新增 KB 条目"
+    },
+    {
+      "query": "帮我做个 Excel 表格汇总入户数据",
+      "freq": 12,
+      "user_count": 2,
+      "last_seen": "2026-06-29T16:07:14+08:00",
+      "action": "考虑新增 KB 条目"
+    },
+    {
+      "query": "帮我做一下这个住户的行职业编码",
+      "freq": 12,
+      "user_count": 2,
+      "last_seen": "2026-06-29T16:07:13+08:00",
+      "action": "考虑新增 KB 条目"
+    },
+    {
+      "query": "你叫什么名字？",
+      "freq": 12,
+      "user_count": 2,
+      "last_seen": "2026-06-29T16:07:13+08:00",
+      "action": "考虑新增 KB 条目"
+    },
+    {
+      "query": "今天贵阳天气怎么样？",
+      "freq": 12,
+      "user_count": 2,
+      "last_seen": "2026-06-29T16:07:13+08:00",
+      "action": "考虑新增 KB 条目"
+    }
+  ],
+  "kb_hit_but_down": [
+    {
+      "qa_id": "301",
+      "down_count": 7,
+      "sample_questions": [
+        "自营劳动者，这个月才开始卖钱，上个月店还没开呢",
+        "自营劳动者，这个月才开始卖钱，上个月店还没开呢",
+        "自营劳动者，这个月才开始卖钱，上个月店还没开呢"
+      ],
+      "sample_comments": [
+        "劳动力调查制度（2026版）中dui'yu",
+        "劳动力调查制度（2026版）中对于",
+        "刚开始工作尚未获得劳动bao'c"
+      ],
+      "action": "review KB 该条目，可能需要改写"
+    }
+  ],
+  "high_freq_low_match": []
+}

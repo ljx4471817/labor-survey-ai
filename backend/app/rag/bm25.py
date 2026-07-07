@@ -17,12 +17,11 @@ from loguru import logger
 from app.core.config import PROJECT_ROOT
 
 INDEX_PATH = PROJECT_ROOT / "backend" / "data" / "bm25_index.json"
-FAQ_PATH = PROJECT_ROOT / "knowledge-base" / "qa" / "faq.json"
 
 
 @lru_cache(maxsize=1)
 def _load_index() -> tuple[list[str], "BM25Okapi", dict[str, dict]]:
-    """加载 BM25 索引 + faq 元数据 + 构建好的 BM25Okapi 对象。启动时调用一次，之后走缓存。"""
+    """加载 BM25 索引 + 元数据 + BM25Okapi 对象。启动时调用一次，之后走缓存。"""
     try:
         from rank_bm25 import BM25Okapi
     except ImportError:
@@ -33,26 +32,16 @@ def _load_index() -> tuple[list[str], "BM25Okapi", dict[str, dict]]:
             f"BM25 索引不存在：{INDEX_PATH}\n请先跑 python scripts/build_bm25.py --full"
         )
     payload = json.loads(INDEX_PATH.read_text(encoding="utf-8"))
-    qa_ids: list[str] = payload["qa_ids"]
+    ids: list[str] = payload.get("ids", payload.get("qa_ids", []))
     tokenized_corpus: list[list[str]] = payload["tokenized_corpus"]
     bm25 = BM25Okapi(tokenized_corpus)
 
-    meta_by_id: dict[str, dict] = {}
-    if FAQ_PATH.exists():
-        for qa in json.loads(FAQ_PATH.read_text(encoding="utf-8")):
-            qid = str(qa["id"]).zfill(3)
-            meta_by_id[qid] = {
-                "question": qa.get("question", ""),
-                "answer": qa.get("answer", ""),
-                "category": qa.get("category", ""),
-                "source": qa.get("source", ""),
-                "keywords": qa.get("keywords", []),
-            }
+    meta_by_id: dict[str, dict] = payload.get("meta_by_id", {})
 
     logger.info(
-        f"BM25 索引加载：{len(qa_ids)} 条，built_at={payload.get('built_at', '?')}"
+        f"BM25 索引加载：{len(ids)} 条，built_at={payload.get('built_at', '?')}"
     )
-    return qa_ids, bm25, meta_by_id
+    return ids, bm25, meta_by_id
 
 
 def tokenize(text: str) -> list[str]:
@@ -67,7 +56,7 @@ def search(query: str, top_k: int) -> list[dict]:
 
     score 是 BM25 原始分数（不是相似度），越大越相关。0 表示无命中。
     """
-    qa_ids, bm25, meta_by_id = _load_index()
+    ids, bm25, meta_by_id = _load_index()
     scores = bm25.get_scores(_tokenize(query))
     ranked = sorted(enumerate(scores), key=lambda x: x[1], reverse=True)[:top_k]
 
@@ -75,21 +64,38 @@ def search(query: str, top_k: int) -> list[dict]:
     for idx, s in ranked:
         if s <= 0:
             continue
-        qa_id = qa_ids[idx]
-        meta = meta_by_id.get(qa_id, {})
-        doc = f"{meta.get('question', '')}\n{meta.get('answer', '')}"
-        results.append({
-            "id": qa_id,
-            "document": doc,
-            "metadata": {
+        eid = ids[idx]
+        meta = meta_by_id.get(eid, {})
+        doc_type = meta.get("doc_type", "qa")
+
+        if doc_type == "qa":
+            doc = f"{meta.get('question', '')}\n{meta.get('answer', '')}"
+            result_meta = {
                 "question": meta.get("question", ""),
                 "category": meta.get("category", ""),
                 "source": meta.get("source", ""),
-                "keywords": ",".join(meta.get("keywords", []) or []),
-            },
+                "keywords": meta.get("keywords", ""),
+                "doc_type": "qa",
+            }
+        else:
+            doc = f"{meta.get('section', '')}\n{meta.get('text', '')}"
+            result_meta = {
+                "question": "",
+                "category": "",
+                "source": meta.get("source", ""),
+                "section": meta.get("section", ""),
+                "doc_type": doc_type,
+            }
+
+        results.append({
+            "id": eid,
+            "document": doc,
+            "metadata": result_meta,
             "score": round(float(s), 4),
         })
+
+    top1 = results[0]["score"] if results else 0
     logger.info(
-        f"bm25_search: query='{query[:30]}' top1_score={results[0]['score'] if results else 0:.3f}"
+        f"bm25_search: query='{query[:30]}' top1_score={top1:.3f}"
     )
     return results

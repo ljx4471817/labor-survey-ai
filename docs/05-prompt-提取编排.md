@@ -1,8 +1,12 @@
 # 内容提取编排 Prompt
 
-> **用途**：把 `knowledge-base/raw/` 下的 3 个原始文件转成结构化 QA JSON，供 RAG 系统使用。
-> **使用方式**：把下面"Prompt 全文"部分整段复制，发给另一个 AI（如 GPT-4、Claude 网页版），让它执行。
-> **输出位置**：`D:\code\labor-survey-ai\knowledge-base\qa\faq.json`
+> ⚠️ **本文件是一次性任务的归档 Prompt**（2026-06 初版）。当前 KB 维护已转用脚本（`scripts/build_kb.py` + `scripts/eval_from_docx.py`），不再手工执行 Prompt。新增 QA 见 `docs/04-知识库规范.md` 第四节「录入流程」。
+>
+> 如确需重跑（重大制度更新时），按下方「Prompt 全文」执行。
+
+> **历史用途**：把 `knowledge-base/raw/` 下的原始文件转成结构化 QA JSON，供 RAG 系统使用。
+> **历史使用方式**：把下面"Prompt 全文"部分整段复制，发给另一个 AI（如 GPT-4、Claude 网页版），让它执行。
+> **历史输出位置**：`knowledge-base/qa/faq.json`（项目内路径，不再使用绝对路径）
 
 ---
 
@@ -29,9 +33,9 @@
 
 # 输入文件
 请读取以下 3 个文件：
-- `D:\code\labor-survey-ai\knowledge-base\raw\劳动力调查制度（2026年定期报表）-定稿.doc`
-- `D:\code\labor-survey-ai\knowledge-base\raw\劳动力调查专业题库（24年8月）.docx`
-- `D:\code\labor-survey-ai\knowledge-base\raw\劳动力调查及指标讲解.pptx`
+- `<PROJECT_ROOT>\knowledge-base\raw\劳动力调查制度（2026年定期报表）-定稿.doc`
+- `<PROJECT_ROOT>\knowledge-base\raw\劳动力调查专业题库（24年8月）.docx`
+- `<PROJECT_ROOT>\knowledge-base\raw\劳动力调查及指标讲解.pptx`
 
 # 任务步骤
 
@@ -49,7 +53,7 @@ from pathlib import Path
 from markitdown import MarkItDown
 
 md = MarkItDown()
-raw = Path(r"D:\code\labor-survey-ai\knowledge-base\raw")
+raw = Path(r"<PROJECT_ROOT>\knowledge-base\raw")
 out = raw / "markdown"
 out.mkdir(exist_ok=True)
 
@@ -119,7 +123,7 @@ for f in raw.glob("*"):
 
 ## 步骤 5：输出 JSON
 
-输出到 `D:\code\labor-survey-ai\knowledge-base\qa\faq.json`：
+输出到 `<PROJECT_ROOT>\knowledge-base\qa\faq.json`：
 
 ```json
 [
@@ -166,6 +170,6 @@ for f in raw.glob("*"):
 
 ## 收到结果后你要做的事
 
-1. 把 `faq.json` 复制到 `D:\code\labor-survey-ai\knowledge-base\qa\faq.json`
-2. 把 markdown 文件放到 `D:\code\labor-survey-ai\knowledge-base\raw\markdown\`
+1. 把 `faq.json` 复制到 `<PROJECT_ROOT>\knowledge-base\qa\faq.json`
+2. 把 markdown 文件放到 `<PROJECT_ROOT>\knowledge-base\raw\markdown\`
 3. 让我（Claude Code）做后续验证：JSON 解析、字段完整性、Top-5 检索测试

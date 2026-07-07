@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>白名单管理 · 劳动力调查 AI 助手</title>
+<style>
+:root {
+  --ink-blue: #1E3A5F;
+  --ink-blue-soft: #2d4f7a;
+  --paper: #F7F4EE;
+  --paper-dim: #ebe6da;
+  --line: #d9d2c2;
+  --text: #1c1c1c;
+  --text-dim: #6b6b6b;
+  --accent: #c97a3a;
+  --bad: #a04545;
+  --bad-soft: #f5dada;
+  --good: #4f7a4f;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--paper);
+  color: var(--text);
+  line-height: 1.55;
+  min-height: 100vh;
+  padding: 0 0 60px;
+}
+header {
+  background: var(--ink-blue);
+  color: var(--paper);
+  padding: 16px 20px;
+  display: flex; align-items: baseline; gap: 16px;
+  position: sticky; top: 0; z-index: 10;
+  box-shadow: 0 2px 8px rgba(30,58,95,0.18);
+}
+header h1 { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.04em; }
+header .back { font-size: 0.82rem; opacity: 0.8; text-decoration: none; color: var(--paper); margin-left: auto; }
+header .back:hover { opacity: 1; }
+
+main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+.toolbar {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  margin-bottom: 16px;
+}
+button {
+  font-family: inherit; font-size: 0.82rem; padding: 6px 14px;
+  border-radius: 4px; border: 1px solid var(--line); background: white;
+  color: var(--ink-blue); cursor: pointer; transition: all 0.15s;
+}
+button:hover { background: var(--ink-blue); color: white; border-color: var(--ink-blue); }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+button.primary { background: var(--ink-blue); color: white; border-color: var(--ink-blue); }
+button.primary:hover { background: var(--ink-blue-soft); }
+button.danger { color: var(--bad); border-color: var(--bad); }
+button.danger:hover { background: var(--bad); color: white; }
+
+.info-bar {
+  font-size: 0.82rem; color: var(--text-dim); margin-bottom: 12px;
+  display: flex; gap: 16px; align-items: center;
+}
+
+.table-wrap { overflow-x: auto; background: white; border: 1px solid var(--line); border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { background: var(--ink-blue); color: var(--paper); font-weight: 600; font-size: 0.78rem; position: sticky; top: 0; }
+tr.inactive { background: #f5f5f5; color: var(--text-dim); }
+tr:hover { background: #eef3f7; }
+
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+  z-index: 100; justify-content: center; align-items: flex-start; padding-top: 60px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: white; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  max-width: 520px; width: 100%; margin: 0 16px; overflow: hidden;
+}
+.modal .head {
+  background: var(--ink-blue); color: var(--paper);
+  padding: 12px 16px; font-weight: 600; font-size: 0.95rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal .head .close { cursor: pointer; font-size: 1.2rem; opacity: 0.8; }
+.modal .body { padding: 16px; }
+.modal .body label {
+  display: block; font-size: 0.8rem; color: var(--text-dim); margin: 8px 0 4px;
+}
+.modal .body input {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px;
+  font-size: 0.88rem; font-family: inherit;
+}
+.modal .body input:focus { outline: none; border-color: var(--ink-blue); }
+.modal .foot {
+  padding: 12px 16px; border-top: 1px solid var(--line);
+  display: flex; gap: 8px; justify-content: flex-end;
+}
+
+.csv-preview {
+  max-height: 200px; overflow: auto; background: var(--paper-dim);
+  border: 1px solid var(--line); border-radius: 4px; padding: 10px;
+  margin: 10px 0; font-size: 0.8rem; font-family: ui-monospace, Menlo, monospace;
+}
+.msg { padding: 8px 14px; border-radius: 4px; margin-bottom: 12px; font-size: 0.85rem; }
+.msg.ok { background: #e8f5e9; color: var(--good); border: 1px solid #c8e6c9; }
+.msg.err { background: var(--bad-soft); color: var(--bad); border: 1px solid #ef9a9a; }
+
+.btn-sm { font-size: 0.75rem; padding: 3px 8px; }
+
+footer {
+  text-align: center; font-size: 0.78rem; color: var(--text-dim); padding: 20px;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>白名单管理</h1>
+  <a class="back" href="/dashboard">← 看板</a>
+  <a class="back" href="/">← 对话</a>
+</header>
+<main>
+  <div id="msg"></div>
+  <div class="toolbar">
+    <button class="primary" id="addBtn">+ 新增条目</button>
+    <button id="csvBtn">CSV 批量导入</button>
+    <label style="font-size:0.82rem;display:flex;align-items:center;gap:4px;cursor:pointer">
+      <input type="checkbox" id="showInactive" onchange="renderTable()"> 显示已禁用
+    </label>
+    <span style="margin-left:auto;font-size:0.82rem;color:var(--text-dim)" id="countInfo">—</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>手机号</th><th>姓名</th><th>省</th><th>市/州</th><th>县/区</th><th>乡/镇</th><th>社区/村</th><th>层级</th><th>状态</th><th>更新时间</th><th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- 新增/编辑 Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="head"><span id="modalTitle">新增条目</span><span class="close" onclick="closeModal()">&times;</span></div>
+    <div class="body">
+      <label>手机号 <span style="color:var(--bad)">*</span></label>
+      <input type="text" id="fPhone" maxlength="11" placeholder="13800000000">
+      <label>姓名 <span style="color:var(--bad)">*</span></label>
+      <input type="text" id="fName" maxlength="20">
+      <label>省 <span style="color:var(--bad)">*</span></label>
+      <input type="text" id="fProvince" maxlength="20" value="贵州省">
+      <label>市/州 <span style="color:var(--bad)">*</span></label>
+      <input type="text" id="fCity" maxlength="20">
+      <label>县/区 <span style="color:var(--bad)">*</span></label>
+      <input type="text" id="fCounty" maxlength="20">
+      <label>乡/镇</label>
+      <input type="text" id="fTownship" maxlength="30">
+      <label>社区/村 <span style="color:var(--bad)">*</span></label>
+      <input type="text" id="fCommunity" maxlength="50">
+      <label>管理员层级</label>
+      <select id="fAdminLevel" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:0.88rem;font-family:inherit">
+        <option value="调查员">调查员</option>
+        <option value="区县">区县</option>
+        <option value="市级">市级</option>
+        <option value="省级">省级</option>
+      </select>
+      <label>备注</label>
+      <input type="text" id="fRemark" maxlength="200" placeholder="可选">
+    </div>
+    <div class="foot">
+      <button onclick="closeModal()">取消</button>
+      <button class="primary" onclick="saveEntry()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV Import Modal -->
+<div class="modal-overlay" id="csvModal">
+  <div class="modal" style="max-width:640px">
+    <div class="head"><span>CSV 批量导入</span><span class="close" onclick="closeCsvModal()">&times;</span></div>
+    <div class="body">
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:8px">
+        必填表头：phone, name, province, city, admin_level<br>
+        选填表头：county, township, community, remark<br>
+        模板：phone, name, province, city, admin_level, county, township, community, remark
+      </p>
+      <input type="file" id="csvFile" accept=".csv" onchange="previewCsv()">
+      <div class="csv-preview" id="csvPreview" style="display:none"></div>
+    </div>
+    <div class="foot">
+      <button onclick="closeCsvModal()">取消</button>
+      <button class="primary" id="csvImportBtn" disabled onclick="doImportCsv()">导入</button>
+    </div>
+  </div>
+</div>
+
+<footer>劳动力调查 AI 助手 · 白名单管理</footer>
+
+<script src="/static/common.js"></script>
+<script>
+requireLoginOrRedirect();
+
+let allItems = [];
+let editPhone = null;
+
+async function loadItems() {
+  try {
+    const r = await fetch('/api/admin/whitelist', { headers: authHeader() });
+    if (await handle401(r)) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    allItems = (await r.json()).items || [];
+    renderTable();
+  } catch (e) {
+    showMsg('加载失败：' + e.message, 'err');
+  }
+}
+
+function showMsg(msg, type) {
+  const el = $('msg');
+  el.innerHTML = '<div class="msg ' + type + '">' + escapeHtml(msg) + '</div>';
+  setTimeout(() => el.innerHTML = '', 4000);
+}
+
+function renderTable() {
+  const showInactive = $('showInactive').checked;
+  const filtered = showInactive ? allItems : allItems.filter(r => r.active);
+  $('countInfo').textContent = '共 ' + filtered.length + ' 条（总计 ' + allItems.length + ' 条）';
+  $('tbody').innerHTML = filtered.map(r => {
+    const cls = r.active ? '' : ' inactive';
+    const status = r.active ? '启用' : '已禁用';
+    return '<tr class="' + cls + '">' +
+      '<td>' + escapeHtml(r.phone) + '</td>' +
+      '<td>' + escapeHtml(r.name) + '</td>' +
+      '<td>' + escapeHtml(r.province) + '</td>' +
+      '<td>' + escapeHtml(r.city) + '</td>' +
+      '<td>' + escapeHtml(r.county) + '</td>' +
+      '<td>' + escapeHtml(r.township || '') + '</td>' +
+      '<td>' + escapeHtml(r.community) + '</td>' +
+      '<td>' + escapeHtml(r.admin_level || '调查员') + '</td>' +
+      '<td>' + status + '</td>' +
+      '<td>' + escapeHtml((r.updated_at || '').slice(0, 16)) + '</td>' +
+      '<td>' +
+        '<button class="btn-sm" onclick="editEntry(\'' + escapeHtml(r.phone) + '\')">编辑</button> ' +
+        (r.active
+          ? '<button class="btn-sm danger" onclick="removeEntry(\'' + escapeHtml(r.phone) + '\')">禁用</button>'
+          : '') +
+      '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+function openModal(title, entry) {
+  editPhone = entry ? entry.phone : null;
+  $('modalTitle').textContent = title;
+  $('fPhone').value = entry ? entry.phone : '';
+  $('fPhone').disabled = !!entry;
+  $('fName').value = entry ? entry.name : '';
+  $('fProvince').value = entry ? entry.province : '贵州省';
+  $('fCity').value = entry ? entry.city : '';
+  $('fCounty').value = entry ? entry.county : '';
+  $('fTownship').value = entry ? (entry.township || '') : '';
+  $('fCommunity').value = entry ? entry.community : '';
+  $('fAdminLevel').value = entry ? (entry.admin_level || '调查员') : '调查员';
+  $('fRemark').value = entry ? (entry.remark || '') : '';
+  $('editModal').classList.add('open');
+}
+
+function closeModal() {
+  $('editModal').classList.remove('open');
+}
+
+async function saveEntry() {
+  const body = {
+    phone: $('fPhone').value.trim(),
+    name: $('fName').value.trim(),
+    province: $('fProvince').value.trim(),
+    city: $('fCity').value.trim(),
+    county: $('fCounty').value.trim(),
+    township: $('fTownship').value.trim(),
+    community: $('fCommunity').value.trim(),
+    admin_level: $('fAdminLevel').value,
+    remark: $('fRemark').value.trim(),
+  };
+  const method = editPhone ? 'PUT' : 'POST';
+  const url = editPhone ? '/api/admin/whitelist/' + encodeURIComponent(editPhone) : '/api/admin/whitelist';
+  try {
+    const r = await fetch(url, {
+      method, headers: { 'Content-Type': 'application/json', ...authHeader() },
+      body: JSON.stringify(body),
+    });
+    if (await handle401(r)) return;
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: 'HTTP ' + r.status }));
+      throw new Error(err.detail || 'HTTP ' + r.status);
+    }
+    closeModal();
+    showMsg((editPhone ? '已更新' : '已新增') + ' ' + body.phone.slice(0, 3) + '****', 'ok');
+    loadItems();
+  } catch (e) {
+    showMsg('保存失败：' + e.message, 'err');
+  }
+}
+
+function editEntry(phone) {
+  const entry = allItems.find(r => r.phone === phone);
+  if (entry) openModal('编辑条目', entry);
+}
+
+async function removeEntry(phone) {
+  if (!confirm('确认禁用 ' + phone + '？\n禁用后该用户将无法登录。')) return;
+  try {
+    const r = await fetch('/api/admin/whitelist/' + encodeURIComponent(phone), {
+      method: 'DELETE', headers: authHeader(),
+    });
+    if (await handle401(r)) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    showMsg('已禁用 ' + phone.slice(0, 3) + '****', 'ok');
+    loadItems();
+  } catch (e) {
+    showMsg('禁用失败：' + e.message, 'err');
+  }
+}
+
+function openCsvModal() {
+  $('csvModal').classList.add('open');
+  $('csvPreview').style.display = 'none';
+  $('csvImportBtn').disabled = true;
+  $('csvFile').value = '';
+}
+
+function closeCsvModal() {
+  $('csvModal').classList.remove('open');
+}
+
+function previewCsv() {
+  const file = $('csvFile').files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function() {
+    $('csvPreview').textContent = reader.result.slice(0, 2000);
+    $('csvPreview').style.display = 'block';
+    $('csvImportBtn').disabled = false;
+  };
+  reader.readAsText(file);
+}
+
+async function doImportCsv() {
+  const file = $('csvFile').files[0];
+  if (!file) return;
+  const form = new FormData();
+  form.append('file', file);
+  $('csvImportBtn').disabled = true;
+  try {
+    const r = await fetch('/api/admin/whitelist/import-csv', {
+      method: 'POST', headers: authHeader(), body: form,
+    });
+    if (await handle401(r)) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const result = await r.json();
+    let msg = '导入完成：新增 ' + result.inserted + '，更新 ' + result.updated;
+    if (result.errors && result.errors.length) {
+      msg += '，错误 ' + result.errors.length + ' 行（已跳过）';
+    }
+    showMsg(msg, result.errors && result.errors.length ? 'err' : 'ok');
+    closeCsvModal();
+    loadItems();
+  } catch (e) {
+    showMsg('导入失败：' + e.message, 'err');
+    $('csvImportBtn').disabled = false;
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeModal(); closeCsvModal(); }
+});
+$('addBtn').onclick = () => openModal('新增条目');
+$('csvBtn').onclick = openCsvModal;
+$('editModal').addEventListener('click', (e) => {
+  if (e.target === $('editModal')) closeModal();
+});
+$('csvModal').addEventListener('click', (e) => {
+  if (e.target === $('csvModal')) closeCsvModal();
+});
+
+loadItems();
+</script>
+</body>
+</html>

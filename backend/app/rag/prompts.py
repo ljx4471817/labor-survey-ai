@@ -78,17 +78,28 @@ USER_TEMPLATE = """# 知识库检索结果
 
 
 def format_kb_results(sources: list[dict]) -> str:
-    """把检索结果格式化成可读的 KB 块。"""
+    """把检索结果格式化成可读的 KB 块。QA 和 chunk 分别渲染。"""
     if not sources:
         return "（知识库未召回任何结果）"
     lines: list[str] = []
     for i, s in enumerate(sources, start=1):
         meta = s.get("metadata", {})
-        lines.append(
-            f"[{i}] ID={s.get('id', '?')} 分类={meta.get('category', '')} "
-            f"相似度={s.get('score', 0):.3f}\n"
-            f"问题：{meta.get('question', '')}\n"
-            f"答案：{s.get('document', '').split(chr(10), 1)[-1] if s.get('document') else ''}\n"
-            f"来源：{meta.get('source', '')}"
-        )
+        doc_type = meta.get("doc_type", "qa")
+
+        if doc_type == "qa":
+            answer = s.get("document", "").split("\n", 1)[-1] if s.get("document") else ""
+            lines.append(
+                f"[{i}] ID={s.get('id', '?')} 分类={meta.get('category', '')} "
+                f"相似度={s.get('score', 0):.3f}\n"
+                f"问题：{meta.get('question', '')}\n"
+                f"答案：{answer}\n"
+                f"来源：{meta.get('source', '')}"
+            )
+        else:
+            lines.append(
+                f"[{i}] ID={s.get('id', '?')} 类型=chunk "
+                f"相似度={s.get('score', 0):.3f}\n"
+                f"片段：{s.get('document', '')}\n"
+                f"来源：{meta.get('source', '')} §{meta.get('section', '')}"
+            )
     return "\n\n".join(lines)

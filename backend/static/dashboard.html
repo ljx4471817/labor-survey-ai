@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>反馈看板 · 劳动力调查 AI 助手</title>
+<style>
+:root {
+  --ink-blue: #1E3A5F;
+  --ink-blue-soft: #2d4f7a;
+  --paper: #F7F4EE;
+  --paper-dim: #ebe6da;
+  --line: #d9d2c2;
+  --text: #1c1c1c;
+  --text-dim: #6b6b6b;
+  --accent: #c97a3a;
+  --accent-soft: #f5e3d2;
+  --good: #4f7a4f;
+  --bad: #a04545;
+  --bad-soft: #f5dada;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--paper);
+  color: var(--text);
+  line-height: 1.55;
+  min-height: 100vh;
+  padding: 0 0 60px;
+}
+header {
+  background: var(--ink-blue);
+  color: var(--paper);
+  padding: 16px 20px;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.18);
+}
+header h1 { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.04em; }
+header .sub { font-size: 0.78rem; opacity: 0.7; }
+header .back { font-size: 0.82rem; opacity: 0.8; text-decoration: none; color: var(--paper); margin-left: auto; }
+header .back:hover { opacity: 1; }
+
+.banner {
+  background: #fff3e0;
+  color: #6d4520;
+  padding: 8px 20px;
+  font-size: 0.82rem;
+  border-bottom: 1px solid var(--line);
+}
+
+main { max-width: 960px; margin: 0 auto; padding: 20px; }
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.card .label { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 4px; }
+.card .value { font-size: 1.6rem; font-weight: 600; color: var(--ink-blue); }
+.card.rate .value { color: var(--good); }
+.card.rate.low .value { color: var(--bad); }
+
+section { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+section h2 { font-size: 1rem; color: var(--ink-blue); margin-bottom: 12px; font-weight: 600; }
+section h2 .h2-sub { font-size: 0.78rem; color: var(--text-dim); font-weight: normal; }
+section .empty { color: var(--text-dim); font-size: 0.88rem; padding: 8px 0; }
+
+.candidate {
+  border-left: 4px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 12px 14px;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 10px;
+}
+.candidate .head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.candidate .tag { background: var(--accent); color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.05em; }
+.candidate .freq { font-size: 0.78rem; color: var(--text-dim); }
+.candidate .key { font-weight: 600; color: var(--ink-blue); font-size: 0.95rem; word-break: break-all; }
+.candidate .comments { margin-top: 6px; font-size: 0.85rem; color: var(--text-dim); padding-left: 14px; }
+.candidate .comments li { margin: 2px 0; }
+.candidate .actions { margin-top: 8px; display: flex; gap: 8px; }
+
+.list { display: flex; flex-direction: column; gap: 8px; }
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper-dim);
+}
+.row .count {
+  flex-shrink: 0;
+  background: var(--bad);
+  color: white;
+  font-weight: 600;
+  font-size: 0.85rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.row .body { flex: 1; min-width: 0; }
+.row .q { font-weight: 500; color: var(--ink-blue); word-break: break-word; }
+.row .meta { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
+
+.chart { display: flex; gap: 6px; align-items: flex-end; height: 140px; padding: 8px 0; overflow-x: auto; }
+.chart .bar-group { flex: 0 0 auto; min-width: 50px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.chart .bars { display: flex; gap: 2px; align-items: flex-end; height: 100px; }
+.chart .bar { width: 14px; border-radius: 2px 2px 0 0; }
+.chart .bar.good { background: var(--good); }
+.chart .bar.bad { background: var(--bad); }
+.chart .day { font-size: 0.7rem; color: var(--text-dim); writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+.chart-empty { color: var(--text-dim); font-size: 0.85rem; padding: 12px 0; }
+
+.recent-item {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: var(--paper-dim);
+  transition: opacity 0.3s;
+}
+.recent-item.resolved { opacity: 0.45; text-decoration: line-through; background: #e5e5e5; }
+.recent-item .head { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; flex-wrap: wrap; }
+.recent-item .id { font-family: ui-monospace, Menlo, monospace; font-size: 0.72rem; color: var(--text-dim); }
+.recent-item .ts { font-size: 0.75rem; color: var(--text-dim); }
+.recent-item .q { font-size: 0.92rem; color: var(--ink-blue); font-weight: 500; margin-bottom: 4px; }
+.recent-item .a { font-size: 0.85rem; color: var(--text); white-space: pre-wrap; max-height: 100px; overflow: auto; padding: 6px 8px; background: white; border-radius: 4px; border: 1px solid var(--line); }
+.recent-item .c { font-size: 0.82rem; color: var(--bad); margin-top: 6px; }
+.recent-item .actions { margin-top: 8px; }
+
+button {
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink-blue);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+button:hover { background: var(--ink-blue); color: white; border-color: var(--ink-blue); }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+button.primary { background: var(--ink-blue); color: white; border-color: var(--ink-blue); }
+button.primary:hover { background: var(--ink-blue-soft); }
+
+.pagination { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }
+.pagination .info { font-size: 0.85rem; color: var(--text-dim); }
+
+.error {
+  background: var(--bad-soft);
+  color: var(--bad);
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+footer {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  padding: 20px;
+}
+
+.rate-null { color: var(--text-dim); font-style: italic; }
+.rate-good { color: var(--good); font-weight: 600; }
+.rate-mid { color: var(--accent); font-weight: 600; }
+.rate-bad { color: var(--bad); font-weight: 600; }
+
+.tab-bar {
+  display: flex; gap: 0; margin-bottom: 20px;
+  border-bottom: 2px solid var(--line);
+}
+.tab-btn {
+  font-family: inherit; font-size: 0.9rem; padding: 10px 24px;
+  border: none; background: none; color: var(--text-dim); cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: all 0.15s;
+}
+.tab-btn:hover { color: var(--ink-blue); }
+.tab-btn.active { color: var(--ink-blue); border-bottom-color: var(--ink-blue); font-weight: 600; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.usage-filters {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+  margin-bottom: 16px;
+}
+.usage-filters .field { display: flex; flex-direction: column; gap: 3px; }
+.usage-filters .field label { font-size: 0.75rem; color: var(--text-dim); }
+.usage-filters .field input {
+  font-family: inherit; font-size: 0.82rem; padding: 6px 8px;
+  border: 1px solid var(--line); border-radius: 4px; width: 110px;
+}
+.usage-filters .field input:focus { outline: none; border-color: var(--ink-blue); }
+.usage-filters .actions { display: flex; gap: 6px; align-items: flex-end; padding-bottom: 1px; }
+
+.usage-table { width: 100%; border-collapse: collapse; }
+.usage-table th, .usage-table td {
+  text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line);
+  font-size: 0.82rem; white-space: nowrap;
+}
+.usage-table th { color: var(--text-dim); font-weight: 600; font-size: 0.75rem; background: var(--paper-dim); }
+.usage-table tr:hover { background: var(--accent-soft); }
+.usage-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.usage-result-info { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>反馈看板</h1>
+  <span class="sub">内部使用</span>
+  <a class="back" href="/">← 返回对话</a>
+</header>
+<div class="banner">⚠ 内部使用 · 含调查员提问原文 · 数据未脱敏</div>
+<main>
+  <div id="error"></div>
+  <div class="cards">
+    <div class="card"><div class="label">总反馈数</div><div class="value" id="total">—</div></div>
+    <div class="card"><div class="label">采纳</div><div class="value" id="adopted">—</div></div>
+    <div class="card"><div class="label">不采纳</div><div class="value" id="rejected">—</div></div>
+    <div class="card rate" id="rateCard"><div class="label">采纳率</div><div class="value" id="rate">—</div></div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="kb">KB 优化</button>
+    <button class="tab-btn" data-tab="usage">使用监测</button>
+    <button class="tab-btn" data-tab="usage-gaps">使用侧发现</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-kb">
+    <section>
+      <h2>候选 KB 改进</h2>
+      <div id="candidates"></div>
+    </section>
+
+    <section>
+      <h2>集中不采纳问题 · Top 10</h2>
+      <div class="list" id="topQuestions"></div>
+    </section>
+
+    <section>
+      <h2>KB 问题热点 · Top 5（被不采纳答案引用的条目）</h2>
+      <div class="list" id="topKb"></div>
+    </section>
+
+    <section>
+      <h2>最近不采纳明细 <span class="h2-sub" id="resolvedInfo"></span></h2>
+      <div id="recent"></div>
+      <div class="pagination">
+        <button id="prevBtn">上一页</button>
+        <span class="info" id="pageInfo">—</span>
+        <button id="nextBtn">下一页</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="tab-panel" id="tab-usage">
+    <section>
+      <h2>反馈时间分布 <span class="h2-sub">（UTC+8）</span></h2>
+      <div id="chart" class="chart"></div>
+    </section>
+
+    <section id="usageSection">
+      <h2>使用情况查询</h2>
+      <div class="usage-filters">
+        <div class="field"><label>省</label><input id="fProvince" placeholder="如 贵州省"></div>
+        <div class="field"><label>市/州</label><input id="fCity" placeholder="如 贵阳市"></div>
+        <div class="field"><label>县/区</label><input id="fCounty" placeholder="如 云岩区"></div>
+        <div class="field"><label>乡/镇</label><input id="fTownship"></div>
+        <div class="field"><label>社区/村</label><input id="fCommunity"></div>
+        <div class="field"><label>姓名</label><input id="fName" placeholder="模糊匹配"></div>
+        <div class="field"><label>手机号</label><input id="fPhone" placeholder="模糊匹配" maxlength="11"></div>
+        <div class="actions">
+          <button class="primary" id="queryBtn" onclick="searchUsage()">查询</button>
+          <button onclick="resetUsageFilters()">重置</button>
+        </div>
+      </div>
+      <div id="usageResult"></div>
+    </section>
+  </div>
+
+  <div class="tab-panel" id="tab-usage-gaps">
+    <section>
+      <h2>使用侧 KB 改进候选 <span class="h2-sub">（query_log + feedback 联合分析）</span></h2>
+      <div class="usage-filters">
+        <div class="field"><label>近 N 天</label><input id="gapsSinceDays" type="number" value="7" min="1" max="90"></div>
+        <div class="field"><label>最小频次</label><input id="gapsMinFreq" type="number" value="3" min="2" max="20"></div>
+        <div class="actions">
+          <button class="primary" onclick="loadGaps()">刷新</button>
+        </div>
+      </div>
+
+      <h2 style="margin-top:18px">① 高频 out_of_scope <span class="h2-sub">KB 完全未覆盖（应新增条目）</span></h2>
+      <div class="list" id="oosList"></div>
+
+      <h2 style="margin-top:24px">② 命中但 down <span class="h2-sub">KB 命中但用户不采纳（应改写现有条目）</span></h2>
+      <div class="list" id="downList"></div>
+
+      <p style="margin-top:18px;font-size:0.82rem;color:var(--text-dim)">
+        ③ 高频但相似度低的 query（含 embedding 计算）由 <code>python scripts/detect_gaps_from_usage.py</code> 离线跑，产物 <code>reports/gap-report-from-usage-&lt;date&gt;.json</code>。
+      </p>
+    </section>
+  </div>
+</main>
+<footer>劳动力调查 AI 助手 · 反馈看板 v1 · 由 <code>/api/admin/feedback/stats</code> 驱动</footer>
+
+<script src="/static/common.js"></script>
+<script>
+const PAGE_SIZE = 20;
+let state = null;
+let page = 0;
+
+requireLoginOrRedirect();
+
+async function loadStats() {
+  try {
+    const r = await fetch('/api/admin/feedback/stats', { headers: authHeader() });
+    if (await handle401(r)) return;
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    state = await r.json();
+    render();
+  } catch (e) {
+    $('error').innerHTML = `<div class="error">加载失败：${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function renderSummary() {
+  const s = state.summary;
+  $('total').textContent = s.total;
+  $('adopted').textContent = s.adopted;
+  $('rejected').textContent = s.rejected;
+  const pct = (s.adoption_rate * 100).toFixed(1) + '%';
+  $('rate').textContent = pct;
+  $('rateCard').classList.toggle('low', s.adoption_rate < 0.6 && s.total > 0);
+}
+
+function renderCandidates() {
+  const cands = state.candidate_improvements;
+  const el = $('candidates');
+  if (!cands.length) {
+    el.innerHTML = '<div class="empty">暂无候选。当前反馈量低于阈值（min_freq=3）。</div>';
+    return;
+  }
+  el.innerHTML = cands.map(c => {
+    const isMissing = c.type === 'missing_entry';
+    const display = isMissing ? c.key : `qa_id=${escapeHtml(c.key)}` + (c.question ? `（${escapeHtml(c.question)}）` : '');
+    const detail = isMissing
+      ? `<div class="comments"><b>用户补充说明：</b><ul>${c.sample_comments.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`
+      : `<div class="comments">该 KB 条目被 ${c.frequency} 条不采纳答案引用，可能答得不准，需要修订或补充上下文。</div>`;
+    return `
+      <div class="candidate">
+        <div class="head">
+          <span class="tag">${isMissing ? 'KB 缺失' : 'KB 待修订'}</span>
+          <span class="freq">${c.frequency} 次不采纳</span>
+        </div>
+        <div class="key">${display}</div>
+        ${detail}
+      </div>`;
+  }).join('');
+}
+
+function renderTopQuestions() {
+  const items = state.top_down_questions;
+  const el = $('topQuestions');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty">无</div>';
+    return;
+  }
+  el.innerHTML = items.map(it => `
+    <div class="row">
+      <div class="count">${it.down_count}</div>
+      <div class="body">
+        <div class="q">${escapeHtml(it.question)}</div>
+        ${it.sample_comments.length ? `<div class="meta">样例评论：${escapeHtml(it.sample_comments[0])}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTopKb() {
+  const items = state.top_down_kb;
+  const el = $('topKb');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty">无</div>';
+    return;
+  }
+  el.innerHTML = items.map(it => `
+    <div class="row">
+      <div class="count">${it.down_count}</div>
+      <div class="body">
+        <div class="q">qa_id=${escapeHtml(it.qa_id)}：${escapeHtml(it.question || '（无问题文本）')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderChart() {
+  const data = state.by_day;
+  const el = $('chart');
+  if (!data.length) {
+    el.className = 'chart-empty';
+    el.textContent = '暂无数据';
+    return;
+  }
+  el.className = 'chart';
+  const maxCount = Math.max(...data.map(d => d.count), 1);
+  el.innerHTML = data.slice(-14).map(d => {
+    const goodH = (d.adopted / maxCount) * 100;
+    const badH = (d.rejected / maxCount) * 100;
+    return `
+      <div class="bar-group">
+        <div class="bars">
+          <div class="bar good" style="height:${goodH}%" title="采纳 ${d.adopted}"></div>
+          <div class="bar bad" style="height:${badH}%" title="不采纳 ${d.rejected}"></div>
+        </div>
+        <div class="day">${escapeHtml(d.day.slice(5))}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderRecent() {
+  const all = state.recent_down || [];
+  const resolvedSet = new Set(state.resolved_ids || []);
+  const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
+  if (page >= totalPages) page = totalPages - 1;
+  if (page < 0) page = 0;
+  const start = page * PAGE_SIZE;
+  const slice = all.slice(start, start + PAGE_SIZE);
+  const el = $('recent');
+  if (!all.length) {
+    el.innerHTML = '<div class="empty">无</div>';
+    $('pageInfo').textContent = '0 / 0';
+    $('prevBtn').disabled = true;
+    $('nextBtn').disabled = true;
+  } else {
+    el.innerHTML = slice.map(r => {
+      const resolved = resolvedSet.has(r.id);
+      const c = r.comment ? `<div class="c">用户评论：${escapeHtml(r.comment)}</div>` : '';
+      return `
+        <div class="recent-item ${resolved ? 'resolved' : ''}" data-id="${escapeHtml(r.id)}">
+          <div class="head">
+            <span class="id">${escapeHtml(r.id)}</span>
+            <span class="ts">${escapeHtml(r.timestamp || '')}</span>
+            <span style="margin-left:auto">
+              ${resolved ? '<span style="color:var(--text-dim);font-size:0.75rem">✓ 已处理</span>' : `<button class="resolveBtn" data-id="${escapeHtml(r.id)}">标记已处理</button>`}
+            </span>
+          </div>
+          <div class="q">${escapeHtml(r.question || '')}</div>
+          <div class="a">${escapeHtml((r.answer || '').slice(0, 400))}${(r.answer || '').length > 400 ? '…' : ''}</div>
+          ${c}
+        </div>`;
+    }).join('');
+    $('pageInfo').textContent = `第 ${page + 1} / ${totalPages} 页 · 共 ${all.length} 条`;
+    $('prevBtn').disabled = page === 0;
+    $('nextBtn').disabled = page >= totalPages - 1;
+  }
+  $('resolvedInfo').textContent = `· ${(state.resolved_ids || []).length} 条已处理`;
+}
+
+async function resolveRecord(rid, btn) {
+  if (btn) btn.disabled = true;
+  try {
+    const r = await fetch('/api/admin/feedback/resolve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeader() },
+      body: JSON.stringify({ record_ids: [rid] }),
+    });
+    if (await handle401(r)) return;
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    state.resolved_ids.push(rid);
+    renderRecent();
+  } catch (e) {
+    alert('标记失败：' + e.message);
+    if (btn) btn.disabled = false;
+  }
+}
+
+function render() {
+  renderSummary();
+  renderCandidates();
+  renderTopQuestions();
+  renderTopKb();
+  renderChart();
+  renderRecent();
+}
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.resolveBtn');
+  if (btn) {
+    resolveRecord(btn.dataset.id, btn);
+    return;
+  }
+  if (e.target.id === 'prevBtn') { page--; renderRecent(); }
+  if (e.target.id === 'nextBtn') { page++; renderRecent(); }
+});
+
+loadStats();
+searchUsage();
+
+// ── tab 切换 ─────
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    switchTab(btn.dataset.tab);
+    if (btn.dataset.tab === 'usage-gaps' && !gapsLoaded) loadGaps();
+  });
+});
+
+// ── 使用侧 KB 闭环（v2） ─────
+
+let gapsLoaded = false;
+let gapsState = null;
+
+async function loadGaps() {
+  const sinceDays = parseInt($('gapsSinceDays').value, 10) || 7;
+  const minFreq = parseInt($('gapsMinFreq').value, 10) || 3;
+  $('oosList').innerHTML = '<div class="empty">加载中…</div>';
+  $('downList').innerHTML = '';
+  try {
+    const r = await fetch(
+      `/api/admin/usage/gaps?since_days=${sinceDays}&min_freq=${minFreq}`,
+      { headers: authHeader() },
+    );
+    if (await handle401(r)) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    gapsState = await r.json();
+    renderGaps();
+    gapsLoaded = true;
+  } catch (e) {
+    $('oosList').innerHTML = '<div class="error">加载失败：' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+function renderGaps() {
+  const oos = gapsState.high_freq_out_of_scope || [];
+  const down = gapsState.kb_hit_but_down || [];
+
+  if (!oos.length) {
+    $('oosList').innerHTML = '<div class="empty">无</div>';
+  } else {
+    $('oosList').innerHTML = oos.map((it, i) => `
+      <div class="row" data-q="${escapeHtml(it.query)}">
+        <div class="count">${it.freq}</div>
+        <div class="body">
+          <div class="q">${escapeHtml(it.query)}</div>
+          <div class="meta">${it.user_count} 人问过 · 最近 ${escapeHtml(it.last_seen || '')}</div>
+          <div class="actions" style="margin-top:6px">
+            <button class="markGapBtn" data-idx="${i}" data-source="high_freq_out_of_scope">标记为待入库</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  if (!down.length) {
+    $('downList').innerHTML = '<div class="empty">无</div>';
+  } else {
+    $('downList').innerHTML = down.map((it, i) => {
+      const sq = (it.sample_questions || []).map(q => `<li>${escapeHtml(q)}</li>`).join('');
+      const sc = (it.sample_comments || []).map(c => `<li>${escapeHtml(c)}</li>`).join('');
+      return `
+      <div class="row">
+        <div class="count">${it.down_count}</div>
+        <div class="body">
+          <div class="q">qa_id=${escapeHtml(it.qa_id)} · ${it.down_count} 次不采纳</div>
+          ${sq ? `<div class="meta">样例问题：<ul style="padding-left:18px">${sq}</ul></div>` : ''}
+          ${sc ? `<div class="meta" style="color:var(--bad)">样例评论：<ul style="padding-left:18px">${sc}</ul></div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.markGapBtn');
+  if (!btn) return;
+  btn.disabled = true;
+  const idx = parseInt(btn.dataset.idx, 10);
+  const source = btn.dataset.source;
+  const item = gapsState.high_freq_out_of_scope[idx];
+  if (!item) { btn.disabled = false; return; }
+  try {
+    const r = await fetch('/api/admin/usage/gaps/mark', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeader() },
+      body: JSON.stringify({ items: [{ query: item.query }], source }),
+    });
+    if (await handle401(r)) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    btn.textContent = `✓ 已标记 (${j.total} 条候选)`;
+    btn.classList.add('primary');
+  } catch (err) {
+    btn.disabled = false;
+    alert('标记失败：' + err.message);
+  }
+});
+
+// ── 使用情况筛选查询 ─────
+
+function formatRate(rate) {
+  if (rate === null || rate === undefined) return '—';
+  return (rate * 100).toFixed(1) + '%';
+}
+
+function rateClass(rate) {
+  if (rate === null || rate === undefined) return 'rate-null';
+  if (rate >= 0.8) return 'rate-good';
+  if (rate >= 0.5) return 'rate-mid';
+  return 'rate-bad';
+}
+
+function collectUsageFilters() {
+  const p = {};
+  const v = $('fProvince').value.trim(); if (v) p.province = v;
+  const c = $('fCity').value.trim(); if (c) p.city = c;
+  const co = $('fCounty').value.trim(); if (co) p.county = co;
+  const t = $('fTownship').value.trim(); if (t) p.township = t;
+  const cm = $('fCommunity').value.trim(); if (cm) p.community = cm;
+  const n = $('fName').value.trim(); if (n) p.name = n;
+  const ph = $('fPhone').value.trim(); if (ph) p.phone = ph;
+  return p;
+}
+
+async function searchUsage() {
+  const btn = $('queryBtn');
+  btn.disabled = true;
+  const filters = collectUsageFilters();
+  const params = new URLSearchParams(filters);
+  try {
+    const r = await fetch('/api/admin/usage/search?' + params, { headers: authHeader() });
+    if (await handle401(r)) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    renderUsageResult(data);
+  } catch (e) {
+    $('usageResult').innerHTML = '<div class="empty">查询失败：' + escapeHtml(e.message) + '</div>';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function resetUsageFilters() {
+  ['fProvince', 'fCity', 'fCounty', 'fTownship', 'fCommunity', 'fName', 'fPhone'].forEach(id => $(id).value = '');
+  searchUsage();
+}
+
+function renderUsageResult(data) {
+  const results = data.results || [];
+  const el = $('usageResult');
+  if (!results.length) {
+    el.innerHTML = '<div class="usage-result-info">共 0 条</div><div class="empty">暂无匹配数据</div>';
+    return;
+  }
+  const rows = results.map(r => {
+    const fbRate = r.feedback_count > 0 ? r.adopted_count / r.feedback_count : null;
+    return '<tr>' +
+      '<td>' + escapeHtml(r.phone) + '</td>' +
+      '<td>' + escapeHtml(r.name) + '</td>' +
+      '<td>' + escapeHtml(r.province) + '</td>' +
+      '<td>' + escapeHtml(r.city) + '</td>' +
+      '<td>' + escapeHtml(r.county) + '</td>' +
+      '<td>' + escapeHtml(r.township || '') + '</td>' +
+      '<td>' + escapeHtml(r.community) + '</td>' +
+      '<td class="num">' + r.query_count + '</td>' +
+      '<td>' + escapeHtml((r.last_query_at || '').slice(0, 16)) + '</td>' +
+      '<td class="num">' + r.feedback_count + '</td>' +
+      '<td class="num ' + rateClass(fbRate) + '">' + formatRate(fbRate) + '</td>' +
+      '</tr>';
+  }).join('');
+  el.innerHTML = '<div class="usage-result-info">共 ' + data.count + ' 条</div>' +
+    '<table class="usage-table"><thead><tr>' +
+    '<th>手机号</th><th>姓名</th><th>省</th><th>市/州</th><th>县/区</th><th>乡/镇</th><th>社区/村</th>' +
+    '<th>查询次数</th><th>最近查询</th><th>反馈数</th><th>采用率</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+</script>
+</body>
+</html>

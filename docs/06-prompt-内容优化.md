@@ -1,14 +1,23 @@
 # 内容优化 Prompt
 
-> **用途**：在已有 103 条 QA 的基础上，把知识库扩到 250-300 条，重点补"复杂场景案例、询问/沟通技巧、错误示例、问法变体"四大类。
-> **使用方式**：把下面「Prompt 全文」整段复制，发给另一个 AI（如 GPT-4、Claude 网页版），让它执行。
-> **输出位置**：追加到 `D:\code\labor-survey-ai\knowledge-base\qa\faq.json`（id 从 104 开始）
+> ⚠️ **本文件是一次性任务的归档 Prompt**（2026-06 初版执行时基线 103 条 QA）。当前 KB 已扩到 335 条（schema v1 完成，见 `docs/04-知识库规范.md` 第四节 + ADR 0008）。
+>
+> **新增 QA 的标准流程已切换**：
+> - 新题库 / 新文档入库 → 走 `kb-update-workflow` skill（项目级，5 阶段）
+> - 制度年度变更 → 走 `regulations-migrate` skill（项目级，7 步）
+> - 维护流程不再手工执行 Prompt，见 `docs/04-知识库规范.md` 第四节
+>
+> 如确需重跑（重大制度更新时），按下方「Prompt 全文」执行；当前数据基线请改为 **335 条**。
+
+> **历史用途**：在已有 103 条 QA 的基础上，把知识库扩到 250-300 条，重点补"复杂场景案例、询问/沟通技巧、错误示例、问法变体"四大类。
+> **历史使用方式**：把下面「Prompt 全文」整段复制，发给另一个 AI（如 GPT-4、Claude 网页版），让它执行。
+> **历史输出位置**：追加到 `knowledge-base/qa/faq.json`（项目内路径，不再使用绝对路径；id 从 104 开始）
 
 ---
 
 ## 当前知识库现状（必读）
 
-`D:\code\labor-survey-ai\knowledge-base\qa\faq.json` 已有 103 条，分布：
+`knowledge-base/qa/faq.json` 已有 103 条（执行本 Prompt 时基线；当前实际 303 条），分布：
 
 | 分类 | 条数 |
 |------|------|
@@ -37,7 +46,7 @@
 你是一名政务领域知识工程专家，专门为劳动力调查辅助调查员扩充 RAG 知识库。
 
 # 项目背景
-- 产品：劳动力调查 AI 助手（微信小程序 + FastAPI 后端，Chroma 向量库）
+- 产品：劳动力调查 AI 助手（H5 单页应用 + FastAPI 后端，Chroma + BM25 Hybrid 向量库，2026-06-21 前端已从微信小程序反转）
 - 用户：辅助调查员（基层入户调查人员）
 - 填报工具：调查员使用专用 app 填报，app 自带基础指引
 - 编码填报：行职业编码由办公室人员填报，调查员不接触
@@ -45,15 +54,15 @@
 
 # 输入文件
 1. 现有知识库（请先读取）：
-   `D:\code\labor-survey-ai\knowledge-base\qa\faq.json`（103 条）
+   `<PROJECT_ROOT>\knowledge-base\qa\faq.json`（执行本 Prompt 时基线 103 条；当前实际 303 条，按需调整目标值）
 
 2. 原始素材（markitdown 转换后的）：
-   - `D:\code\labor-survey-ai\knowledge-base\raw\markdown\劳动力调查制度（2026年定期报表）-定稿.md`
-   - `D:\code\labor-survey-ai\knowledge-base\raw\markdown\劳动力调查专业题库（24年8月）.md`
-   - `D:\code\labor-survey-ai\knowledge-base\raw\markdown\劳动力调查及指标讲解.md`
+   - `<PROJECT_ROOT>\knowledge-base\raw\markdown\劳动力调查制度（2026年定期报表）-定稿.md`
+   - `<PROJECT_ROOT>\knowledge-base\raw\markdown\劳动力调查专业题库（24年8月）.md`
+   - `<PROJECT_ROOT>\knowledge-base\raw\markdown\劳动力调查及指标讲解.md`
 
 3. 知识库规范（必读）：
-   `D:\code\labor-survey-ai\docs\04-知识库规范.md`
+   `<PROJECT_ROOT>\docs\04-知识库规范.md`
 
 # 总体目标
 在现有 103 条基础上，**新增 150-200 条 QA**，最终总数 **250-300 条**。
@@ -191,7 +200,7 @@ LLM 容易出错的场景，提前入库作为"反例"。
 
 # 输出格式
 
-追加到 `D:\code\labor-survey-ai\knowledge-base\qa\faq.json` 数组末尾（**不要重写整个文件，只追加**）：
+追加到 `<PROJECT_ROOT>\knowledge-base\qa\faq.json` 数组末尾（**不要重写整个文件，只追加**）：
 
 ```json
 [
@@ -238,7 +247,7 @@ LLM 容易出错的场景，提前入库作为"反例"。
 > 请**分批保存**：每完成 20-30 条就保存一次 faq.json，避免大批量写入失败导致丢失。
 
 ### 3. 交付形式
-> 完成后只需修改 `D:\code\labor-survey-ai\knowledge-base\qa\faq.json`（追加即可，不要发给我中间文件）。
+> 完成后只需修改 `<PROJECT_ROOT>\knowledge-base\qa\faq.json`（追加即可，不要发给我中间文件）。
 
 ### 4. 质量验证
 > 必须执行「自查清单」8 个问题，逐条回答。如果某项不达标（如重复 > 0），**先修正再交付**。

@@ -8,13 +8,15 @@
 
 ## 当前状态
 
-**迭代 1 / Step 1.2：内网穿透 + 公网验证**（进行中）
+**迭代 2 收尾 · 迭代 3 待领导决策启动**
 
-- ✅ 后端：FastAPI 完整，chat / feedback 两个 API（**voice 2026-06-21 已停用**）
-- ✅ 前端：H5 单页应用（`backend/static/index.html`，**讯飞语音按钮已隐藏**）
-- ✅ 知识库：Vector + BM25 hybrid 检索，297 条 QA
+- ✅ 后端：FastAPI + chat / feedback / admin / auth 四个 API 模块（voice 2026-06-21 已停用）
+- ✅ 前端：H5 四页面（对话 / 登录 / 反馈看板 / 白名单管理）
+- ✅ 知识库：Vector + BM25 hybrid 检索，354 条 QA（schema v1：含 `indicators` 字段）
+- ✅ 鉴权：手机号白名单 + HMAC token（`whitelist.db`，五级区划字段）
+- ✅ 运营：反馈看板（KB 优化 + 使用监测双 tab）+ 区域 5 级下钻
 - ✅ 内网穿透：Cloudflare Tunnel quick 模式
-- ⏳ 公网部署验证中
+- ⏳ 迭代 3 材料已就绪，待领导决策后启动（域名备案 15-20 工作日）
 
 ## 快速开始
 
@@ -97,3 +99,12 @@ labor-survey-ai/
 - `docs/adr/0002-向量库选型.md` — Chroma 选型
 - `docs/adr/0003-embedding-部署方式.md` — Embedding API 选型
 - `docs/adr/0004-内网穿透方案.md` — Cloudflare Tunnel 决策
+- `docs/adr/0005-手机号白名单门禁.md` — HMAC token + whitelist 鉴权
+- `docs/adr/0006-反馈闭环与Dashboard看板.md` — admin API + 看板设计
+- `docs/adr/0007-多轮对话上下文.md` — history 字段 + 上下文注入
+- `docs/adr/0008-制度对齐机制.md` — indicators 字段 + migration_map.json + regulations-migrate skill
+
+## 项目级 Claude Code Skills（`.claude/skills/`，已 git 入仓）
+
+- `kb-update-workflow/` — 5 阶段 KB 入库流程（源文档 → markdown → Q&A 抽取 → 查重 → 审核入库）
+- `regulations-migrate/` — 年度《劳动力调查制度》变更 7 步迁移（12 月初触发）

@@ -1,0 +1,15 @@
+{
+  "_comment": "制度变更迁移映射文件。修改此文件后执行: python scripts/migrate_indicators.py migration_map.json --write",
+  "_usage": "renamed: 旧编号→新编号（纯位移）; removed: 取消的指标; added: 新增指标",
+  "target_version": "2027",
+  "date": "2026-XX-XX",
+  "renamed": {
+    "_example_old": "_example_new"
+  },
+  "removed": [
+    "_example_removed_code"
+  ],
+  "added": [
+    {"code": "_example_new_code", "description": "新指标含义", "type": "单选"}
+  ]
+}

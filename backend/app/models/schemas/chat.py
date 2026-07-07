@@ -1,4 +1,4 @@
-"""API 请求/响应模型。"""
+"""对话 / 反馈相关请求/响应模型。"""
 from __future__ import annotations
 
 from typing import Literal
@@ -30,12 +30,7 @@ class ChatResponse(BaseModel):
     sources: list[SourceItem] = []
     mode: Literal["rag", "out_of_kb", "out_of_scope", "ambiguous", "error"] = "rag"
     retrieval_score: float | None = None
-
-
-class HealthResponse(BaseModel):
-    status: str
-    chroma_count: int
-    llm_configured: bool
+    request_id: str | None = None
 
 
 class FeedbackRequest(BaseModel):
@@ -45,6 +40,7 @@ class FeedbackRequest(BaseModel):
     rating: Literal["up", "down"]
     comment: str = Field(default="", max_length=500)
     sources: list[dict] = Field(default_factory=list)
+    request_id: str | None = Field(default=None, max_length=12)
 
 
 class FeedbackResponse(BaseModel):

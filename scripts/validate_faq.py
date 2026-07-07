@@ -30,6 +30,7 @@ MAX_ANSWER_LEN = 400
 MIN_KEYWORDS = 3
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PATH = PROJECT_ROOT / "knowledge-base" / "qa" / "faq.json"
+CATALOG_PATH = PROJECT_ROOT / "knowledge-base" / "indicator_catalog.json"
 
 
 @dataclass
@@ -172,6 +173,37 @@ def category_stats(qas: list[dict]) -> dict[str, int]:
     return dict(Counter(qa.get("category", "<空>") for qa in qas))
 
 
+def check_indicators(qa: dict, report: Report, all_catalog_codes: set[str]) -> None:
+    qa_id = str(qa.get("id", ""))
+    if qa.get("_indicators_review"):
+        report.add("warning", "indicators_review_needed", qa_id,
+                   "indicators 字段需人工标注")
+        return
+    indicators = qa.get("indicators")
+    if indicators is None:
+        report.add("warning", "indicators_missing", qa_id,
+                   "缺少 indicators 字段（运行 backfill_indicators.py）")
+        return
+    if not isinstance(indicators, list):
+        report.add("error", "indicators_not_list", qa_id,
+                   "indicators 必须是数组")
+        return
+    for code in indicators:
+        if code not in all_catalog_codes:
+            report.add("error", "indicators_unknown_code", qa_id,
+                       f"indicators 含未注册编号: {code}（检查 indicator_catalog.json）")
+
+
+def load_catalog_codes() -> set[str]:
+    if not CATALOG_PATH.exists():
+        return set()
+    catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+    codes = set()
+    for mod_indicators in catalog.get("modules", {}).values():
+        codes.update(mod_indicators.keys())
+    return codes
+
+
 def validate(path: Path) -> Report:
     report = Report()
     if not path.exists():
@@ -186,6 +218,7 @@ def validate(path: Path) -> Report:
         report.add("error", "json_not_array", "-", "根节点必须是数组")
         return report
     report.total = len(data)
+    catalog_codes = load_catalog_codes()
     for qa in data:
         if not isinstance(qa, dict):
             report.add("error", "qa_not_object", "-", "QA 项必须是对象")
@@ -198,6 +231,7 @@ def validate(path: Path) -> Report:
         check_keywords(qa, report)
         check_source(qa, report)
         check_answer_placeholders(qa, report)
+        check_indicators(qa, report, catalog_codes)
     check_id_continuity(data, report)
     check_duplicates(data, report)
     return report

@@ -39,6 +39,8 @@ backend/data/*.db
 backend/data/*.sqlite
 backend/data/bm25_index.json
 backend/data/feedback.jsonl
+backend/data/feedback_resolved.jsonl
+backend/data/whitelist.json
 
 # 上传与缓存
 backend/uploads/
@@ -68,6 +70,9 @@ Thumbs.db
 # 系统
 $RECYCLE.BIN/
 
+# 知识库构建产物（不入仓）
+knowledge-base/chunks.jsonl
+
 # 知识库原始素材（量大，不入仓）
 knowledge-base/raw/*.pdf
 knowledge-base/raw/*.docx
@@ -80,3 +85,5 @@ knowledge-base/raw/*.pptx
 
 # Claude Code 项目笔记
 .claude/
+# 例外：项目级 skill 入仓共享
+!.claude/skills/

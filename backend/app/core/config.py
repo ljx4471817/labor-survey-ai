@@ -63,7 +63,7 @@ def _load() -> Settings:
     llm_provider = os.environ.get("LLM_PROVIDER", "deepseek").lower()
     if llm_provider == "deepseek":
         llm_api_key = os.environ.get("DEEPSEEK_API_KEY", "")
-        llm_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+        llm_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
         llm_url = "https://api.deepseek.com/v1/chat/completions"
     elif llm_provider == "dashscope":
         llm_api_key = os.environ.get("DASHSCOPE_API_KEY", "")
