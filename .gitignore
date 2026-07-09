@@ -88,3 +88,10 @@ knowledge-base/raw/*.pptx
 # 例外：项目级 skill 入仓共享
 !.codex/skills/
 
+
+# SQLite WAL/SHM 运行时副产物
+backend/data/*.db-shm
+backend/data/*.db-wal
+
+# 临时调试脚本（下划线开头）
+scripts/_*.py

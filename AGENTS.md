@@ -100,7 +100,7 @@
 | `backend/tests/` | 后端测试（**未做**：当前以 `run_eval.py` 端到端验证替代单元测试） | 自由修改 |
 | `scripts/` | 跨子项目运维脚本 | 自由修改 |
 | `deploy/` | 部署配置（含 ssl/ / systemd/ 占位） | 谨慎修改，影响线上 |
-| `.claude/skills/` | **项目级 Codex skill**（已 git 入仓），含 `regulations-migrate` 等 | 自由修改 |
+| `.codex/skills/` | **项目级 Codex skill**（已 git 入仓），含 `regulations-migrate` / `kb-update-workflow` | 自由修改 |
 
 > `miniprogram/` 保留为决策反转前的历史骨架（已 git 追踪 `.gitkeep` 占位），不再修改其内容。
 
@@ -245,11 +245,13 @@ cd backend && pip install -r requirements.txt
 - **2026-06-24**：feedback JSONL 富化区域字段 —— `feedback.py` 写入时附带 phone/name/province/city/county/township/community；旧 feedback（无 province）在区域聚合时自动过滤
 - **2026-06-25**：Dashboard 双 tab 重构 —— KB 优化（候选改进 + Top 10 + Top 5 + 最近不采纳明细）与 使用监测（时间分布图 + 区域下钻表）分 tab 展示；概览卡共享置顶；默认展示 KB 优化 tab
 - **2026-06-26**：KB schema v1（ADR 0008）—— 335 条 QA 全部有 `indicators` 或 `_indicators_topic` 字段；`indicator_catalog.json`（63 个指标 4 模块）；`migration_map.json` 制度变更模板；`backfill_indicators.py` / `migrate_indicators.py` / `smart_backfill_indicators.py` 三个脚本；`validate_faq.py` 加 indicators 合法性校验；eval 102/102 通过
-- **2026-06-26**：项目级 `regulations-migrate` skill（`.claude/skills/regulations-migrate/SKILL.md`，已 git 入仓）—— 制度变更 7 步流程标准化；`.gitignore` 加 `!.claude/skills/` 例外
+- **2026-06-26**：项目级 `regulations-migrate` skill（`.codex/skills/regulations-migrate/SKILL.md`，已 git 入仓）—— 制度变更 7 步流程标准化；`.gitignore` 加 `!.claude/skills/` 例外
 - **2026-06-26**：零覆盖指标 KB 补全（commit 335→353）—— 18 条新条目（id 336-353）覆盖 F5.1/F6.1/F9.1-3/F13.1/F22.1/F26.1/F30.1/F31.2/F32.3/F36.1/F39/F40/F41 全部 15 个零覆盖指标；KB 覆盖与密度审计见 `reports/kb-coverage-and-density-20260626.md`
 - **2026-06-26**：`run_eval_notify.bat` 弹窗 wrapper（`scripts/`）—— 自动启后端+跑 eval+Windows MessageBox 弹窗，退出码透传
 - **2026-06-26**：eval 关键词为连续子串修复 —— id 180（拒访话术）+ id 188（PAD 离线）改写 canonical answer 让 `expected_keywords` 4 个术语都作为连续子串出现；`kb-update-workflow` skill 加「5d 前必读：连续子串陷阱」段（`run_eval.py:70` 的 `k in answer`）
 - **2026-06-29**：KB F34 6 项速查新增（id=354，353→354）—— 集中「不找工作主要原因」6 项合法选项 + 常见误选纠正；227/228/296 瘦化去掉重复 inline 引用；eval 验证 u-05/u-07 PASS；`/simplify` 顺手删 227/228/296 内联 `(F34 6 项速查见 id=354)` 引用 + id 354 keywords 8→6（去 `6 项` `选项`）
+- **2026-07-09**：欢迎页个性化姓名 + 吉祥物改名「小筑」—— auth.py /login 返回 name；common.js 加 setUserName/getUserName（localStorage lsx_user_name）；login.html 登录成功后存入；index.html 欢迎文案改为「你好{姓名}/访客，」+「我是贵阳调查队小筑...」，IIFE 注入姓名（commit 8bb6330）
+- **2026-07-09**：「whitelist-admin」翻页——renderTable 用 pageItems.slice 取代整张表渲染；新增 renderPager/buildPageList/goPage，每页 20/50/100 + 页码导航 + 首末页快捷键；showInactive 切换回到第 1 页；空数据 placeholder + pager display:none；goPage NaN 防御；buildPageList(cur, total) 改名 (current, totalPages) 命名对齐（commit 6c0d39c）
 - **2026-07-05**：架构重构 Phase 1-9 —— admin.py 拆 4 sub-router + rag/pure.py 拆分 + schemas 子包 + 关键词外移 JSON + chat.py pipeline 提取 + watchdog hook + simplify 修复 7 项 + eval 102/100% 回归通过
 - **2026-06-29**：KB 双轨（QA + chunk）—— `scripts/build_chunks.py` 新制度文档入 chunk 库；`build_bm25.py` + `bm25.py` 改双源；`prompts.py` format_kb_results 区分 QA/chunk 渲染；`regulations-migrate` skill 第 8 步提醒 chunk 入库
 - **2026-06-29**：容量压测 + 瓶颈定位 —— 4 档压测（baseline/20/50/100）实测 0 错误；瓶颈确认在 **DeepSeek 每账号并发连接上限 ≈ 45**（不是 RPM 限制）；`uvicorn --workers 2` 实验验证无效（w1 vs w2 QPS 都在 ~11），**上云不解决此瓶颈**；分析见 `reports/llm-bottleneck-analysis-20260629.md`，压测数据 `reports/load-test-20260629-2058.md`；架构文档 6.1/6.2 同步修订
