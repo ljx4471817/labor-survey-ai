@@ -44,3 +44,14 @@ async function handle401(res) {
   }
   return false;
 }
+
+const USER_NAME_KEY = "lsx_user_name";
+
+function setUserName(name) {
+  if (name) localStorage.setItem(USER_NAME_KEY, name);
+  else localStorage.removeItem(USER_NAME_KEY);
+}
+
+function getUserName() {
+  return localStorage.getItem(USER_NAME_KEY) || "";
+}

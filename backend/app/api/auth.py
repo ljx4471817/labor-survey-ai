@@ -12,6 +12,7 @@ from loguru import logger
 from pydantic import BaseModel, Field
 
 from app.infra.auth import load_whitelist, require_user, sign_token
+from app.persistence import whitelist_db
 
 router = APIRouter()
 
@@ -28,8 +29,10 @@ def login(req: LoginRequest) -> dict:
         logger.warning(f"login: 未授权手机号 {req.phone[:3]}****")
         raise HTTPException(401, "手机号未授权")
     token, exp = sign_token(req.phone)
-    logger.info(f"login: phone={req.phone[:3]}**** exp={exp}")
-    return {"token": token, "expires_at": exp, "phone": req.phone}
+    u = whitelist_db.get_user(req.phone)
+    name = (u.get("name") or "").strip() if u else ""
+    logger.info(f"login: phone={req.phone[:3]}**** exp={exp} name={name}")
+    return {"token": token, "expires_at": exp, "phone": req.phone, "name": name}
 
 
 @router.get("/check")

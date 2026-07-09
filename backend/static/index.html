@@ -693,8 +693,9 @@
   <main id="chat">
     <div class="empty-state" id="empty-state">
       <img class="empty-mascot" src="/static/mascot.png" alt="贵阳调查队吉祥物·筑小调" width="96" height="96">
-      <div class="empty-title">你好，我是筑小调</div>
-      <p class="empty-greeting">我是贵阳调查队筑小调，可以解答所有劳动力调查指标填报的问题。</p>
+      <div class="empty-title">你好<span class="user-name">，访客</span>，</div>
+      <div class="empty-subtitle">我是贵阳调查队小筑，可以解答所有劳动力调查指标填报的问题。</div>
+
       <p class="empty-hint">回答基于本地制度 QA 知识库；未命中的题目会明确提示「未找到」，不会编造。</p>
       <div class="examples" id="examples"></div>
     </div>
@@ -732,6 +733,13 @@
 
     // 未登录直接跳登录页
     requireLoginOrRedirect();
+
+    (function () {
+      var _el = document.querySelector('.user-name');
+      if (!_el) return;
+      var _n = getUserName();
+      _el.textContent = _n ? '，' + escapeHtml(_n) : '，访客';
+    })();
 
     // 多轮对话：保留最近 4 轮（8 条消息）。超出时丢掉最早的。
     const chatHistory = [];
