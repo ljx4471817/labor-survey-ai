@@ -109,6 +109,14 @@ tr:hover { background: #eef3f7; }
 
 .btn-sm { font-size: 0.75rem; padding: 3px 8px; }
 
+.pager { display: flex; align-items: center; gap: 12px; padding: 10px 4px 0; font-size: 0.82rem; color: var(--text-dim); flex-wrap: wrap; }
+.pager select { padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; font-size: 0.82rem; font-family: inherit; background: white; }
+.pager .pages { display: flex; gap: 4px; align-items: center; margin-left: auto; }
+.pager .pages button { min-width: 32px; padding: 4px 8px; }
+.pager .pages button.active { background: var(--ink-blue); color: white; border-color: var(--ink-blue); }
+.pager .ellipsis { padding: 0 4px; color: var(--text-dim); }
+.empty-row { text-align: center; padding: 24px; color: var(--text-dim); font-size: 0.88rem; }
+
 footer {
   text-align: center; font-size: 0.78rem; color: var(--text-dim); padding: 20px;
 }
@@ -126,7 +134,7 @@ footer {
     <button class="primary" id="addBtn">+ 新增条目</button>
     <button id="csvBtn">CSV 批量导入</button>
     <label style="font-size:0.82rem;display:flex;align-items:center;gap:4px;cursor:pointer">
-      <input type="checkbox" id="showInactive" onchange="renderTable()"> 显示已禁用
+      <input type="checkbox" id="showInactive" onchange="currentPage=1;renderTable()"> 显示已禁用
     </label>
     <span style="margin-left:auto;font-size:0.82rem;color:var(--text-dim)" id="countInfo">—</span>
   </div>
@@ -140,6 +148,7 @@ footer {
       <tbody id="tbody"></tbody>
     </table>
   </div>
+    <div class="pager" id="pager"></div>
 </main>
 
 <!-- 新增/编辑 Modal -->
@@ -206,6 +215,8 @@ requireLoginOrRedirect();
 
 let allItems = [];
 let editPhone = null;
+let currentPage = 1;
+let pageSize = 20;
 
 async function loadItems() {
   try {
@@ -228,8 +239,14 @@ function showMsg(msg, type) {
 function renderTable() {
   const showInactive = $('showInactive').checked;
   const filtered = showInactive ? allItems : allItems.filter(r => r.active);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  if (currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * pageSize;
+  const pageItems = filtered.slice(start, start + pageSize);
   $('countInfo').textContent = '共 ' + filtered.length + ' 条（总计 ' + allItems.length + ' 条）';
-  $('tbody').innerHTML = filtered.map(r => {
+  $('tbody').innerHTML = pageItems.length === 0
+    ? '<tr><td colspan="11" class="empty-row">暂无数据</td></tr>'
+    : pageItems.map(r => {
     const cls = r.active ? '' : ' inactive';
     const status = r.active ? '启用' : '已禁用';
     return '<tr class="' + cls + '">' +
@@ -251,6 +268,58 @@ function renderTable() {
       '</td>' +
       '</tr>';
   }).join('');
+  renderPager(totalPages, filtered.length);
+}
+
+function renderPager(totalPages, totalItems) {
+  const p = $('pager');
+  if (totalItems === 0) { p.innerHTML = ''; p.style.display = 'none'; return; }
+  const from = (currentPage - 1) * pageSize + 1;
+  const to = Math.min(currentPage * pageSize, totalItems);
+  const pages = buildPageList(currentPage, totalPages);
+  const pageOpts = [20,50,100].map(function(n){
+    return '<option value="' + n + '"' + (n===pageSize?' selected':'') + '>' + n + '</option>';
+  }).join('');
+  const pageBtns = pages.map(function(x){
+    return x === '...'
+      ? '<span class="ellipsis">…</span>'
+      : '<button class="' + (x===currentPage?'active':'') + '" onclick="goPage(' + x + ')">' + x + '</button>';
+  }).join('');
+p.style.display = 'flex';
+  p.innerHTML =
+    '<span>每页 <select onchange="pageSize=parseInt(this.value,10);currentPage=1;renderTable()">' + pageOpts + '</select> 条</span>' +
+    '<span>第 ' + from + '-' + to + ' 条 / 共 ' + totalItems + ' 条</span>' +
+    '<span class="pages">' +
+    '<button onclick="goPage(1)" ' + (currentPage===1?'disabled':'') + '>«</button>' +
+    '<button onclick="goPage(' + (currentPage-1) + ')" ' + (currentPage===1?'disabled':'') + '>‹</button>' +
+    pageBtns +
+    '<button onclick="goPage(' + (currentPage+1) + ')" ' + (currentPage===totalPages?'disabled':'') + '>›</button>' +
+    '<button onclick="goPage(' + totalPages + ')" ' + (currentPage===totalPages?'disabled':'') + '>»</button>' +
+    '</span>';
+}
+
+function buildPageList(current, totalPages) {
+  const out = [];
+  const set = new Set([1, totalPages, current, current-1, current+1, current-2, current+2]);
+  const sorted = Array.from(set).filter(function(n){ return n >= 1 && n <= totalPages; }).sort(function(a,b){ return a-b; });
+  let prev = 0;
+  for (const n of sorted) {
+    if (n - prev > 1 && prev !== 0) out.push('...');
+    out.push(n);
+    prev = n;
+  }
+  return out;
+}
+
+function goPage(n) {
+  if (!Number.isFinite(n)) n = 1;
+  const showInactive = $('showInactive').checked;
+  const total = showInactive ? allItems.length : allItems.filter(function(r){ return r.active; }).length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  if (n < 1) n = 1;
+  if (n > totalPages) n = totalPages;
+  currentPage = n;
+  renderTable();
 }
 
 function openModal(title, entry) {
