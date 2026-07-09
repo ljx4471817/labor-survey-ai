@@ -1,4 +1,4 @@
-# Python
+﻿# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -83,7 +83,8 @@ knowledge-base/raw/*.pptx
 # CodeGraph
 .codegraph/cache/
 
-# Claude Code 项目笔记
-.claude/
+# Codex 运行时配置（不入仓，skills 例外）
+.codex/*
 # 例外：项目级 skill 入仓共享
-!.claude/skills/
+!.codex/skills/
+
