@@ -45,9 +45,9 @@ exit /b 1
 echo       backend ready.
 
 echo.
-echo [2/3] Starting Cloudflare Tunnel (HTTP/2 mode)...
+echo [2/3] Starting Cloudflare Tunnel (QUIC/UDP mode)...
 echo       log: %CF_LOG%
-powershell -NoProfile -Command "Start-Process -WindowStyle Hidden -FilePath 'cmd' -ArgumentList '/k','cloudflared tunnel --url http://localhost:8001 --protocol http2 2>&1' -RedirectStandardOutput '%CF_LOG%'"
+powershell -NoProfile -Command "Start-Process -WindowStyle Hidden -FilePath 'cmd' -ArgumentList '/k','cloudflared tunnel --url http://localhost:8001 --protocol quic 2>&1' -RedirectStandardOutput '%CF_LOG%'"
 
 echo.
 echo [3/3] Waiting for public URL (up to ~45s)...
