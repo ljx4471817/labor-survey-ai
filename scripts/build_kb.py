@@ -7,14 +7,14 @@ backend/data/chroma/ 持久化目录。支持 --full / --incremental / --query �
 
 用法：
     python scripts/build_kb.py                       # 增量（默认）
-    python scripts/build_kb.py --full                # 清空重建
+    python scripts/build_kb.py --full                # 重建 QA（保留制度 chunk）
     python scripts/build_kb.py --provider dashscope
     python scripts/build_kb.py --query "每周工作15小时算就业吗？"   # 检索测试
 
 环境变量（写入项目根 .env，不要提交）：
     EMBEDDING_PROVIDER=dashscope     # bge | dashscope
     DASHSCOPE_API_KEY=...
-    DASHSCOPE_MODEL=text-embedding-v3
+    DASHSCOPE_MODEL=text-embedding-v4
     BGE_API_KEY=...                  # 用 BGE 时填
     BGE_MODEL=BAAI/bge-large-zh-v1.5
     BGE_API_URL=https://api.bge.modelbest.cn/v1/embeddings
@@ -80,7 +80,7 @@ class EmbeddingClient:
         "dashscope": {
             "key_env": "DASHSCOPE_API_KEY",
             "model_env": "DASHSCOPE_MODEL",
-            "model_default": "text-embedding-v3",
+            "model_default": "text-embedding-v4",
             "url_env": None,  # 固定
             "url_default": "https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings",
         },
@@ -126,6 +126,7 @@ def qa_to_chroma_record(qa: dict) -> tuple[str, str, dict]:
     qa_id = str(qa["id"]).zfill(3)
     doc = f"{qa['question']}\n{qa['answer']}"
     meta = {
+        "doc_type": "qa",
         "qa_id": qa_id,
         "category": qa.get("category", ""),
         "source": qa.get("source", ""),
@@ -136,13 +137,33 @@ def qa_to_chroma_record(qa: dict) -> tuple[str, str, dict]:
 
 
 def get_existing_hashes(collection) -> set[str]:
-    """拉取已入库的 embedding 输入文本 hash，用于增量判断。"""
+    """拉取已入库 QA 的 embedding 输入文本 hash，用于增量判断。"""
     existing = collection.get(include=["metadatas"])
     hashes: set[str] = set()
     for meta in existing.get("metadatas", []) or []:
-        if meta and "embed_hash" in meta:
+        if _is_qa_metadata(meta) and "embed_hash" in meta:
             hashes.add(meta["embed_hash"])
     return hashes
+
+
+def _is_qa_metadata(meta: dict | None) -> bool:
+    """兼容旧 QA 元数据：早期记录没有 doc_type，但始终包含 qa_id。"""
+    return bool(meta) and (meta.get("doc_type") == "qa" or "qa_id" in meta)
+
+
+def delete_existing_qas(collection) -> int:
+    """只删除共享 collection 中的 QA，保留制度原文 chunk。"""
+    existing = collection.get(include=["metadatas"])
+    stale_ids = [
+        record_id
+        for record_id, meta in zip(
+            existing.get("ids", []), existing.get("metadatas", []) or []
+        )
+        if _is_qa_metadata(meta)
+    ]
+    if stale_ids:
+        collection.delete(ids=stale_ids)
+    return len(stale_ids)
 
 
 def build(
@@ -160,13 +181,13 @@ def build(
     print(f"读取 {len(qas)} 条 QA")
     chroma_dir.mkdir(parents=True, exist_ok=True)
     client = chromadb.PersistentClient(path=str(chroma_dir))
-    if full and any(coll.name == collection_name for coll in client.list_collections()):
-        client.delete_collection(collection_name)
-        print(f"已删除旧 collection: {collection_name}")
     collection = client.get_or_create_collection(
         name=collection_name,
         metadata={"hnsw:space": "cosine"},
     )
+    if full:
+        deleted = delete_existing_qas(collection)
+        print(f"已删除 {deleted} 条旧 QA（保留制度 chunk）")
     existing_hashes = set() if full else get_existing_hashes(collection)
     if existing_hashes:
         print(f"增量模式：跳过 {len(existing_hashes)} 条已入库")
@@ -251,7 +272,9 @@ def main() -> int:
         default=os.environ.get("EMBEDDING_PROVIDER", "dashscope"),
         choices=["bge", "dashscope"],
     )
-    p.add_argument("--full", action="store_true", help="清空重建")
+    p.add_argument(
+        "--full", action="store_true", help="全量重建 QA（保留同 collection 的 chunk）"
+    )
     p.add_argument("--query", default=None, help="构建后跑一次检索测试")
     p.add_argument("--k", type=int, default=5)
     args = p.parse_args()

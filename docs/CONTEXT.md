@@ -22,27 +22,28 @@
 | `indicators` 字段 | KB 中每条 QA 关联的指标编号列表 | `knowledge-base/qa/faq.json` 每条 QA |
 | `_indicators_topic` | 非指标类条目标记（如程序、抽样、入户技巧） | `faq.json` 部分条目的特殊字段 |
 | `migration_map.json` | 制度变更时指标 rename/remove/add 的映射 | `knowledge-base/migration_map.json` |
-| `regulations-migrate` skill | 制度变更时的标准化 7 步流程 | `.claude/skills/regulations-migrate/` |
+| `regulations-migrate` skill | 制度变更时的标准化 7 步流程 | `.codex/skills/regulations-migrate/` |
 
 ## 3. 区域五级
 
 | 概念 | 定义 | 在哪里 |
 |------|------|------|
-| 区域五级 | 省 / 市 / 县 / 乡 / 社区 五个层级的行政区划 | `whitelist_db._REGION_LEVELS`、`query_log._REGION_LEVELS`、`admin.py._REGION_LEVELS` |
+| 区域五级 | 省 / 市 / 县 / 乡 / 社区 五个层级的行政区划 | `query_log._REGION_LEVELS`、`feedback_analytics.REGION_LEVELS` |
 | 区域下钻 | Dashboard 从 province 逐级下钻到 community | `GET /api/admin/feedback/stats/region`（支持 cascading 过滤） |
 
-> **注意**：`whitelist_db` 和 `query_log` 各自维护一份 `_REGION_LEVELS` 元组，是已知的轻微重复（修改时要同步两处）。
+> **注意**：`query_log` 和 `feedback_analytics` 各自维护一份区域层级元组，修改层级时要同步两处。
 
 ## 4. 知识库检索
 
 | 概念 | 定义 | 在哪里 |
 |------|------|------|
-| QA 条目 | KB 中结构化的人工整理条目（question + answer + indicators） | `knowledge-base/qa/faq.json` |
-| Chunk 条目 | 制度文档 markdown 切片入库后的检索单元 | `knowledge-base/chunks.jsonl`（构建产物） |
+| QA 条目 | KB 中结构化的人工整理条目（question + answer + indicators），当前 354 条 | `knowledge-base/qa/faq.json` |
+| Chunk 条目 | 制度文档 markdown 切片入库后的检索单元，当前 55 条 | `knowledge-base/chunks.jsonl`（构建产物） |
 | 双轨检索 | QA 与 chunk 双源同时入库，BM25 + Chroma 都覆盖 | `build_bm25.py` / `bm25.py` 同时加载两源 |
 | Hybrid 检索 | Chroma 向量检索 + BM25 关键词检索 + RRF 融合 | `rag/retriever.py` 的 `retrieve()` 函数 |
-| RRF | Reciprocal Rank Fusion，Cormack 2009 提出的排名融合算法，c=60 | `_rrf_fuse()` 函数 |
+| RRF | Reciprocal Rank Fusion，Cormack 2009 提出的排名融合算法，c=60 | `rag/pure.py::rrf_fuse()` |
 | `doc_type` | 元数据字段，区分 QA 条目和 chunk 条目 | `rag/prompts.py.format_kb_results` 据此分别渲染 |
+| Embedding | 将 QA、chunk 和用户问题映射为语义向量；当前模型为 DashScope `text-embedding-v4` | `DASHSCOPE_MODEL` / `rag/retriever.py::embed_query` |
 
 ## 5. 检索模式枚举
 
@@ -65,7 +66,7 @@
 | Query 日志 | 每次 chat 请求的元数据（不含答案内容） | `backend/data/query_log.db`（SQLite） |
 | Dashboard | 内部反馈看板 + 使用监测，双 tab | `backend/static/dashboard.html` |
 | 候选 KB 改进 | 自动从 down 反馈 + 高频 query 中识别 KB 缺口 | `aggregate_feedback()` 的 `candidate_improvements` 字段 |
-| `MIN_FREQ` | 进入"候选改进"列表的最低频次阈值（默认 3） | `backend/app/api/admin.py` |
+| `MIN_FREQ` | 进入"候选改进"列表的最低频次阈值（默认 3） | `backend/app/services/feedback_analytics.py` |
 
 ## 7. 鉴权
 
@@ -74,7 +75,7 @@
 | 手机号白名单 | 通过手机号 + 5 级区域预登记的可访问用户列表 | `backend/data/whitelist.db`（SQLite） |
 | HMAC token | 登录后由服务端签发的 token，前端存在 localStorage | `infra/auth.py::mint_token` / `verify_token` |
 | `LSX_AUTH_SECRET` | HMAC 签名的密钥（生产必须设置） | `.env` |
-| 手机号正则 | 11 位、`1[3-9]` 开头 | `models/schemas.py::PhoneStr`（Pydantic Field） |
+| 手机号正则 | 11 位、`1[3-9]` 开头 | `models/schemas/admin.py::WhitelistEntry.phone` |
 | 软删除 | 删除白名单不真删，标记 `active=0` | `persistence/whitelist_db.py::delete(soft=True)` |
 
 ## 8. 部署与运行
@@ -85,14 +86,3 @@
 | Named Tunnel | Cloudflare Tunnel 绑定自有域名（生产模式，未启用） | 待 ADR 备案决策后启用 |
 | DeepSeek 提额 | 单账号 ~45 并发连接瓶颈 | `reports/llm-bottleneck-analysis-20260629.md` |
 
-## 9. 已知的术语漂移（待办）
-
-> 这些是本次审计发现的问题，**不删除现有代码**，仅记录待办。
-
-- **`miniprogram/` 历史遗留**：`AGENTS.md` 说"`.gitkeep` 占位，不修改"，但实际目录里有 `pages/chat/`、`pages/faq/`、`pages/index/`、`pages/settings/`、`components/`、`assets/`、`utils/` 真实代码。决策待定（清掉还是保留）。详见审计报告 `docs/audit-20260705.md`。
-
-- **架构分层（2026-07-05 重构）**：`backend/app/` 按职责分为 `api/`（路由）→ `services/`（业务逻辑）→ `rag/`（检索）→ `persistence/`（存储）→ `infra/`（基础设施）。纯函数拆到 `rag/pure.py`，Pydantic 模型拆到 `models/schemas/` 子包。关键词列表外移到 `data/scope_keywords.json`。
-
-- **DISABLED(voice) 散落注释**：`main.py`、`core/config.py` 都有 `# DISABLED(voice) 2026-06-21` 注释。**已统一到 ADR 0009**，注释行改为指向 ADR。
-
-- **`_REGION_LEVELS` 元组重复**：`whitelist_db.py` 和 `query_log.py` 各有一份。**短期不动**（抽到 `core/constants.py` 会引入跨 DB 模块的耦合），未来真加新层级时再统一。

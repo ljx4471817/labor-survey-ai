@@ -56,7 +56,7 @@ class EmbeddingClient:
         "dashscope": {
             "key_env": "DASHSCOPE_API_KEY",
             "model_env": "DASHSCOPE_MODEL",
-            "model_default": "text-embedding-v3",
+            "model_default": "text-embedding-v4",
             "url_env": None,
             "url_default": "https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings",
         },

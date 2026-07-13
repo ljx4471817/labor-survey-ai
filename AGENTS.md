@@ -1,7 +1,6 @@
 # 劳动力调查 AI 助手 · 项目约定
 
-> 本文件是项目级 AGENTS.md，**优先级高于全局 CLAUDE.md**，冲突时以本文件为准（按全局 CLAUDE.md 的指令优先级规则）。
-> 全局约定见 `C:\\Users\\Administrator\\.codex\\CLAUDE.md`。
+> 本文件是项目级 Codex 约定；项目内工作以这里的目录、验证和合规规则为准。
 
 ## 项目身份
 
@@ -21,14 +20,16 @@
   1. 需要用户提供密钥、密码等敏感信息
   2. 需要用户做不可逆操作决策（删除、push、采购等，见合规红线）
   3. 遇到物理阻塞（shell连续不可用、磁盘满等）
-- **不要输出预告文字——直接做。
+- **预告必须当场执行** —— 如果一个句子语法上说了"马上做什么"（"立刻启动"、"我接下来要 X"、"I'll X"、"let me X"），同一个回合内必须有对应的工具调用执行它。预告变成空话 = 已违反红线。
+- 用户没问后续计划时，不用长篇复述未来步骤；工具调用之间只报必要进展。
+
 - **工具报错不是停止信号** —— 换写法重试一次；还失败就在最终结果里说明，绝不把工具错误当作“任务已完结”。
 - **一整条链路一口气跑完** —— 有终点的任务（起隧道 / commit / eval）完成后直接接下一步，不在中间输出长 preamble 等推动。
 - **一次授权做透** —— 用户明确授权的动作，做完整条链路，不在中间又举手确认。**
 
 ## 用户身份
 
-我是项目开发者，使用 Codex 协作。沟通风格遵循全局 CLAUDE.md：中文、结论先行、不谄媚。
+我是项目开发者，使用 Codex 协作。沟通使用中文，结论先行，不谄媚。
 
 ## 新功能开发规范
 
@@ -71,6 +72,7 @@
 | `0007-多轮对话上下文.md` | history 字段 + merge_query_with_history + history_context | 对话 UX |
 | `0008-制度对齐机制.md` | indicators 字段 + indicator_catalog.json + migration_map.json + regulations-migrate skill | KB 质量基础设施 |
 | `0009-voice-disabled.md` | 2026-06-21 语音功能停用（输入法自带语音转写够用） | 功能开关 |
+| `0010-embedding-v4.md` | DashScope text-embedding-v4 + 共享 collection 重建边界 | 检索依赖 |
 
 ## 目录约定
 
@@ -94,10 +96,9 @@
 | `backend/app/services/` | 业务服务（feedback_analytics / jsonl_utils） | 自由修改 |
 | `backend/app/api/_xunfei_auth.py` | DISABLED（讯飞语音鉴权，代码完整保留） | 不修改 |
 | `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json） | 自由修改 |
-| `backend/tests/` | 后端单元测试（38 tests, 0.63s） | 自由修改 |
-| `scripts/watchdog*.ps1` | 线程活跃度监控 hook + marker | 自由修改 |
+| `backend/tests/` | 后端单元测试（40 tests） | 自由修改 |
+| `scripts/watchdog*.ps1` | 本地 API 可用性监控与自动重启 | 自由修改 |
 | `backend/static/` | H5 前端（单页应用） | 自由修改 |
-| `backend/tests/` | 后端测试（**未做**：当前以 `run_eval.py` 端到端验证替代单元测试） | 自由修改 |
 | `scripts/` | 跨子项目运维脚本 | 自由修改 |
 | `deploy/` | 部署配置（含 ssl/ / systemd/ 占位） | 谨慎修改，影响线上 |
 | `.codex/skills/` | **项目级 Codex skill**（已 git 入仓），含 `regulations-migrate` / `kb-update-workflow` | 自由修改 |
@@ -154,14 +155,14 @@ python scripts/generate_project_intro.py
 python scripts/extract_cf_url.py
 
 # 后端：本地启动（开发模式，不需要公网）
-cd backend && uvicorn app.main:app --reload --port 8000
+cd backend && uvicorn app.main:app --reload --port 8001
 
 # 后端 + 公网穿透：一键启动（H5 + Cloudflare Tunnel）
 scripts\start_tunnel.bat
 # 或：跑 start_tunnel.bat → 抓取 URL 用 extract_cf_url.py
 
 # 后端：测试
-cd backend && pytest
+cd backend && pytest tests/ -q
 
 # 后端：依赖安装
 cd backend && pip install -r requirements.txt
@@ -169,7 +170,7 @@ cd backend && pip install -r requirements.txt
 
 ## 代码风格
 
-**通用**：遵循全局 CLAUDE.md 的"匹配已有代码风格"原则。
+**通用**：匹配代码库已有风格，避免无关重构。
 
 **Python（后端）**：
 - 类型注解必加（公共函数）
@@ -188,7 +189,7 @@ cd backend && pip install -r requirements.txt
 
 ## 合规红线
 
-> 全量红线见 `C:\\Users\\Administrator\\.codex\\CLAUDE.md`「自主边界（红线）」。本节只摘项目高频触发的子集。
+> 本节列出本项目的高频合规边界。
 
 - 不收集居民个人信息（H5 不接触调查数据）
 - 不把 API Key、token 写进代码或 commit
@@ -219,44 +220,7 @@ cd backend && pip install -r requirements.txt
 3. 跑 `python scripts/validate_faq.py`（字段完整性）+ `python scripts/build_bm25.py --full`（索引重建）
 4. 在 `eval_set.json` 加 eval 锁定（`must_contain_any` 列表任一命中 → 硬指标；`should_not_contain` 拦截典型错误措辞；多轮场景可配 `history` 字段）
 
-**每年 12 月初**：用 `git diff` 对比新旧《劳动力调查制度》文档，列出可能受影响的 KB 条目，业务人员 + 开发人员 review。**优先走 `regulations-migrate` skill**（`.claude/skills/regulations-migrate/`），整条链路标准化。
-
-## 变更日志（重要节点）
-
-- **2026-06-21**：H5 替代微信小程序（ADR 0001）；Cloudflare Tunnel quick 模式落地（ADR 0004）
-- **2026-06-21**：关闭讯飞语音识别（输入法自带，代码完整保留，未来可恢复）
-- **2026-06-22**：H5 前端视觉升级（墨蓝 + 米白配色 + 消息动画）；接入单位吉祥物「筑小调」（空状态欢迎 + 每条 AI 回复头像）
-- **2026-06-22**：项目首次推送到 GitHub：`https://github.com/ljx4471817/labor-survey-ai`
-- **2026-06-22**：`/simplify` 性能/质量修复 —— Chroma collection 模块级单例、向量 + BM25 改 `ThreadPoolExecutor` 并发跑、`chat.py` 提取 `_to_source_items` + `REFUSAL_PATTERNS` 提到模块级、`config.py` 提取 `_resolve_path` helper
-- **2026-06-22**：成本预算报告 v2（`reports/cost-budget-20260622.md` + docx/pdf）—— 三档用量 × 三档人数，按行政层级测算，含采购建议档 ¥87/月
-- **2026-06-22**：F27 corner case KB 补全（commit `b46387b`）—— 5 条 corner case（id 298-302）+ 1 条 eval-101 锁定用户原问
-- **2026-06-24**：多轮对话上下文支持（最多 4 轮，commit `5b494a3`）—— `ChatMessage` + `history` 字段；history 非空跳过模糊追问；prompt 注入 `history_context`
-- **2026-06-24**：F27 自营+新开业 corner case 修复（commit `de75c90`）—— `merge_query_with_history` 改方案 X（≥8 字清检索、<8 字拼历史兜底）；KB 新增 id=303 自营豁免条目；eval-102 多轮 case 锁定「合同/协议/预计/预期」
-- **2026-06-24**：`/simplify` 质量/安全修复 —— `get_collection()` 加双检锁防 TOCTOU；删 `_CHROMA_CLIENT` 死代码；`bm25.tokenize()` 统一到 `build_bm25.py`；`ChatMessage.max_length` 500→4000 防 422；`_EXECUTOR` shutdown 注册；eval 新增 `must_contain_any` 硬指标
-- **2026-06-24**：反馈闭环 + Dashboard 看板 —— `admin.py` 聚合看板端点（`GET /stats` + `POST /resolve`）；`dashboard.html` 独立看板页面（统计卡 + 候选 KB 改进 + 时间分布 + 明细分页）；`feedback_resolved.jsonl` append-only event log；首页不暴露看板入口（手动 `/dashboard` 访问）
-- **2026-06-24**：`/simplify` 复用/质量修复 —— 提取 `common.js`（`$()` + `escapeHtml()` 去重）、`_serve_static_page` 改 `HTTPException` 去 TOCTOU、`ResolveRequest.max_length=100`、admin.py 去叙事注释
-- **2026-06-24**：手机号白名单门禁 —— `auth.py` HMAC 签名 token + `whitelist.json` mtime 热加载；`api/auth.py` `/login`+`/check`；`login.html` 登录页；`main.py` `chat/feedback/admin` router 全部加 `Depends(require_user)`；`common.js` 加 `authHeader` + `handle401`；`run_eval.py` 加 `--phone` 拿 token
-- **2026-06-24**：白名单挪出 git 仓 —— `.gitignore` 忽略 `backend/data/whitelist.json`；新增 `backend/data/whitelist.example.json` 模板（真人号不入仓）；`/simplify` 顺手修 `auth.py` 死代码 + `getToken()` NaN 防护 + 删冗余注释
-- **2026-06-24**：CLAUDE.md 审计整改 —— 关键命令补 7 个脚本 + `run_eval.py` 加 `--phone` 提示；H5 约定补 `login.html`；目录约定补 `backend/app/api/`；新增 ADR 索引段；迭代阶段细化（2 收尾中 → 3 计划）；合规红线指全局 + 补 push / .env 复述；`安全注意` 段并入 `合规红线` 去重；待办 Stage 2 状态标"材料已就绪，待领导决策"
-- **2026-06-24**：白名单 JSON→SQLite 迁移 —— `whitelist_db.py` CRUD + 完整五级区划字段（省/市/县/乡/社区+姓名+手机号）；`auth.py` 改用 `whitelist_db`（保留 mtime 热加载语义）；`migrate_whitelist_json_to_db.py` 一次性迁移脚本
-- **2026-06-24**：查询日志 SQLite —— `query_log.py` 记录每次 chat 请求（区划快照去关联漂移）；`chat.py` 全出口写入 query_log（含 out_of_scope / ambiguous 分支）
-- **2026-06-24**：区域 5 级下钻 —— `GET /api/admin/feedback/stats/region`（province/city/county/township/community），合并 query_log 用量 + feedback 采纳率；`dashboard.html` 区域表支持 cascading 下钻点击
-- **2026-06-24**：白名单管理 UI —— `whitelist.html` 完整 CRUD 页面 + CSV 批量导入（`POST /api/admin/whitelist/import-csv`）；`WhitelistEntry` Pydantic 模型含手机号格式校验；CSV 编码自动检测 UTF-8/GBK
-- **2026-06-24**：feedback JSONL 富化区域字段 —— `feedback.py` 写入时附带 phone/name/province/city/county/township/community；旧 feedback（无 province）在区域聚合时自动过滤
-- **2026-06-25**：Dashboard 双 tab 重构 —— KB 优化（候选改进 + Top 10 + Top 5 + 最近不采纳明细）与 使用监测（时间分布图 + 区域下钻表）分 tab 展示；概览卡共享置顶；默认展示 KB 优化 tab
-- **2026-06-26**：KB schema v1（ADR 0008）—— 335 条 QA 全部有 `indicators` 或 `_indicators_topic` 字段；`indicator_catalog.json`（63 个指标 4 模块）；`migration_map.json` 制度变更模板；`backfill_indicators.py` / `migrate_indicators.py` / `smart_backfill_indicators.py` 三个脚本；`validate_faq.py` 加 indicators 合法性校验；eval 102/102 通过
-- **2026-06-26**：项目级 `regulations-migrate` skill（`.codex/skills/regulations-migrate/SKILL.md`，已 git 入仓）—— 制度变更 7 步流程标准化；`.gitignore` 加 `!.claude/skills/` 例外
-- **2026-06-26**：零覆盖指标 KB 补全（commit 335→353）—— 18 条新条目（id 336-353）覆盖 F5.1/F6.1/F9.1-3/F13.1/F22.1/F26.1/F30.1/F31.2/F32.3/F36.1/F39/F40/F41 全部 15 个零覆盖指标；KB 覆盖与密度审计见 `reports/kb-coverage-and-density-20260626.md`
-- **2026-06-26**：`run_eval_notify.bat` 弹窗 wrapper（`scripts/`）—— 自动启后端+跑 eval+Windows MessageBox 弹窗，退出码透传
-- **2026-06-26**：eval 关键词为连续子串修复 —— id 180（拒访话术）+ id 188（PAD 离线）改写 canonical answer 让 `expected_keywords` 4 个术语都作为连续子串出现；`kb-update-workflow` skill 加「5d 前必读：连续子串陷阱」段（`run_eval.py:70` 的 `k in answer`）
-- **2026-06-29**：KB F34 6 项速查新增（id=354，353→354）—— 集中「不找工作主要原因」6 项合法选项 + 常见误选纠正；227/228/296 瘦化去掉重复 inline 引用；eval 验证 u-05/u-07 PASS；`/simplify` 顺手删 227/228/296 内联 `(F34 6 项速查见 id=354)` 引用 + id 354 keywords 8→6（去 `6 项` `选项`）
-- **2026-07-09**：欢迎页个性化姓名 + 吉祥物改名「小筑」—— auth.py /login 返回 name；common.js 加 setUserName/getUserName（localStorage lsx_user_name）；login.html 登录成功后存入；index.html 欢迎文案改为「你好{姓名}/访客，」+「我是贵阳调查队小筑...」，IIFE 注入姓名（commit 8bb6330）
-- **2026-07-09**：「whitelist-admin」翻页——renderTable 用 pageItems.slice 取代整张表渲染；新增 renderPager/buildPageList/goPage，每页 20/50/100 + 页码导航 + 首末页快捷键；showInactive 切换回到第 1 页；空数据 placeholder + pager display:none；goPage NaN 防御；buildPageList(cur, total) 改名 (current, totalPages) 命名对齐（commit 6c0d39c）
-- **2026-07-05**：架构重构 Phase 1-9 —— admin.py 拆 4 sub-router + rag/pure.py 拆分 + schemas 子包 + 关键词外移 JSON + chat.py pipeline 提取 + watchdog hook + simplify 修复 7 项 + eval 102/100% 回归通过
-- **2026-06-29**：KB 双轨（QA + chunk）—— `scripts/build_chunks.py` 新制度文档入 chunk 库；`build_bm25.py` + `bm25.py` 改双源；`prompts.py` format_kb_results 区分 QA/chunk 渲染；`regulations-migrate` skill 第 8 步提醒 chunk 入库
-- **2026-06-29**：容量压测 + 瓶颈定位 —— 4 档压测（baseline/20/50/100）实测 0 错误；瓶颈确认在 **DeepSeek 每账号并发连接上限 ≈ 45**（不是 RPM 限制）；`uvicorn --workers 2` 实验验证无效（w1 vs w2 QPS 都在 ~11），**上云不解决此瓶颈**；分析见 `reports/llm-bottleneck-analysis-20260629.md`，压测数据 `reports/load-test-20260629-2058.md`；架构文档 6.1/6.2 同步修订
-- **2026-07-06**：权限 Excel ↔ DB 同步 —— `scripts/sync_whitelist_xlsx.py` 支持「调查员 + 管理人员」双 sheet 同步；管理员层级（市级/区县/省级）允许缺县/小区字段；同步脚本 `--dry-run` 预览增量、`--xlsx <path>` 指定文件；130 调查员 + 20 管理人员 = 150 条入 DB（155 条含 5 个测试号）
-- **2026-07-06**：`whitelist_db.py` UTF-8 重写 —— 修复前 agent 从 `.pyc` 反编译重建时中文枚举默认值被破坏成乱码（`调查员` → `调束员`）的编码隐患；加 WAL 模式
+**每年 12 月初**：用 `git diff` 对比新旧《劳动力调查制度》文档，列出可能受影响的 KB 条目，业务人员 + 开发人员 review。**优先走 `regulations-migrate` skill**（`.codex/skills/regulations-migrate/`），整条链路标准化。
 
 ## 待办
 

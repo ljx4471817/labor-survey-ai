@@ -51,7 +51,7 @@ def _load() -> Settings:
     provider = os.environ.get("EMBEDDING_PROVIDER", "dashscope").lower()
     if provider == "dashscope":
         api_key = os.environ.get("DASHSCOPE_API_KEY", "")
-        model = os.environ.get("DASHSCOPE_MODEL", "text-embedding-v3")
+        model = os.environ.get("DASHSCOPE_MODEL", "text-embedding-v4")
         url = "https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings"
     else:
         api_key = os.environ.get("BGE_API_KEY", "")
