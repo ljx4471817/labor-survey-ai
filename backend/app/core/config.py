@@ -1,4 +1,4 @@
-"""读环境变量，集中配置。"""
+﻿"""读环境变量，集中配置。"""
 from __future__ import annotations
 
 import os
@@ -32,6 +32,7 @@ class Settings:
     # 检索参数
     top_k: int
     similarity_threshold: float
+    rag_direct_hit_threshold: float = 0.75
 
     # DISABLED(voice) 2026-06-21: 讯飞 ASR 字段停用，保留供未来恢复。
     # xunfei_app_id: str
@@ -87,6 +88,7 @@ def _load() -> Settings:
         llm_url=llm_url,
         top_k=int(os.environ.get("RETRIEVAL_TOP_K", "5")),
         similarity_threshold=float(os.environ.get("SIMILARITY_THRESHOLD", "0.5")),
+        rag_direct_hit_threshold=float(os.environ.get("RAG_DIRECT_HIT_THRESHOLD", "0.75")),
         # DISABLED(voice) 2026-06-21: 讯飞字段停用，保留供未来恢复。
         # xunfei_app_id=os.environ.get("XUNFEI_APP_ID", ""),
         # xunfei_api_key=os.environ.get("XUNFEI_API_KEY", ""),

@@ -1,0 +1,3 @@
+display_name: 白名单同步
+short_description: 把权限表 xlsx 同步到 whitelist.db
+default_prompt: 同步权限表到数据库

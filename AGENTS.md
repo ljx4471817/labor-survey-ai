@@ -1,4 +1,4 @@
-# 劳动力调查 AI 助手 · 项目约定
+﻿# 劳动力调查 AI 助手 · 项目约定
 
 > 本文件是项目级 Codex 约定；项目内工作以这里的目录、验证和合规规则为准。
 
@@ -101,7 +101,7 @@
 | `backend/static/` | H5 前端（单页应用） | 自由修改 |
 | `scripts/` | 跨子项目运维脚本 | 自由修改 |
 | `deploy/` | 部署配置（含 ssl/ / systemd/ 占位） | 谨慎修改，影响线上 |
-| `.codex/skills/` | **项目级 Codex skill**（已 git 入仓），含 `regulations-migrate` / `kb-update-workflow` | 自由修改 |
+| `.codex/skills/` | **项目级 Codex skill**（已 git 入仓），含 `regulations-migrate` / `kb-update-workflow` / `whitelist-sync` | 自由修改 |
 
 > `miniprogram/` 保留为决策反转前的历史骨架（已 git 追踪 `.gitkeep` 占位），不再修改其内容。
 
@@ -113,12 +113,16 @@
 # 初始化 codegraph 索引（首次必跑，之后不用）
 codegraph init -i
 
-# 知识库：构建向量索引（QA，仅 faq.json）
-python scripts/build_kb.py
-# 知识库：制度文档 chunk 入库（QA + chunk 双源，独立于 build_kb.py）
-python scripts/build_chunks.py --input knowledge-base/raw/markdown/xxx.md --full
-# 知识库：构建 BM25 索引（Hybrid 检索用，双源：faq.json + chunks.jsonl，改任一方后需 --full）
-python scripts/build_bm25.py --full
+# 知识库：一站式重建（推荐日常使用）
+# 从 faq.json + 4 个 markdown 源文件重建 Chroma + BM25 索引，避免漏跑
+python scripts/rebuild_all.py              # 全量重建
+python scripts/rebuild_all.py --incremental  # 增量更新（仅更新变动条目）
+
+# 知识库：独立脚本（仅在需要单独使用时使用）
+# python scripts/rebuild_all.py 已自动调用以下三者，无需手动分跑：
+# python scripts/build_kb.py        # QA 入库 Chroma
+# python scripts/build_chunks.py --input knowledge-base/raw/markdown/xxx.md --full  # chunk 入库 Chroma
+# python scripts/build_bm25.py --full  # 构建 BM25 索引
 # 知识库：QA 字段完整性校验（改 faq.json 后必跑，含 indicators 合法性）
 python scripts/validate_faq.py
 # 知识库：制度对齐（首次/制度变更后必跑）
@@ -153,6 +157,10 @@ python scripts/generate_project_intro.py
 
 # 部署：从 cloudflared 日志抽取 trycloudflare URL（替代手抄）
 python scripts/extract_cf_url.py
+
+# 白名单：docs/权限表.xlsx → backend/data/whitelist.db（调查员+管理人员双 sheet，幂等 upsert + 软删除）
+python scripts/sync_whitelist_xlsx.py --dry-run   # 预览新增/更新/软删除数量
+python scripts/sync_whitelist_xlsx.py             # 真实同步（受保护测试号 13985000001-4 不删除）
 
 # 后端：本地启动（开发模式，不需要公网）
 cd backend && uvicorn app.main:app --reload --port 8001
@@ -213,6 +221,7 @@ cd backend && pip install -r requirements.txt
 - 不确定的答案宁可不录，不要编造
 - **每条 QA 必须有 `indicators` 字段**（关联 `indicator_catalog.json` 中的 F/H 编号）；程序/抽样/入户技巧等非指标类条目用 `_indicators_topic` 标注（详见 ADR 0008）
 - 制度变更后走 `migration_map.json` 同步，**不要手工改 indicators**（详见 `知识库更新与制度更新方法.md`）
+- **实操约定**：凡贵阳调查队自定义的填报规范（在实际工作中总结、制度原文未明文的规则），一律在 `source` 字段标注"贵阳调查队填报规范指引・XXX（制度依据：YYY 结合 实际判断）"，用于区分制度原文条目和自建指引。示例见 `knowledge-base/qa/faq.json` id=355（大学生家庭登记规则）。
 
 **Corner case 处理流程**：遇到「KB 命中但答得不准」或「fallback 兜底」时：
 1. 查 `knowledge-base/raw/markdown/` 对应章节原文
@@ -229,3 +238,11 @@ cd backend && pip install -r requirements.txt
 - **DeepSeek 提额申请结果待回**——用户已提交，参考 https://api-docs.deepseek.com/zh-cn/quick_start/rate_limit ；批下来第一时间重跑 `scripts/load_test.py --all` 验证新 QPS 上限。**未批前不做 kb_direct 等 LLM 优化**（优先级低于 DeepSeek 提额）
 - **新增测试覆盖**：chat.py 端到端（需 mock embedding + LLM）、auth.py HMAC 校验、bm25.py search 函数
 - **miniprogram/ 目录**：加 README.md 说明"ADR 0001 反转后的历史骨架" 
+
+# 数据维护：白名单 (docs/权限表.xlsx ↔ whitelist.db)
+python scripts/sync_whitelist_xlsx.py             # 双向同步，dry-run 先预览
+python scripts/sync_whitelist_xlsx.py --write     # 真实同步
+# 数据维护：知识库一站式重建（推荐日常使用）
+# 从 faq.json + 4 个 markdown 源文件重建 Chroma + BM25 索引，避免漏跑
+python scripts/rebuild_all.py                    # 全量重建
+python scripts/rebuild_all.py --incremental      # 增量更新

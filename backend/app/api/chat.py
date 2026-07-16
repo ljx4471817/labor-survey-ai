@@ -1,4 +1,4 @@
-"""POST /api/chat 端点。"""
+﻿"""POST /api/chat 端点。"""
 from __future__ import annotations
 
 import re
@@ -147,6 +147,10 @@ def chat_endpoint(
     hits = len(sources)
 
     # LLM 生成
+    # log top-1 for observability
+    top1_id = sources[0]["id"] if sources else "none"
+    top1_score = sources[0]["score"] if sources else 0.0
+    logger.info(f"chat: q={msg[:30]!r} top1={top1_id} score={top1_score:.3f} n_sources={len(sources)}")
     kb_block = format_kb_results(sources)
     history_context = _build_history_context(history)
     try:
