@@ -323,6 +323,49 @@
       margin-top: 3px;
       letter-spacing: 0.02em;
     }
+    .source-images {
+      margin-top: 12px;
+    }
+    .source-images-title {
+      font-size: 12px;
+      color: var(--c-ink-4);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .source-images-scroll {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .source-images-scroll::-webkit-scrollbar {
+      height: 6px;
+    }
+    .source-images-scroll::-webkit-scrollbar-thumb {
+      background: var(--c-line);
+      border-radius: 3px;
+    }
+    .source-image-item {
+      flex: 0 0 auto;
+      width: 180px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--c-line-soft);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .source-image-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .source-image-item img {
+      display: block;
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      background: var(--c-bg-tint);
+    }
 
     /* ===== 反馈区 ===== */
     .feedback-row {
@@ -805,20 +848,34 @@
       const modeLabel = MODE_LABEL[mode] || mode;
       const sources = data.sources || [];
       const score = data.retrieval_score;
-      const sourceHtml = sources.length === 0 ? '' : `
+      const imageList = sources.filter(s => s.image).map(s => s.image);
+      const imageHtml = imageList.length > 0 ? `
+        <div class="source-images">
+          <div class="source-images-title">参考截图</div>
+          <div class="source-images-scroll">
+            ${imageList.map(img => `
+              <div class="source-image-item">
+                <img src="${escapeHtml(img)}" alt="参考截图" loading="lazy" onclick="window.open(this.src, '_blank')" />
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : '';
+      const textHtml = sources.length > 0 ? `
         <details class="sources">
-          <summary>参考资料 (${sources.length})${score != null ? ` · 相似度 ${score.toFixed(3)}` : ''}</summary>
+          <summary>参考资料 (${sources.length})</summary>
           <ol>
             ${sources.map(s => `
               <li>
-                <strong>${escapeHtml(s.qa_id || '?')}</strong> · ${escapeHtml(s.category || '')}
+                <strong>${escapeHtml(s.qa_id || '?')}</strong> \u00b7 ${escapeHtml(s.category || '')}
                 <div>${escapeHtml(s.question || '')}</div>
-                <span class="source-meta">来源：${escapeHtml(s.source || '?')}${s.score != null ? ' · score=' + s.score.toFixed(3) : ''}</span>
+                <span class="source-meta">\u6765\u6e90\uff1a${escapeHtml(s.source || '?')}</span>
               </li>
             `).join('')}
           </ol>
         </details>
-      `;
+      ` : '';
+      const sourceHtml = imageHtml + textHtml;
       block.innerHTML = `
         <span class="mode-badge mode-${mode}">${escapeHtml(modeLabel)}</span>
         <div class="answer-text">${escapeHtml(data.answer || '')}</div>

@@ -36,18 +36,21 @@ def _load_qa_items(faq_path: Path) -> list[dict]:
     items: list[dict] = []
     for qa in qas:
         qa_id = str(qa["id"]).zfill(3)
+        meta = {
+            "doc_type": "qa",
+            "chunk_id": qa_id,
+            "question": qa.get("question", ""),
+            "answer": qa.get("answer", ""),
+            "category": qa.get("category", ""),
+            "source": qa.get("source", ""),
+            "keywords": ",".join(qa.get("keywords", []) or []),
+        }
+        if qa.get("image"):
+            meta["image"] = qa["image"]
         items.append({
             "id": qa_id,
             "text": f"{qa['question']}\n{qa['answer']}",
-            "meta": {
-                "doc_type": "qa",
-                "chunk_id": qa_id,
-                "question": qa.get("question", ""),
-                "answer": qa.get("answer", ""),
-                "category": qa.get("category", ""),
-                "source": qa.get("source", ""),
-                "keywords": ",".join(qa.get("keywords", []) or []),
-            },
+            "meta": meta,
         })
     return items
 

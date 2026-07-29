@@ -23,6 +23,7 @@ class SourceItem(BaseModel):
     source: str
     category: str
     score: float
+    image: str | None = None
 
 
 class ChatResponse(BaseModel):

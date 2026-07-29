@@ -48,6 +48,7 @@ def _to_source_items(sources: list[dict]) -> list[SourceItem]:
             source=s["metadata"].get("source", ""),
             category=s["metadata"].get("category", ""),
             score=s["score"],
+            image=s["metadata"].get("image") or None,
         )
         for s in sources
     ]

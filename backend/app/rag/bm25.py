@@ -77,6 +77,8 @@ def search(query: str, top_k: int) -> list[dict]:
                 "keywords": meta.get("keywords", ""),
                 "doc_type": "qa",
             }
+            if meta.get("image"):
+                result_meta["image"] = meta["image"]
         else:
             doc = f"{meta.get('section', '')}\n{meta.get('text', '')}"
             result_meta = {

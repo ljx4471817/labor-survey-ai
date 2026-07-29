@@ -133,6 +133,10 @@ def qa_to_chroma_record(qa: dict) -> tuple[str, str, dict]:
         "question": qa["question"],
         "keywords": ",".join(qa.get("keywords", []) or []),
     }
+    # 可选：关联图片路径
+    img = qa.get("image")
+    if img:
+        meta["image"] = img
     return qa_id, doc, meta
 
 

@@ -98,6 +98,7 @@
 | `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json） | 自由修改 |
 | `backend/tests/` | 后端单元测试（40 tests） | 自由修改 |
 | `scripts/watchdog*.ps1` | 本地 API 可用性监控与自动重启 | 自由修改 |
+| `backend/static/kb-images/` | ????????PPT ?????? `page_XX/` ?? | ???? |
 | `backend/static/` | H5 前端（单页应用） | 自由修改 |
 | `scripts/` | 跨子项目运维脚本 | 自由修改 |
 | `deploy/` | 部署配置（含 ssl/ / systemd/ 占位） | 谨慎修改，影响线上 |
