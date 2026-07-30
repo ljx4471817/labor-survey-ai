@@ -73,6 +73,7 @@
 | `0008-制度对齐机制.md` | indicators 字段 + indicator_catalog.json + migration_map.json + regulations-migrate skill | KB 质量基础设施 |
 | `0009-voice-disabled.md` | 2026-06-21 语音功能停用（输入法自带语音转写够用） | 功能开关 |
 | `0010-embedding-v4.md` | DashScope text-embedding-v4 + 共享 collection 重建边界 | 检索依赖 |
+| `0011-不引入ponytail.md` | 2026-07-30 评估后决定不引入（与项目分层规则冲突，无实际痛点驱动） | 开发规范 |
 
 ## 目录约定
 
@@ -102,7 +103,7 @@
 | `backend/static/` | H5 前端（单页应用） | 自由修改 |
 | `scripts/` | 跨子项目运维脚本 | 自由修改 |
 | `deploy/` | 部署配置（含 ssl/ / systemd/ 占位） | 谨慎修改，影响线上 |
-| `.codex/skills/` | **项目级 Codex skill**（已 git 入仓），含 `regulations-migrate` / `kb-update-workflow` / `whitelist-sync` | 自由修改 |
+| `.codex/skills/` | **项目级 Codex skill**（已 git 入仓），含 `regulations-migrate` / `kb-update-workflow` / `whitelist-sync` / `pptx-structured-ocr` | 自由修改 |
 
 > `miniprogram/` 保留为决策反转前的历史骨架（已 git 追踪 `.gitkeep` 占位），不再修改其内容。
 
@@ -126,6 +127,9 @@ python scripts/rebuild_all.py --incremental  # 增量更新（仅更新变动条
 # python scripts/build_bm25.py --full  # 构建 BM25 索引
 # 知识库：QA 字段完整性校验（改 faq.json 后必跑，含 indicators 合法性）
 python scripts/validate_faq.py
+# ????PPT ?????????? PPT ???? + OCR?
+python scripts/extract_pptx.py <source.pptx> <out_dir>  # ??????+??
+python scripts/ocr_images.py <out_dir>                  # ?? OCR ????
 # 知识库：制度对齐（首次/制度变更后必跑）
 python scripts/backfill_indicators.py         # 从 source/question/answer 自动提取 indicators
 python scripts/backfill_indicators.py --write  # 写入
@@ -247,3 +251,4 @@ python scripts/sync_whitelist_xlsx.py --write     # 真实同步
 # 从 faq.json + 4 个 markdown 源文件重建 Chroma + BM25 索引，避免漏跑
 python scripts/rebuild_all.py                    # 全量重建
 python scripts/rebuild_all.py --incremental      # 增量更新
+
