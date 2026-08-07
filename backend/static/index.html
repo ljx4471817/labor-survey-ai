@@ -686,6 +686,22 @@
     }
 
     /* ===== 桌面端微调 ===== */
+    @media (max-width: 480px) {
+      header { padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
+      .brand { gap: 8px; }
+      .brand-mark { width: 26px; height: 26px; }
+      .brand-mark svg { width: 15px; height: 15px; }
+      .brand-org { font-size: 9.5px; letter-spacing: 0.02em; }
+      header h1 { font-size: 13px; }
+      .brand-sub { font-size: 10px; }
+      .logout-btn { font-size: 11px; padding: 4px 10px; }
+      header .status { font-size: 10px; padding: 3px 8px; gap: 4px; }
+      header .status .dot { width: 5px; height: 5px; }
+      .brand-sub { display: none; }
+    }
+    @media (max-width: 360px) {
+      header .status { width: 100%; order: 3; justify-content: center; }
+    }
     @media (min-width: 600px) {
       body { padding: 0 16px; }
       header {
