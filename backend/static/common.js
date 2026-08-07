@@ -32,14 +32,21 @@ function clearAuth() {
 }
 
 function requireLoginOrRedirect() {
-  if (!getToken()) { location.replace('/login'); return false; }
+  if (!getToken()) {
+    // 记住来源地址，登录后跳回（仅同源路径）
+    const next = encodeURIComponent(location.pathname + location.search);
+    location.replace('/login?next=' + next);
+    return false;
+  }
   return true;
 }
 
 async function handle401(res) {
   if (res && res.status === 401) {
     clearAuth();
-    location.replace('/login');
+    // 也带 next：登录后回到原页面
+    const next = encodeURIComponent(location.pathname + location.search);
+    location.replace('/login?next=' + next);
     return true;
   }
   return false;
@@ -54,4 +61,12 @@ function setUserName(name) {
 
 function getUserName() {
   return localStorage.getItem(USER_NAME_KEY) || "";
+}
+
+
+function logout() {
+  // 退出登录：清 token 与用户名，回登录页重新登录
+  clearAuth();
+  setUserName('');
+  location.replace('/login');
 }

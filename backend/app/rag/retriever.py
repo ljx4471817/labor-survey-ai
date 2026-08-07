@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+import functools
 import math
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -42,6 +43,24 @@ def get_collection():
                 _CHROMA_COLLECTION = client.get_collection(settings.chroma_collection)
                 logger.info(f"Chroma collection 初始化：{settings.chroma_collection}")
     return _CHROMA_COLLECTION
+
+
+
+
+@functools.lru_cache(maxsize=1)
+def _cached_doc_type_counts(count: int) -> dict[str, int]:
+    """按 collection count 缓存 doc_type 分布（count 变化时自动失效）。"""
+    from collections import Counter
+
+    collection = get_collection()
+    metas = collection.get(include=["metadatas"])["metadatas"] or []
+    c = Counter((m or {}).get("doc_type", "qa") for m in metas)
+    return {"qa": c.get("qa", 0), "chunk": c.get("chunk", 0), "total": len(metas)}
+
+
+def count_by_doc_type() -> dict[str, int]:
+    """返回 QA 与制度 chunk 的条数（首页分开显示用）。"""
+    return _cached_doc_type_counts(get_collection().count())
 
 
 def shutdown_executor():

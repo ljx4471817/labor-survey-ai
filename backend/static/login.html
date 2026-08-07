@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:,">
 <title>登录 · 劳动力调查 AI 助手</title>
 <style>
 :root {
@@ -207,11 +208,19 @@ formEl.addEventListener('submit', async (e) => {
       body: JSON.stringify({ phone }),
     });
     if (r.ok) {
-      const { token, expires_at, name } = await r.json();
+      const { token, expires_at, name, admin_level } = await r.json();
         setUserName(name);
       localStorage.setItem(TOKEN_KEY, token);
       localStorage.setItem(EXP_KEY, String(expires_at));
-      location.replace('/');
+      const params = new URLSearchParams(location.search);
+      const next = (params.get('next') || '').trim();
+      let target = '/';
+      if (next && next.startsWith('/') && !next.startsWith('//')) {
+        target = next;  // 记住来源地址，登录后跳回
+      } else if (admin_level === '市级' || admin_level === '省级') {
+        target = '/quiz-admin';  // 管理员默认直达管理页
+      }
+      location.replace(target);
     } else {
       const err = await r.json().catch(() => ({}));
       showError(err.detail || `登录失败（HTTP ${r.status}）`);

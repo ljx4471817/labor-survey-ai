@@ -75,3 +75,48 @@ class AdminLevel(str, Enum):
 
 # --- 区域 5 级（暂不抽到此处，因为 whitelist_db / query_log 各自的索引用，---
 # --- 抽到这里会引入跨 DB 模块的依赖，等真加第 6 级时再统一。详见 CONTEXT.md §9 ---
+
+
+# --- 月度测验系统 (quiz) ---------------------------------------------------
+
+class QuizStatus(str, Enum):
+    """测验（套）状态机：draft → reviewing → published → expired → archived。"""
+    DRAFT = "draft"
+    REVIEWING = "reviewing"
+    PUBLISHED = "published"
+    EXPIRED = "expired"
+    ARCHIVED = "archived"
+
+
+class QuestionStatus(str, Enum):
+    """题目 / 要点审核状态。"""
+    DRAFT = "draft"
+    REVIEWING = "reviewing"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+class KbMatchStatus(str, Enum):
+    """要点与 KB 关联状态。"""
+    MATCHED = "matched"
+    UNMATCHED = "unmatched"
+    MANUAL = "manual"
+
+
+class QuizSection(str, Enum):
+    """要点章节（识别时归并，其它原样保留）。"""
+    REVIEW = "审核要点"
+    QUESTIONNAIRE = "问卷要点"
+    CALIBRATION = "填报口径微调"
+    OTHER = "其它"
+
+
+# 生成 / 提取的硬约束
+QUIZ_MAX_QUESTIONS: int = 7          # 每套测验上限
+QUIZ_DEFAULT_VALID_DAYS: int = 7     # 默认有效期（天）
+QUIZ_KB_MATCH_THRESHOLD: float = 0.6  # KB 关联向量 cosine 阈值
+QUIZ_EXTRACT_TIMEOUT_S: int = 120     # 提取/出题任务总超时
+QUIZ_RETRY_TIMES: int = 2             # LLM JSON 解析重试次数
+QUIZ_MAX_FILE_MB: int = 10            # docx 上传上限
+QUIZ_DATA_RETENTION_MONTHS: int = 12  # 答题记录保留月数
+QUIZ_RETENTION_DAYS: int = QUIZ_DATA_RETENTION_MONTHS * 30  # 清理阈值（天）

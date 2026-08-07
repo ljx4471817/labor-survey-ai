@@ -86,3 +86,15 @@
 | Named Tunnel | Cloudflare Tunnel 绑定自有域名（生产模式，未启用） | 待 ADR 备案决策后启用 |
 | DeepSeek 提额 | 单账号 ~45 并发连接瓶颈 | `reports/llm-bottleneck-analysis-20260629.md` |
 
+## 10. 月度测验系统（quiz）
+
+| 概念 | 定义 | 在哪儿 |
+|------|------|--------|
+| 测验套 | 一次月度测验的完整数据单元（quiz_id = Q + YYYYMM + 序号） | `backend/data/quiz.db` → `quizzes` 表 |
+| 要点 | 从月度通知中提取的可出题知识点 | `keypoints` 表 + `quiz_extract.py` |
+| 题目 | 根据要点自动生成的 4 选 1 选择题 | `questions` 表 + `quiz_generator.py` |
+| 下发 | 管理员选择目标用户并发布测验（action = publish/append/remove） | `quiz_admin.py` → `/quiz/publish` |
+| 完成率 | 已完成人数 / 总目标人数 | `quiz-stats.html` + `/quiz/stats` |
+| `_WRITE_LOCK` | 写串行化锁（SQLite 单写者，避免并发写 busy） | `quiz_db.py` 全局锁 |
+| `require_admin` | 登录 + 管理员校验（admin_level ∈ 市级/省级） | `infra/auth.py` |
+| `QUIZ_MOCK_LLM` | 环境变量：=1 时跳过真实 LLM 调用（用于自动化测试） | `quiz_admin.py` → `_get_llm_chat()` |

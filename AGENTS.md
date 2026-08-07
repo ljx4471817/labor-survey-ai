@@ -74,6 +74,7 @@
 | `0009-voice-disabled.md` | 2026-06-21 语音功能停用（输入法自带语音转写够用） | 功能开关 |
 | `0010-embedding-v4.md` | DashScope text-embedding-v4 + 共享 collection 重建边界 | 检索依赖 |
 | `0011-不引入ponytail.md` | 2026-07-30 评估后决定不引入（与项目分层规则冲突，无实际痛点驱动） | 开发规范 |
+| `0012-月度测验系统.md` | 6 表 SQLite + LLM 要点提取 + 4 选 1 选择题 + 完成率看板 | 月度测验 |
 
 ## 目录约定
 
@@ -87,20 +88,20 @@
 | `knowledge-base/indicator_catalog.json` | **制度指标目录**（按模块组织的 F/H 编号 + 名称），schema v1 核心 | 制度变更时改 |
 | `knowledge-base/migration_map.json` | **迁移映射**（renamed/removed/added），每次制度变更生成一份 | 自由修改（按需） |
 | `backend/app/` | FastAPI 应用代码 | 自由修改 |
-| `backend/app/api/` | 各业务模块路由（chat / feedback / feedback_admin / usage_admin / whitelist_admin / gaps_admin / auth / voice） | 自由修改 |
+| `backend/app/api/` | 各业务模块路由（chat / feedback / feedback_admin / usage_admin / whitelist_admin / gaps_admin / auth / voice / **quiz / quiz_admin**） | 自由修改 |
 | `backend/app/core/` | 配置 + 枚举常量（config.py / constants.py） | 自由修改 |
 | `backend/app/models/schemas/` | Pydantic 请求/响应模型子包（common / chat / admin） | 自由修改 |
 | `backend/app/rag/` | 检索算法（pure.py = 纯函数 / retriever.py = IO 层 / bm25 / llm / prompts） | 自由修改 |
 | `backend/app/infra/` | 基础设施（auth.py = HMAC 签名 + 白名单校验） | 自由修改 |
-| `backend/app/persistence/` | SQLite 持久化（whitelist_db / query_log） | 自由修改 |
+| `backend/app/persistence/` | SQLite 持久化（whitelist_db / query_log / **quiz_db**） | 自由修改 |
 | `backend/app/analytics/` | 使用侧分析（gaps.py = KB 闭环检测） | 自由修改 |
-| `backend/app/services/` | 业务服务（feedback_analytics / jsonl_utils） | 自由修改 |
+| `backend/app/services/` | 业务服务（feedback_analytics / jsonl_utils / **quiz_extract / quiz_generator**） | 自由修改 |
 | `backend/app/api/_xunfei_auth.py` | DISABLED（讯飞语音鉴权，代码完整保留） | 不修改 |
 | `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json） | 自由修改 |
 | `backend/tests/` | 后端单元测试（40 tests） | 自由修改 |
 | `scripts/watchdog*.ps1` | 本地 API 可用性监控与自动重启 | 自由修改 |
 | `backend/static/kb-images/` | ????????PPT ?????? `page_XX/` ?? | ???? |
-| `backend/static/` | H5 前端（单页应用） | 自由修改 |
+| `backend/static/` | H5 前端（单页应用）+ 月度测验 3 页面（quiz.html / quiz_admin.html / quiz-stats.html） | 自由修改 |
 | `scripts/` | 跨子项目运维脚本 | 自由修改 |
 | `deploy/` | 部署配置（含 ssl/ / systemd/ 占位） | 谨慎修改，影响线上 |
 | `.codex/skills/` | **项目级 Codex skill**（已 git 入仓），含 `regulations-migrate` / `kb-update-workflow` / `whitelist-sync` / `pptx-structured-ocr` | 自由修改 |
@@ -166,6 +167,11 @@ python scripts/extract_cf_url.py
 # 白名单：docs/权限表.xlsx → backend/data/whitelist.db（调查员+管理人员双 sheet，幂等 upsert + 软删除）
 python scripts/sync_whitelist_xlsx.py --dry-run   # 预览新增/更新/软删除数量
 python scripts/sync_whitelist_xlsx.py             # 真实同步（受保护测试号 13985000001-4 不删除）
+# 月度测验：本地测试（QUIZ_MOCK_LLM=1 跳过真实 LLM 调用）
+set QUIZ_MOCK_LLM=1 && python -m pytest backend/tests/test_quiz_api.py -q
+# 月度测验：手动 curl 测试（先登录拿 token，再调管理端 API）
+# python scripts/quiz_stress.py  # 压力测试（并发答题）
+
 
 # 后端：本地启动（开发模式，不需要公网）
 cd backend && uvicorn app.main:app --reload --port 8001

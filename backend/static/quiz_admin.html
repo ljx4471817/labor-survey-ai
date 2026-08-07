@@ -1,0 +1,625 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:,">
+<title>月度测验管理 · 劳动力调查 AI 助手</title>
+<style>
+:root {
+  --ink-blue:#1E3A5F; --ink-blue-soft:#2d4f7a; --paper:#F7F4EE; --paper-dim:#ebe6da;
+  --line:#d9d2c2; --text:#1c1c1c; --text-dim:#6b6b6b; --accent:#c97a3a; --accent-soft:#f5e3d2;
+  --good:#4f7a4f; --bad:#a04545; --bad-soft:#f5dada; --info-soft:#eceff4;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; background:var(--paper); color:var(--text); line-height:1.55; min-height:100vh; padding-bottom:60px; }
+header { background:var(--ink-blue); color:var(--paper); padding:14px 20px; display:flex; align-items:baseline; gap:16px; position:sticky; top:0; z-index:10; box-shadow:0 2px 8px rgba(30,58,95,.18); }
+header h1 { font-size:1.05rem; font-weight:600; }
+header .back { margin-left:auto; color:var(--paper); text-decoration:none; font-size:.85rem; opacity:.85; }
+main { max-width:980px; margin:0 auto; padding:18px 16px; display:flex; flex-direction:column; gap:14px; }
+section { background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
+section h2 { font-size:.95rem; color:var(--ink-blue); margin-bottom:10px; font-weight:600; }
+.step { font-size:.72rem; color:var(--ink-blue); background:var(--info-soft); border-radius:999px; padding:1px 8px; margin-right:6px; }
+.row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+input[type=text], input[type=month], input[type=date], input[type=search], input[type=file], select {
+  padding:8px 10px; border:1px solid var(--line); border-radius:6px; font-size:.9rem; background:#fff; color:var(--text);
+}
+.btn { border:none; border-radius:6px; padding:8px 16px; font-size:.88rem; cursor:pointer; background:var(--ink-blue); color:#fff; }
+.btn:disabled { opacity:.45; cursor:default; }
+.btn-ghost { background:var(--paper-dim); color:var(--text); }
+.btn-ok { background:var(--good); }
+.btn-bad { background:var(--bad); }
+.btn-sm { padding:4px 10px; font-size:.78rem; }
+table { width:100%; border-collapse:collapse; font-size:.85rem; }
+th, td { text-align:left; padding:8px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--text-dim); font-weight:600; font-size:.78rem; white-space:nowrap; }
+.muted { color:var(--text-dim); font-size:.8rem; }
+.tag { display:inline-block; font-size:.7rem; padding:1px 8px; border-radius:999px; margin-right:4px; }
+.tag.ok { background:#e6f3ec; color:var(--good); }
+.tag.bad { background:var(--bad-soft); color:var(--bad); }
+.tag.info { background:var(--info-soft); color:var(--ink-blue); }
+.tag.warn { background:#fbf1dd; color:#b7791f; }
+.region-group { border:1px solid var(--line); border-radius:8px; margin-bottom:8px; overflow:hidden; }
+.region-head { background:var(--paper-dim); padding:8px 12px; font-size:.82rem; font-weight:600; display:flex; align-items:center; gap:8px; }
+.region-body { padding:6px 12px; display:flex; flex-wrap:wrap; gap:4px; }
+.user-chip { border:1px solid var(--line); border-radius:999px; padding:3px 10px; font-size:.78rem; cursor:pointer; user-select:none; }
+.user-chip.sel { background:var(--ink-blue); color:#fff; border-color:var(--ink-blue); }
+
+.role-list { border-top:1px solid var(--line); }
+.role-row { border-top:1px dashed var(--line); }
+.role-row:first-child { border-top:none; }
+.role-row-head { display:flex; align-items:center; gap:10px; padding:8px 12px; }
+.role-label { font-size:.84rem; font-weight:600; color:var(--text); min-width:88px; }
+.role-count { font-size:.78rem; color:var(--text-dim); }
+.role-row-head .btn { margin-left:auto; }
+.role-row-head .btn[data-act="toggle"] { margin-left:6px; }
+.role-body { padding:6px 12px 10px; display:flex; flex-wrap:wrap; gap:4px; border-top:1px solid var(--line); }
+.kp-item, .q-item { border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; background:#fff; }
+.kp-item .content { font-size:.9rem; line-height:1.6; }
+.kp-item .meta { font-size:.76rem; color:var(--text-dim); margin-top:5px; line-height:1.5; }
+.kp-item .actions, .q-item .actions { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.kp-section-title { font-size:.8rem; font-weight:700; color:var(--ink-blue); margin:14px 2px 8px; padding-top:10px; border-top:1px solid var(--line); }
+.kp-section-title:first-of-type { border-top:none; padding-top:0; }
+
+.metric-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-bottom:12px; }
+.metric { background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+.metric .label { font-size:.72rem; color:var(--text-dim); }
+.metric .value { font-size:1.3rem; font-weight:600; color:var(--ink-blue); }
+.kp-item, .q-item { border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:8px; }
+.kp-item .content { font-size:.88rem; }
+.kp-item .meta { font-size:.75rem; color:var(--text-dim); margin-top:4px; }
+.kp-item .actions, .q-item .actions { margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; }
+textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-size:.85rem; resize:vertical; min-height:60px; font-family:inherit; }
+.hidden { display:none; }
+.notice { background:#fff8ef; border:1px solid #f0e0c8; color:#6d4520; border-radius:8px; padding:8px 12px; font-size:.82rem; margin-bottom:8px; }
+.edit-panel { background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:10px; margin-top:8px; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; z-index: 99;
+  max-width: 92%; padding: 10px 16px; border-radius: 8px; font-size: .85rem;
+  background: #1c1c1c; color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  display: none; line-height: 1.5;
+}
+.toast.err { background: #a04545; }
+
+
+.logout-btn { border:1px solid var(--line); background:#fff; color:var(--text-dim); font-size:.8rem; padding:5px 12px; border-radius:999px; cursor:pointer; margin-left:auto; }
+.logout-btn:hover { color:var(--bad); border-color:var(--bad); }
+
+</style>
+</head>
+<body>
+<header><h1>月度测验管理</h1><a class="back" href="/dashboard">← 看板</a><button class="logout-btn" onclick="logout()">退出登录</button></header>
+<main>
+  <div class="notice">流程：导入文档(.doc/.docx/.wps) → 提取要点 → 审核要点 → 生成题目 → 审核题目 → 下发 → 看统计。写操作即时生效。</div>
+
+  <section id="sec-list">
+    <h2>测验列表</h2>
+    <div class="row">
+      <input type="month" id="f-month" value="2026-08">
+      <button class="btn btn-ghost" id="btn-list">查询</button>
+      <span style="flex:1"></span>
+    </div>
+    <div id="quiz-table" style="margin-top:10px"></div>
+  </section>
+
+  <section id="sec-import">
+    <h2><span class="step">①</span>导入月度通知</h2>
+    <div class="row">
+      <input type="month" id="imp-month" value="2026-08">
+      <input type="file" id="imp-file" accept=".doc,.docx,.wps">
+      <button class="btn" id="btn-import">上传并导入</button>
+      <span class="muted" id="imp-msg"></span>
+    </div>
+  </section>
+
+  <section id="sec-extract">
+    <h2><span class="step">②</span>LLM 提取要点</h2>
+    <div class="row">
+      <button class="btn" id="btn-extract" disabled>开始提取（约 30-60s）</button>
+      <span class="muted" id="extract-msg"></span>
+    </div>
+    <div id="keypoint-box" style="margin-top:10px"></div>
+  </section>
+
+  <section id="sec-generate">
+    <h2><span class="step">③</span>生成题目（≤7 题）</h2>
+    <div class="row">
+      <button class="btn" id="btn-generate" disabled>用所选要点生成</button>
+      <span class="muted" id="generate-msg"></span>
+    </div>
+    <div id="question-box" style="margin-top:10px"></div>
+  </section>
+
+  <section id="sec-publish">
+    <h2><span class="step">④</span>选择下发对象并下发</h2>
+    <div class="row" style="margin-bottom:10px">
+      <input type="search" id="target-search" placeholder="按姓名/手机号搜索">
+      <button class="btn btn-ghost btn-sm" id="btn-search">搜索</button>
+      <button class="btn btn-ghost btn-sm" id="btn-clear-sel">清空选择</button>
+      <span style="flex:1"></span>
+      <span class="muted" id="sel-count">已选 0 人</span>
+    </div>
+    <div id="target-box"></div>
+    <div class="row" style="margin-top:10px">
+      <span class="muted">有效期至</span>
+      <input type="date" id="valid-until">
+      <button class="btn" id="btn-publish">确认下发</button>
+      <button class="btn btn-ghost btn-sm" id="btn-append">追加所选</button>
+      <button class="btn btn-bad btn-sm" id="btn-remove">移除所选（未答）</button>
+      <span class="muted" id="publish-msg"></span>
+    </div>
+  </section>
+
+  <section id="sec-stats">
+    <h2><span class="step">⑤</span>完成率看板</h2>
+    <div class="row">
+      <button class="btn btn-ghost" id="btn-stats">查看统计</button>
+      <input type="text" id="stats-region" placeholder="按地区筛选（可选）" style="width:160px">
+      <span class="muted" id="stats-msg"></span>
+    </div>
+    <div id="stats-box" style="margin-top:12px"></div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+<script src="/static/common.js"></script>
+<script>
+let curQuizId = null;
+let curQuizMonth = '2026-08';
+let selectedPhones = new Set();
+let expandedKeys = new Set();  // '城市|角色' 展开的明细
+let polling = false;
+
+
+function toast(msg, isErr) {
+  const el = document.getElementById('toast');
+  if (!el) { console.error(msg); return; }
+  el.textContent = msg;
+  el.className = 'toast' + (isErr ? ' err' : '');
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(function () { el.style.display = 'none'; }, isErr ? 6000 : 3000);
+}
+window.addEventListener('error', function (e) {
+  toast('页面脚本错误：' + (e.message || e.type), true);
+  console.error(e.error || e);
+});
+window.addEventListener('unhandledrejection', function (e) {
+  const r = e.reason || {};
+  toast('请求失败：' + (r && r.message ? r.message : String(r)), true);
+  console.error(e.reason);
+});
+
+if (requireLoginOrRedirect()) {
+  init();
+}
+
+async function api(path, opts) {
+  // 注意：必须合并 headers 而不是覆盖，否则 POST 的 Content-Type 会挤掉 Authorization（401 被踢登录页）
+  opts = opts || {};
+  const headers = Object.assign({}, authHeader(), opts.headers || {});
+  const res = await fetch(path, Object.assign({}, opts, { headers: headers }));
+  if (await handle401(res)) throw 'REDIRECTED';
+  if (!res.ok) {
+    let msg = res.status + ' ' + res.statusText;
+    try { const d = await res.json(); if (d.detail) msg = d.detail; } catch (e) {}
+    toast(msg);
+    return null;
+  }
+  return res.json();
+}
+function apiPost(path, body) {
+  return api(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+}
+
+async function init() {
+  const who = await api('/api/admin/quiz/whoami');
+  if (!who || !['市级', '省级'].includes(who.admin_level)) {
+    toast('无管理员权限');
+    location.href = '/';
+    return;
+  }
+  // 默认有效期 = 今天 + 7 天
+  const d = new Date(); d.setDate(d.getDate() + 7);
+  $('valid-until').value = d.toISOString().slice(0, 10);
+  await loadQuizList();
+  await loadTargets();  // 进入页面即加载下发对象，避免导入直通流程时目标列表空白
+}
+
+async function loadQuizList() {
+  const data = await api('/api/admin/quiz/list?month=' + encodeURIComponent($('f-month').value));
+  if (!data) return;
+  const rows = data.items.map(q => `<tr>
+    <td>${escapeHtml(q.month)}</td><td>${escapeHtml(q.title)}</td>
+    <td><span class="tag ${q.status === 'published' ? 'ok' : (q.status === 'expired' ? 'warn' : 'info')}">${escapeHtml(q.status)}</span></td>
+    <td>${q.questions} 题</td><td>${q.targets} 人</td><td>${q.completed} 完成</td>
+    <td><button class="btn btn-sm" data-q="${escapeHtml(q.quiz_id)}" data-m="${escapeHtml(q.month)}">管理</button></td>
+  </tr>`).join('');
+  $('quiz-table').innerHTML = rows ? `<table><tr><th>月份</th><th>标题</th><th>状态</th><th>题目</th><th>目标</th><th>完成</th><th></th></tr>${rows}</table>` : '<div class="muted">暂无测验</div>';
+  $('quiz-table').querySelectorAll('button').forEach(b => b.addEventListener('click', () => selectQuiz(b.dataset.q, b.dataset.m)));
+}
+
+async function selectQuiz(qid, month) {
+  curQuizId = qid;
+  curQuizMonth = month;
+  $('btn-extract').disabled = false;
+  $('btn-generate').disabled = false;
+  $('extract-msg').textContent = '';
+  $('sec-extract').scrollIntoView({ behavior: 'smooth' });
+  await loadKeypoints();
+  await loadQuestions();
+  await loadTargets();
+}
+
+$('btn-list').addEventListener('click', loadQuizList);
+$('f-month').addEventListener('change', loadQuizList);
+
+// --- 导入 ---
+$('btn-import').addEventListener('click', async function () {
+  var btn = $('btn-import');
+  var orig = btn.textContent;
+  // 点击立即反馈：按钮变「导入中…」+ 底部提示，任何后续错误都会显示
+  btn.disabled = true;
+  btn.textContent = '导入中…';
+  toast('正在上传并导入…');
+  console.log('import click: start');
+  try {
+    var file = $('imp-file').files[0];
+    if (!file) {
+      toast('请先选择 .doc/.docx/.wps 文件（文件输入框右侧）再点导入', true);
+      return;
+    }
+    var ext = file.name.split('.').pop().toLowerCase();
+    if (['doc', 'docx', 'wps'].indexOf(ext) === -1) {
+      toast('仅支持 .doc/.docx/.wps 文件（当前：' + escapeHtml(file.name) + '）', true);
+      return;
+    }
+    var fd = new FormData();
+    fd.append('month', $('imp-month').value);
+    fd.append('file', file);
+    var res = await fetch('/api/admin/quiz/import', { method: 'POST', headers: authHeader(), body: fd });
+    console.log('import response:', res.status);
+    if (await handle401(res)) return;
+    var data = {};
+    try { data = await res.json(); } catch (e) { data = {}; }
+    if (!res.ok) { toast(data.detail || ('导入失败 HTTP ' + res.status), true); return; }
+    $('imp-msg').textContent = '已导入：' + data.filename;
+    curQuizId = data.quiz_id;
+    curQuizMonth = $('imp-month').value;
+    $('btn-extract').disabled = false;
+    $('btn-generate').disabled = false;
+    $('sec-extract').scrollIntoView({ behavior: 'smooth' });
+    loadQuizList();
+    toast('导入成功：' + data.filename);
+  } catch (e) {
+    console.error(e);
+    toast('导入请求失败：' + (e.message || e), true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+});
+
+// --- 提取（轮询）---
+$('btn-extract').addEventListener('click', async () => {
+  if (!curQuizId) { toast('请先选择或导入测验'); return; }
+  if (polling) return;
+  polling = true;
+  $('btn-extract').disabled = true;
+  $('extract-msg').textContent = '正在提取，约 30-60 秒…';
+  const d = await apiPost('/api/admin/quiz/extract', { quiz_id: curQuizId });
+  if (d) await pollTask('extract', d.task_id, async () => { await loadKeypoints(); $('extract-msg').textContent = '提取完成'; });
+  polling = false;
+  $('btn-extract').disabled = false;
+});
+
+async function pollTask(kind, taskId, doneFn) {
+  for (let i = 0; i < 400; i++) {  // 上限约 16 分钟（出题需多次 LLM 调用）
+    await new Promise(r => setTimeout(r, 2500));
+    try {
+      const st = await api('/api/admin/quiz/' + kind + '/status/' + encodeURIComponent(taskId));
+      if (!st) { continue; }  // 单次轮询失败不退出，继续等到任务结束
+      if (st.status === 'done') {
+        $('extract-msg').textContent = '';
+        $('generate-msg').textContent = '';
+        await doneFn(st.result);
+        return;
+      }
+      if (st.status === 'error') {
+        toast('任务失败：' + (st.error || '未知错误'));
+        return;
+      }
+    } catch (e) {
+      if (e === 'REDIRECTED') return;  // 401 已跳转登录页，停止轮询
+      // 其他错误继续重试
+    }
+  }
+  toast('任务超时，请重试');
+}
+
+// --- 要点 ---
+async function loadKeypoints() {
+  if (!curQuizId) return;
+  const data = await api('/api/admin/quiz/keypoints?quiz_id=' + encodeURIComponent(curQuizId));
+  if (!data) return;
+  const box = $('keypoint-box');
+  if (!data.items.length) { box.innerHTML = '<div class="muted">暂无要点，先执行提取</div>'; return; }
+  const sections = {};
+  data.items.forEach((kp, i) => {
+    const s = kp.section || '其它';
+    (sections[s] = sections[s] || []).push({ kp, i });
+  });
+  box.innerHTML = Object.keys(sections).map(s => `
+    <div class="kp-section-title">${escapeHtml(s)}</div>
+    ${sections[s].map(({ kp, i }) => `
+    <div class="kp-item" data-id="${escapeHtml(kp.id)}">
+      <div class="content">${i + 1}. ${escapeHtml(kp.content)}</div>
+      <div class="meta">
+        <span class="tag ${kp.status === 'approved' ? 'ok' : (kp.status === 'rejected' ? 'bad' : 'warn')}">${escapeHtml(kp.status)}</span>
+        <span class="tag ${kp.kb_match_status === 'matched' ? 'ok' : 'warn'}">KB:${escapeHtml(kp.kb_match_status || 'unmatched')}${kp.kb_faq_id ? ' #' + escapeHtml(kp.kb_faq_id) : ''}</span>
+        ${kp.suggest_quiz ? '<span class="tag info">建议出题</span>' : ''}
+      </div>
+      ${kp.common_error ? `<div class="meta">常见错误：${escapeHtml(kp.common_error)}</div>` : ''}
+      ${kp.source_quote ? `<div class="meta">原文：${escapeHtml(kp.source_quote)}</div>` : ''}
+      <div class="actions">
+        <label style="font-size:.8rem;display:flex;align-items:center;gap:4px"><input type="checkbox" class="kp-check" ${kp.status === 'approved' ? 'checked' : ''}>出题</label>
+        <button class="btn btn-ok btn-sm" data-act="approve">确认</button>
+        <button class="btn btn-bad btn-sm" data-act="reject">拒绝</button>
+        <button class="btn btn-ghost btn-sm" data-act="edit">编辑</button>
+      </div>
+    </div>`).join('')}
+  `).join('');
+  box.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', async () => {
+    const id = b.closest('.kp-item').dataset.id;
+    if (b.dataset.act === 'edit') {
+      openKpEdit(id);
+    } else {
+      await apiPost('/api/admin/quiz/keypoint/review', { keypoint_id: id, action: b.dataset.act });
+      loadKeypoints();
+    }
+  }));
+}
+
+function openKpEdit(id) {
+  const item = document.querySelector('.kp-item[data-id="' + CSS.escape(id) + '"]');
+  if (!item) return;
+  const kp = null; // 从 DOM 取不到结构化数据，重新拉取
+  api('/api/admin/quiz/keypoints?quiz_id=' + encodeURIComponent(curQuizId)).then(data => {
+    const k = data.items.find(x => x.id === id);
+    if (!k) return;
+    item.querySelector('.actions').insertAdjacentHTML('beforebegin', `<div class="edit-panel">
+      <div class="row"><span class="muted">内容</span><textarea id="kp-content">${escapeHtml(k.content)}</textarea></div>
+      <div class="row" style="margin-top:6px"><span class="muted">常见错误</span><input type="text" id="kp-err" value="${escapeHtml(k.common_error || '')}" style="flex:1"></div>
+      <div class="row" style="margin-top:6px"><span class="muted">原文段落</span><input type="text" id="kp-quote" value="${escapeHtml(k.source_quote || '')}" style="flex:1"></div>
+      <div class="row" style="margin-top:6px">
+        <span class="muted">KB 搜索</span><input type="search" id="kp-kb-q" placeholder="输入关键词" style="flex:1">
+        <button class="btn btn-ghost btn-sm" id="kp-kb-search">搜索</button>
+        <select id="kp-kb-sel" style="flex:1"><option value="">未关联</option></select>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn btn-sm" id="kp-save">保存</button>
+        <button class="btn btn-ghost btn-sm" id="kp-cancel">取消</button>
+      </div>
+    </div>`);
+    $('kp-kb-search').addEventListener('click', async () => {
+      const r = await api('/api/admin/quiz/kb/search?q=' + encodeURIComponent($('kp-kb-q').value));
+      const sel = $('kp-kb-sel');
+      sel.innerHTML = '<option value="">未关联</option>' + (r.items || []).map(x => `<option value="${escapeHtml(x.faq_id)}">#${escapeHtml(x.faq_id)} ${escapeHtml(x.question.slice(0, 24))}</option>`).join('');
+    });
+    $('kp-save').addEventListener('click', async () => {
+      const edits = {
+        content: $('kp-content').value,
+        common_error: $('kp-err').value,
+        source_quote: $('kp-quote').value,
+      };
+      const fid = $('kp-kb-sel').value;
+      if (fid) { edits.kb_faq_id = fid; edits.kb_match_status = 'manual'; }
+      await apiPost('/api/admin/quiz/keypoint/review', { keypoint_id: id, action: 'edit', edits });
+      loadKeypoints();
+    });
+    $('kp-cancel').addEventListener('click', loadKeypoints);
+  });
+}
+
+// --- 生成（轮询）---
+$('btn-generate').addEventListener('click', async () => {
+  if (!curQuizId) { toast('请先选择测验'); return; }
+  const ids = Array.from(document.querySelectorAll('.kp-check:checked')).map(c => c.closest('.kp-item').dataset.id);
+  if (!ids.length) { toast('请先勾选要点（确认过的要点默认勾选）'); return; }
+  if (polling) return;
+  polling = true;
+  $('btn-generate').disabled = true;
+  $('generate-msg').textContent = '正在生成题目（最多7题，约 1-3 分钟）…';
+  const d = await apiPost('/api/admin/quiz/generate', { quiz_id: curQuizId, keypoint_ids: ids });
+  if (d) await pollTask('generate', d.task_id, async () => { await loadQuestions(); $('generate-msg').textContent = '题目已生成'; });
+  polling = false;
+  $('btn-generate').disabled = false;
+});
+
+// --- 题目 ---
+async function loadQuestions() {
+  if (!curQuizId) return;
+  const data = await api('/api/admin/quiz/questions?quiz_id=' + encodeURIComponent(curQuizId));
+  if (!data) return;
+  const box = $('question-box');
+  if (!data.items.length) { box.innerHTML = '<div class="muted">暂无题目，先生成</div>'; return; }
+  box.innerHTML = data.items.map(q => {
+    let optsObj = q.options;
+    if (typeof optsObj === 'string') { try { optsObj = JSON.parse(optsObj || '{}'); } catch (e) { optsObj = {}; } }
+    const opts = Object.entries(optsObj || {}).map(([k, v]) => `${k}. ${v}`).join('；');
+    return `<div class="q-item" data-id="${escapeHtml(q.id)}">
+      <div class="content"><b>Q${q.seq}.</b> ${escapeHtml(q.question)}</div>
+      <div class="meta">选项：${escapeHtml(opts)}</div>
+      <div class="meta">答案：<b>${escapeHtml(q.answer)}</b> · 状态 <span class="tag ${q.status === 'approved' ? 'ok' : 'warn'}">${escapeHtml(q.status)}</span>${q.kb_faq_id ? ' · KB #' + escapeHtml(q.kb_faq_id) : ''}</div>
+      <div class="meta">解析：${escapeHtml(q.explanation)}</div>
+      <div class="actions">
+        <button class="btn btn-ok btn-sm" data-act="approve">确认</button>
+        <button class="btn btn-bad btn-sm" data-act="reject">打回</button>
+        <button class="btn btn-ghost btn-sm" data-act="edit">编辑</button>
+      </div>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', async () => {
+    const id = b.closest('.q-item').dataset.id;
+    if (b.dataset.act === 'edit') {
+      openQEdit(id);
+    } else {
+      await apiPost('/api/admin/quiz/question/review', { question_id: id, action: b.dataset.act });
+      loadQuestions();
+    }
+  }));
+}
+
+function openQEdit(id) {
+  api('/api/admin/quiz/questions?quiz_id=' + encodeURIComponent(curQuizId)).then(data => {
+    const q = data.items.find(x => x.id === id);
+    if (!q) return;
+    const item = document.querySelector('.q-item[data-id="' + CSS.escape(id) + '"]');
+    if (!item) return;
+    let qOpts = q.options;
+    if (typeof qOpts === 'string') { try { qOpts = JSON.parse(qOpts || '{}'); } catch (e) { qOpts = {}; } }
+    item.querySelector('.actions').insertAdjacentHTML('beforebegin', `<div class="edit-panel">
+      <textarea id="q-question">${escapeHtml(q.question)}</textarea>
+      <div class="row" style="margin-top:6px"><span class="muted">选项 A</span><input type="text" id="q-A" value="${escapeHtml((qOpts || {}).A || '')}" style="flex:1"></div>
+      <div class="row" style="margin-top:6px"><span class="muted">选项 B</span><input type="text" id="q-B" value="${escapeHtml((qOpts || {}).B || '')}" style="flex:1"></div>
+      <div class="row" style="margin-top:6px"><span class="muted">选项 C</span><input type="text" id="q-C" value="${escapeHtml((qOpts || {}).C || '')}" style="flex:1"></div>
+      <div class="row" style="margin-top:6px"><span class="muted">选项 D</span><input type="text" id="q-D" value="${escapeHtml((qOpts || {}).D || '')}" style="flex:1"></div>
+      <div class="row" style="margin-top:6px"><span class="muted">答案</span><select id="q-answer"><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
+      <div class="row" style="margin-top:6px"><span class="muted">解析</span><textarea id="q-explain" style="min-height:50px">${escapeHtml(q.explanation)}</textarea></div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn btn-sm" id="q-save">保存</button>
+        <button class="btn btn-ghost btn-sm" id="q-cancel">取消</button>
+      </div>
+    </div>`);
+    $('q-answer').value = q.answer || 'A';
+    $('q-save').addEventListener('click', async () => {
+      const edits = {
+        question: $('q-question').value,
+        options: JSON.stringify({ A: $('q-A').value, B: $('q-B').value, C: $('q-C').value, D: $('q-D').value }),
+        answer: $('q-answer').value,
+        explanation: $('q-explain').value,
+      };
+      await apiPost('/api/admin/quiz/question/review', { question_id: id, action: 'edit', edits });
+      loadQuestions();
+    });
+    $('q-cancel').addEventListener('click', loadQuestions);
+  });
+}
+
+// --- 下发对象 ---
+async function loadTargets() {
+  const data = await api('/api/admin/quiz/targets');
+  if (!data) return;
+  renderTargets(data);
+}
+
+function _roleUsers(data, city, role) {
+  const c = (data.cities || []).find(x => x.city === city);
+  if (!c) return [];
+  const r = (c.roles || []).find(x => x.role === role);
+  return r ? (r.users || []) : [];
+}
+
+function _roleAllSelected(data, city, role) {
+  const users = _roleUsers(data, city, role);
+  return users.length > 0 && users.every(u => selectedPhones.has(u.phone));
+}
+
+function renderTargets(data) {
+  const box = $('target-box');
+  if (!data || !data.cities || !data.cities.length) {
+    box.innerHTML = '<div class="muted">暂无下发对象（白名单为空）</div>';
+    updateSelCount();
+    return;
+  }
+  box.innerHTML = data.cities.map(city => {
+    const cityCount = (city.roles || []).reduce((s, r) => s + (r.count || 0), 0);
+    return `<div class="region-group">
+      <div class="region-head">
+        <button class="btn btn-ghost btn-sm" data-act="city" data-city="${escapeHtml(city.city)}">全选该市</button>
+        <span>📍 ${escapeHtml(city.city)}（${cityCount} 人）</span>
+      </div>
+      <div class="role-list">
+        ${(city.roles || []).map(r => `
+          <div class="role-row">
+            <div class="role-row-head">
+              <span class="role-label">${escapeHtml(r.label || r.role)}</span>
+              <span class="role-count">${r.count} 人</span>
+              <button class="btn btn-ghost btn-sm" data-act="role" data-city="${escapeHtml(city.city)}" data-role="${escapeHtml(r.role)}">${_roleAllSelected(data, city.city, r.role) ? '取消全选' : '全选'}</button>
+              <button class="btn btn-ghost btn-sm" data-act="toggle" data-city="${escapeHtml(city.city)}" data-role="${escapeHtml(r.role)}">${expandedKeys.has(city.city + '|' + r.role) ? '收起明细' : '展开明细'}</button>
+            </div>
+            <div class="role-body" style="${expandedKeys.has(city.city + '|' + r.role) ? '' : 'display:none'}">
+              ${(r.users || []).map(u => `<span class="user-chip ${selectedPhones.has(u.phone) ? 'sel' : ''}" data-phone="${escapeHtml(u.phone)}" data-name="${escapeHtml(u.name)}" title="${escapeHtml(u.county || '')}">${escapeHtml(u.name)} ${escapeHtml(u.phone.slice(-4))}</span>`).join('') || '<span class="muted">该角色暂无人员</span>'}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('[data-act="city"]').forEach(b => b.addEventListener('click', () => {
+    const city = b.dataset.city;
+    const users = (data.cities.find(c => c.city === city).roles || []).flatMap(r => r.users || []);
+    const allSel = users.length > 0 && users.every(u => selectedPhones.has(u.phone));
+    users.forEach(u => { if (allSel) selectedPhones.delete(u.phone); else selectedPhones.add(u.phone); });
+    renderTargets(data);
+  }));
+  box.querySelectorAll('[data-act="role"]').forEach(b => b.addEventListener('click', () => {
+    const users = _roleUsers(data, b.dataset.city, b.dataset.role);
+    const allSel = _roleAllSelected(data, b.dataset.city, b.dataset.role);
+    users.forEach(u => { if (allSel) selectedPhones.delete(u.phone); else selectedPhones.add(u.phone); });
+    renderTargets(data);
+  }));
+  box.querySelectorAll('[data-act="toggle"]').forEach(b => b.addEventListener('click', () => {
+    const key = b.dataset.city + '|' + b.dataset.role;
+    if (expandedKeys.has(key)) expandedKeys.delete(key); else expandedKeys.add(key);
+    renderTargets(data);
+  }));
+  box.querySelectorAll('.user-chip').forEach(c => c.addEventListener('click', () => {
+    const p = c.dataset.phone;
+    if (selectedPhones.has(p)) selectedPhones.delete(p); else selectedPhones.add(p);
+    renderTargets(data);
+  }));
+  updateSelCount();
+}
+
+function updateSelCount() {
+  $('sel-count').textContent = '已选 ' + selectedPhones.size + ' 人';
+}
+
+$('btn-search').addEventListener('click', async () => {
+  const q = $('target-search').value.trim();
+  const data = await api('/api/admin/quiz/targets?q=' + encodeURIComponent(q));
+  if (!data) return;
+  renderTargets(data);
+});
+$('btn-clear-sel').addEventListener('click', () => { selectedPhones.clear(); loadTargets(); });
+
+$('btn-publish').addEventListener('click', async () => {
+  if (!curQuizId) { toast('请先选择测验'); return; }
+  if (!selectedPhones.size) { toast('请先选择下发对象'); return; }
+  const r = await apiPost('/api/admin/quiz/publish', {
+    quiz_id: curQuizId, action: 'publish', targets: Array.from(selectedPhones),
+    valid_until: $('valid-until').value || null,
+  });
+  if (r) { $('publish-msg').textContent = '已下发，目标 ' + r.total_users + ' 人，有效期至 ' + (r.valid_until || '').slice(0, 10); toast('已下发：' + r.total_users + ' 人'); loadQuizList(); }
+});
+$('btn-append').addEventListener('click', async () => {
+  if (!curQuizId || !selectedPhones.size) { toast('请选择测验与对象'); return; }
+  const r = await apiPost('/api/admin/quiz/publish', { quiz_id: curQuizId, action: 'append', targets: Array.from(selectedPhones) });
+  if (r) { $('publish-msg').textContent = '已追加 ' + r.added + ' 人'; toast('已追加 ' + r.added + ' 人'); loadQuizList(); }
+});
+$('btn-remove').addEventListener('click', async () => {
+  if (!curQuizId || !selectedPhones.size) { toast('请选择测验与对象'); return; }
+  const r = await apiPost('/api/admin/quiz/publish', { quiz_id: curQuizId, action: 'remove', targets: Array.from(selectedPhones) });
+  if (r) { $('publish-msg').textContent = '已移除 ' + r.removed.length + ' 人（已答用户保留）'; toast('已移除 ' + r.removed.length + ' 人'); loadQuizList(); }
+});
+
+// --- 统计 ---
+$('btn-stats').addEventListener('click', () => {
+  if (!curQuizId) { toast('请先选择测验'); return; }
+  // 新窗口打开独立完成率看板
+  window.open('/quiz-stats?quiz_id=' + encodeURIComponent(curQuizId), '_blank');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<link rel="icon" href="data:,">
+<title>本月测验 · 劳动力调查 AI 助手</title>
+<style>
+:root {
+  --c-ink:#1F2937; --c-ink-2:#4B5563; --c-ink-3:#6B7280; --c-ink-4:#9CA3AF;
+  --c-bg:#F7F4EE; --c-bg-elev:#FFFFFF; --c-bg-tint:#F1EEE7;
+  --c-line:#E7E2D8; --c-line-soft:#EDE9DF;
+  --c-brand:#1E3A5F; --c-brand-2:#2C5282; --c-brand-soft:#E8EEF5;
+  --c-ok:#2F855A; --c-ok-soft:#E6F3EC; --c-warn:#B7791F; --c-warn-soft:#FBF1DD;
+  --c-danger:#B54545; --c-danger-soft:#F7E4E2; --c-info:#5B6B8C; --c-info-soft:#ECEFF4;
+  --radius-card:12px; --radius-btn:8px; --radius-pill:999px;
+  --shadow-1:0 1px 2px rgba(15,23,42,.04),0 1px 3px rgba(15,23,42,.04);
+  --shadow-2:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06);
+}
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--c-bg); color:var(--c-ink); font-size:15px; line-height:1.65;
+  max-width:720px; margin:0 auto; padding:0 0 60px;
+  padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
+}
+header {
+  position:sticky; top:0; z-index:10;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 18px; background:rgba(255,255,255,.92);
+  backdrop-filter:saturate(180%) blur(14px); border-bottom:1px solid var(--c-line);
+}
+header h1 { font-size:16px; font-weight:600; color:var(--c-ink); }
+header a { font-size:13px; color:var(--c-brand); text-decoration:none; }
+main { padding:18px 16px; display:flex; flex-direction:column; gap:14px; }
+.card { background:var(--c-bg-elev); border:1px solid var(--c-line); border-radius:var(--radius-card); padding:16px; box-shadow:var(--shadow-1); }
+.section-title { font-size:13px; color:var(--c-ink-3); margin:6px 2px 10px; font-weight:600; letter-spacing:.03em; }
+.quiz-item { display:block; width:100%; text-align:left; background:var(--c-bg-elev); border:1px solid var(--c-line); border-radius:var(--radius-card); padding:14px 16px; cursor:pointer; box-shadow:var(--shadow-1); margin-bottom:10px; }
+.quiz-item .q-title { font-size:15px; font-weight:600; color:var(--c-ink); }
+.quiz-item .q-meta { font-size:12px; color:var(--c-ink-3); margin-top:6px; display:flex; gap:8px; flex-wrap:wrap; }
+.badge { display:inline-flex; align-items:center; font-size:11px; padding:2px 8px; border-radius:var(--radius-pill); }
+.badge.ok { background:var(--c-ok-soft); color:var(--c-ok); }
+.badge.warn { background:var(--c-warn-soft); color:var(--c-warn); }
+.badge.info { background:var(--c-info-soft); color:var(--c-info); }
+.empty { color:var(--c-ink-3); font-size:14px; padding:18px 6px; text-align:center; }
+.progress-bar { height:6px; background:var(--c-bg-tint); border-radius:999px; overflow:hidden; margin:10px 0 14px; }
+.progress-bar > i { display:block; height:100%; background:var(--c-brand-2); border-radius:999px; transition:width .3s; }
+.opt { display:block; width:100%; text-align:left; background:#fff; border:1px solid var(--c-line); border-radius:var(--radius-btn); padding:12px 14px; margin-bottom:10px; font-size:15px; color:var(--c-ink); cursor:pointer; transition:border-color .15s, background .15s; }
+.opt.selected { border-color:var(--c-brand-2); background:var(--c-brand-soft); }
+.opt.correct { border-color:var(--c-ok); background:var(--c-ok-soft); }
+.opt.wrong { border-color:var(--c-danger); background:var(--c-danger-soft); }
+.opt:disabled { cursor:default; }
+.feedback { border-radius:var(--radius-card); padding:14px 16px; margin-top:14px; font-size:14px; }
+.feedback.ok { background:var(--c-ok-soft); color:#1f4a34; }
+.feedback.bad { background:var(--c-danger-soft); color:#6d2b2b; }
+.feedback .fb-head { font-weight:700; margin-bottom:6px; }
+.feedback .fb-explain { white-space:pre-wrap; color:var(--c-ink-2); margin-top:6px; }
+.feedback .fb-src { font-size:12px; color:var(--c-ink-3); margin-top:8px; border-top:1px dashed rgba(0,0,0,.08); padding-top:6px; }
+.kb-link { color:var(--c-brand); font-weight:600; cursor:pointer; text-decoration:none; border-bottom:1px dashed var(--c-brand); }
+.btn { display:inline-block; border:none; border-radius:var(--radius-btn); padding:11px 22px; font-size:15px; cursor:pointer; background:var(--c-brand); color:#fff; }
+.btn:disabled { opacity:.45; cursor:default; }
+.btn-ghost { background:var(--c-bg-tint); color:var(--c-ink-2); }
+.row { display:flex; gap:10px; align-items:center; }
+.summary-num { font-size:40px; font-weight:700; color:var(--c-brand); }
+.modal-mask { position:fixed; inset:0; background:rgba(15,23,42,.45); display:none; align-items:flex-end; justify-content:center; z-index:50; }
+.modal-mask.show { display:flex; }
+.modal { background:#fff; width:100%; max-width:720px; max-height:78vh; overflow-y:auto; border-radius:16px 16px 0 0; padding:20px 18px 28px; }
+.modal h3 { font-size:16px; color:var(--c-ink); margin-bottom:10px; }
+.modal .q { font-weight:600; color:var(--c-brand); margin:12px 0 6px; }
+.modal .a { color:var(--c-ink-2); font-size:14px; white-space:pre-wrap; }
+.modal .src { color:var(--c-ink-3); font-size:12px; margin-top:10px; }
+.modal .close { float:right; border:none; background:none; font-size:20px; color:var(--c-ink-3); cursor:pointer; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; z-index: 99;
+  max-width: 92%; padding: 10px 16px; border-radius: 8px; font-size: .85rem;
+  background: #1c1c1c; color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  display: none; line-height: 1.5;
+}
+.toast.err { background: #B54545; }
+
+
+.logout-btn { border:1px solid var(--c-line); background:var(--c-bg-elev); color:var(--c-ink-2); font-size:12px; padding:5px 12px; border-radius:var(--radius-pill); cursor:pointer; }
+.logout-btn:hover { color:var(--c-danger); border-color:var(--c-danger); }
+
+</style>
+</head>
+<body>
+<header>
+  <a href="/">← 返回</a>
+  <h1 id="page-title">本月测验</h1>
+  <button class="logout-btn" onclick="logout()">退出登录</button>
+</header>
+<main id="app">
+  <div id="view-list">
+    <p class="section-title">📝 本月测验</p>
+    <div id="current-box"></div>
+    <p class="section-title">🕘 历史记录</p>
+    <div id="history-box"></div>
+  </div>
+  <div id="view-quiz" style="display:none"></div>
+</main>
+<div class="modal-mask" id="kb-mask"><div class="modal" id="kb-modal"></div></div>
+<div class="toast" id="toast"></div>
+<script src="/static/common.js"></script>
+<script>
+let curQuiz = null;      // 当前作答的测验数据
+let curIndex = 0;        // 当前题目下标
+let answeredCount = 0;
+let correctCount = 0;
+
+if (requireLoginOrRedirect()) {
+  init();
+}
+
+function toast(msg, isErr) {
+  const el = document.getElementById('toast');
+  if (!el) { console.error(msg); return; }
+  el.textContent = msg;
+  el.className = 'toast' + (isErr ? ' err' : '');
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(function () { el.style.display = 'none'; }, isErr ? 6000 : 3000);
+}
+window.addEventListener('error', function (e) {
+  toast('页面脚本错误：' + (e.message || e.type), true);
+  console.error(e.error || e);
+});
+window.addEventListener('unhandledrejection', function (e) {
+  const r = e.reason || {};
+  toast('请求失败：' + (r && r.message ? r.message : String(r)), true);
+  console.error(e.reason);
+});
+
+
+async function init() {
+  try {
+    await loadCurrent();
+  } catch (e) { /* 401 已由 handle401 处理 */ }
+  try {
+    await loadHistory();
+  } catch (e) { /* ignore */ }
+}
+
+function renderQuizItem(q) {
+  const statusBadge = q.completed
+    ? '<span class="badge ok">已完成</span>'
+    : (q.answered > 0 ? '<span class="badge warn">进行中</span>' : '<span class="badge info">未做</span>');
+  const days = q.remaining_days != null ? `剩余 ${q.remaining_days} 天` : '';
+  return `<button class="quiz-item" data-quiz="${escapeHtml(q.quiz_id)}">
+    <div class="q-title">${escapeHtml(q.title)}</div>
+    <div class="q-meta">${statusBadge}<span>${q.answered}/${q.total} 题</span><span>${escapeHtml(days)}</span></div>
+  </button>`;
+}
+
+async function loadCurrent() {
+  const res = await fetch('/api/quiz/current', { headers: authHeader() });
+  if (await handle401(res)) return;
+  const data = await res.json();
+  const box = $('current-box');
+  if (!data.items || data.items.length === 0) {
+    box.innerHTML = '<div class="empty">本月暂无测验</div>';
+    return;
+  }
+  box.innerHTML = data.items.map(renderQuizItem).join('');
+  box.querySelectorAll('.quiz-item').forEach(el => {
+    el.addEventListener('click', () => openQuiz(data.items.find(i => i.quiz_id === el.dataset.quiz)));
+  });
+}
+
+async function loadHistory() {
+  const res = await fetch('/api/quiz/history?page=1&page_size=50', { headers: authHeader() });
+  if (await handle401(res)) return;
+  const data = await res.json();
+  const box = $('history-box');
+  if (!data.items || data.items.length === 0) {
+    box.innerHTML = '<div class="empty">暂无历史记录</div>';
+    return;
+  }
+  box.innerHTML = data.items.map(it => `<button class="quiz-item" data-quiz="${escapeHtml(it.quiz_id)}">
+    <div class="q-title">${escapeHtml(it.title)}</div>
+    <div class="q-meta"><span>${it.month}</span><span class="badge ${it.completed ? 'ok' : 'info'}">${it.completed ? `${it.score}/${it.total} 分` : '未完成'}</span><span>${it.answered}/${it.total} 题</span></div>
+  </button>`).join('');
+  box.querySelectorAll('.quiz-item').forEach(el => {
+    el.addEventListener('click', async () => {
+      const res = await fetch('/api/quiz/history/' + encodeURIComponent(el.dataset.quiz), { headers: authHeader() });
+      if (await handle401(res)) return;
+      openQuiz(await res.json());
+    });
+  });
+}
+
+function openQuiz(q) {
+  curQuiz = q;
+  curIndex = 0;
+  answeredCount = q.answered;
+  correctCount = q.questions.filter(x => x.correct).length;
+  $('page-title').textContent = q.title;
+  $('view-list').style.display = 'none';
+  $('view-quiz').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = curQuiz.questions[curIndex];
+  const box = $('view-quiz');
+  const progress = Math.round((curIndex / curQuiz.total) * 100);
+  const answered = q.answered != null;
+
+  let optionsHtml = (Object.entries(q.options || {})).map(([k, v]) => {
+    let cls = 'opt';
+    let mark = `${k}. ${escapeHtml(v)}`;
+    if (answered) {
+      if (k === q.answer) { cls += ' correct'; mark = '✓ ' + mark; }
+      else if (k === q.answered) { cls += ' wrong'; mark = '✗ ' + mark; }
+    }
+    return `<button class="${cls}" data-key="${k}" ${answered ? 'disabled' : ''}>${mark}</button>`;
+  }).join('');
+
+  const feedbackHtml = answered ? `
+    <div class="feedback ${q.correct ? 'ok' : 'bad'}">
+      <div class="fb-head">${q.correct ? '✓ 回答正确' : '✗ 回答错误'}（你的选择：${escapeHtml(q.answered)}）</div>
+      <div class="fb-explain">${escapeHtml(q.explanation || '')}</div>
+      ${q.source_quote ? `<div class="fb-src">📄 通知原文：${escapeHtml(q.source_quote)}</div>` : ''}
+      ${q.kb_ref && q.kb_ref.faq_id ? `<div class="fb-src">📚 相关知识点：<a class="kb-link" data-faq="${escapeHtml(q.kb_ref.faq_id)}">KB 第 ${escapeHtml(q.kb_ref.faq_id)} 条</a>（${escapeHtml(q.kb_ref.question || '')}）</div>` : ''}
+    </div>` : '';
+
+  box.innerHTML = `
+    <div class="card">
+      <div class="q-meta"><span class="badge info">第 ${curIndex + 1}/${curQuiz.total} 题</span><span style="font-size:12px;color:var(--c-ink-3)">已答 ${answeredCount}/${curQuiz.total}</span></div>
+      <div class="progress-bar"><i style="width:${progress}%"></i></div>
+      <p style="font-size:16px;font-weight:600;margin-bottom:14px">${escapeHtml(q.question)}</p>
+      <div id="opts">${optionsHtml}</div>
+      <div id="fb">${feedbackHtml}</div>
+      <div class="row" style="margin-top:14px;justify-content:space-between">
+        <button class="btn btn-ghost" id="prev-btn" ${curIndex === 0 ? 'disabled' : ''}>上一题</button>
+        <span style="flex:1"></span>
+        ${!answered ? '<button class="btn" id="submit-btn" disabled>提交</button>' : (curIndex < curQuiz.total - 1 ? '<button class="btn" id="next-btn">下一题</button>' : '<button class="btn" id="finish-btn">查看总结</button>')}
+      </div>
+    </div>`;
+
+  if (!answered) {
+    const optsEl = $('opts');
+    let selected = null;
+    optsEl.querySelectorAll('.opt').forEach(el => {
+      el.addEventListener('click', () => {
+        optsEl.querySelectorAll('.opt').forEach(x => x.classList.remove('selected'));
+        el.classList.add('selected');
+        selected = el.dataset.key;
+        $('submit-btn').disabled = false;
+      });
+    });
+    $('submit-btn').addEventListener('click', async () => {
+      if (!selected) return;
+      $('submit-btn').disabled = true;
+      const res = await fetch('/api/quiz/submit', {
+        method: 'POST',
+        headers: Object.assign({'Content-Type': 'application/json'}, authHeader()),
+        body: JSON.stringify({ quiz_id: curQuiz.quiz_id, q_id: q.id, selected }),
+      });
+      if (await handle401(res)) return;
+      const data = await res.json();
+      if (!res.ok) { toast(data.detail || '提交失败', true); $('submit-btn').disabled = false; return; }
+      q.answered = selected;
+      q.correct = data.correct;
+      q.answer = data.answer;
+      q.explanation = data.explanation;
+      q.source_quote = data.source_quote;
+      q.kb_ref = data.kb_ref;
+      answeredCount = data.answered;
+      if (data.correct) correctCount++;
+      renderQuestion();
+    });
+  }
+  if ($('prev-btn')) $('prev-btn').addEventListener('click', () => { curIndex--; renderQuestion(); });
+  if ($('next-btn')) $('next-btn').addEventListener('click', () => { curIndex++; renderQuestion(); });
+  if ($('finish-btn')) $('finish-btn').addEventListener('click', showSummary);
+  bindKbLinks();
+}
+
+function showSummary() {
+  const box = $('view-quiz');
+  box.innerHTML = `<div class="card" style="text-align:center;padding:32px 20px">
+    <p style="color:var(--c-ink-3);font-size:14px">本月测验完成</p>
+    <div style="margin:16px 0"><span class="summary-num">${correctCount}</span><span style="font-size:20px;color:var(--c-ink-3)"> / ${curQuiz.total} 题掌握</span></div>
+    <p style="color:var(--c-ink-2);font-size:14px">答错的题目可到「历史记录」中复习。</p>
+    <div class="row" style="justify-content:center;margin-top:22px">
+      <button class="btn btn-ghost" id="back-btn">返回首页</button>
+    </div>
+  </div>`;
+  $('back-btn').addEventListener('click', () => { location.href = '/'; });
+  $('page-title').textContent = '总结';
+}
+
+function bindKbLinks() {
+  document.querySelectorAll('.kb-link').forEach(el => {
+    el.addEventListener('click', async () => {
+      const res = await fetch('/api/faq/' + encodeURIComponent(el.dataset.faq), { headers: authHeader() });
+      if (await handle401(res)) return;
+      const d = await res.json();
+      $('kb-modal').innerHTML = `<button class="close" id="kb-close">×</button>
+        <h3>📚 KB 第 ${escapeHtml(d.id)} 条</h3>
+        <p class="q">${escapeHtml(d.question)}</p>
+        <p class="a">${escapeHtml(d.answer)}</p>
+        <p class="src">来源：${escapeHtml(d.source || '')}</p>`;
+      $('kb-mask').classList.add('show');
+      $('kb-close').addEventListener('click', () => $('kb-mask').classList.remove('show'));
+    });
+  });
+}
+$('kb-mask').addEventListener('click', e => { if (e.target === $('kb-mask')) $('kb-mask').classList.remove('show'); });
+</script>
+</body>
+</html>

@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#1E3A5F">
-  <title>劳动力调查 AI 助手</title>
+  <link rel="icon" href="data:,">
+<title>劳动力调查 AI 助手</title>
   <style>
     /* ============================================================
      * 设计 tokens
@@ -712,7 +713,43 @@
         transition-duration: 0.01ms !important;
       }
     }
-  </style>
+  
+    /* ===== 本月测验入口卡片（quiz）===== */
+    .quiz-card {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: var(--c-bg-elev);
+      border: 1px solid var(--c-line);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-1);
+      cursor: pointer;
+      transition: box-shadow var(--t-base) var(--ease), border-color var(--t-base) var(--ease);
+    }
+    .quiz-card:active { box-shadow: var(--shadow-2); }
+    .quiz-card .qc-head { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--c-ink); }
+    .quiz-card .qc-badge {
+      margin-left: auto;
+      font-size: 11px; font-weight: 500;
+      padding: 2px 9px; border-radius: var(--radius-pill);
+      background: var(--c-brand-soft); color: var(--c-brand);
+    }
+    .quiz-card .qc-sub { font-size: 12px; color: var(--c-ink-3); margin-top: 5px; }
+
+
+    .logout-btn {
+      border: 1px solid var(--c-line);
+      background: var(--c-bg-elev);
+      color: var(--c-ink-2);
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+    }
+    .logout-btn:hover { color: var(--c-danger); border-color: var(--c-danger); }
+
+</style>
 </head>
 <body>
   <header>
@@ -730,6 +767,7 @@
         <span class="brand-sub">辅助调查员专用 · 制度即时查询</span>
       </div>
     </div>
+    <button class="logout-btn" onclick="logout()">退出</button>
     <span class="status" id="status"><span class="dot"></span><span id="status-text">连接中…</span></span>
   </header>
 
@@ -741,6 +779,8 @@
 
       <p class="empty-hint">回答基于本地制度 QA 知识库；未命中的题目会明确提示「未找到」，不会编造。</p>
       <div class="examples" id="examples"></div>
+      <div class="quiz-card" id="quiz-card" style="display:none"></div>
+
     </div>
   </main>
 
@@ -782,6 +822,30 @@
       if (!_el) return;
       var _n = getUserName();
       _el.textContent = _n ? '，' + escapeHtml(_n) : '，访客';
+    })();
+
+
+
+    // 本月测验入口：目标用户且存在 published 未过期测验才显示
+    (async function () {
+      const qc = document.getElementById('quiz-card');
+      if (!qc) return;
+      try {
+        const res = await fetch('/api/quiz/current', { headers: authHeader() });
+        if (await handle401(res)) return;
+        const data = await res.json();
+        if (!data.items || data.items.length === 0) return;
+        const q = data.items[0];
+        const badge = q.completed ? '已完成'
+          : (q.answered > 0 ? '进行中' : (q.remaining_days != null ? q.remaining_days + ' 天' : '未做'));
+        const sub = q.completed ? '本月测验已完成，可查看历史记录'
+          : ('已答 ' + q.answered + '/' + q.total + ' 题 · 剩余 ' + (q.remaining_days != null ? q.remaining_days + ' 天' : '有效期至 ' + (q.valid_until || '').slice(0, 10)));
+        qc.innerHTML =
+          '<div class="qc-head">📝 本月测验<span class="qc-badge">' + badge + '</span></div>' +
+          '<div class="qc-sub">' + sub + '</div>';
+        qc.style.display = 'block';
+        qc.addEventListener('click', function () { location.href = '/quiz'; });
+      } catch (e) { /* 静默失败：不阻塞聊天入口 */ }
     })();
 
     // 多轮对话：保留最近 4 轮（8 条消息）。超出时丢掉最早的。
@@ -1177,7 +1241,9 @@
     fetch('/health').then(r => r.json()).then(j => {
       if (j.status === 'ok') {
         statusEl.classList.add('ok');
-        statusText.textContent = `在线 · 知识库 ${j.chroma_count} 条`;
+        const qa = (j.qa_count != null ? j.qa_count : j.chroma_count);
+    const chunk = (j.chunk_count != null ? j.chunk_count : 0);
+    statusText.textContent = `在线 · QA ${qa} · 制度原文 ${chunk}`;
       } else {
         statusEl.classList.add('err');
         statusText.textContent = '降级运行';

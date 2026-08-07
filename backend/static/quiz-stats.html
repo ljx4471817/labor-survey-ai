@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>完成率看板 · 劳动力调查 AI 助手</title>
+<link rel="icon" href="data:,">
+<style>
+:root {
+  --ink-blue:#1E3A5F; --paper:#F7F4EE; --line:#d9d2c2; --text:#1c1c1c; --text-dim:#6b6b6b;
+  --good:#4f7a4f; --bad:#a04545; --bad-soft:#f5dada; --info-soft:#eceff4; --ok-soft:#e6f3ec;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; background:var(--paper); color:var(--text); line-height:1.55; min-height:100vh; padding-bottom:40px; }
+header { background:var(--ink-blue); color:#fff; padding:14px 20px; display:flex; align-items:baseline; gap:14px; position:sticky; top:0; z-index:10; }
+header h1 { font-size:1.05rem; font-weight:600; }
+header .sub { font-size:.78rem; opacity:.75; }
+header .back { margin-left:auto; color:#fff; text-decoration:none; font-size:.85rem; opacity:.85; }
+main { max-width:1200px; margin:0 auto; padding:18px 16px; display:flex; flex-direction:column; gap:14px; }
+section { background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
+section h2 { font-size:.92rem; color:var(--ink-blue); margin-bottom:10px; font-weight:600; }
+.row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+input[type=text], select { padding:8px 10px; border:1px solid var(--line); border-radius:6px; font-size:.9rem; background:#fff; }
+.btn { border:none; border-radius:6px; padding:8px 16px; font-size:.88rem; cursor:pointer; background:var(--ink-blue); color:#fff; }
+.btn-ghost { background:#ebe6da; color:var(--text); }
+.btn-ok { background:var(--good); }
+a.btn { text-decoration:none; display:inline-block; }
+.metric-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin-bottom:12px; }
+.metric { background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+.metric .label { font-size:.74rem; color:var(--text-dim); }
+.metric .value { font-size:1.4rem; font-weight:600; color:var(--ink-blue); }
+table { width:100%; border-collapse:collapse; font-size:.85rem; }
+th, td { text-align:left; padding:8px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+th { color:var(--text-dim); font-weight:600; font-size:.78rem; background:#faf8f2; }
+.muted { color:var(--text-dim); font-size:.82rem; }
+.pager { display:flex; align-items:center; gap:10px; margin-top:12px; justify-content:flex-end; }
+.tag { display:inline-block; font-size:.7rem; padding:1px 8px; border-radius:999px; }
+.tag.ok { background:var(--ok-soft); color:var(--good); }
+.tag.warn { background:#fbf1dd; color:#b7791f; }
+.tag.bad { background:var(--bad-soft); color:var(--bad); }
+.hidden { display:none !important; }
+
+.toast { position:fixed; left:50%; transform:translateX(-50%); bottom:24px; z-index:99; max-width:92%; padding:10px 16px; border-radius:8px; font-size:.85rem; background:#1c1c1c; color:#fff; box-shadow:0 4px 16px rgba(0,0,0,.25); display:none; line-height:1.5; }
+.toast.err { background:#a04545; }
+
+
+.logout-btn { border:1px solid rgba(255,255,255,.5); background:transparent; color:#fff; font-size:.8rem; padding:5px 12px; border-radius:999px; cursor:pointer; margin-left:auto; }
+.logout-btn:hover { border-color:#fff; }
+
+</style>
+</head>
+<body>
+<header><h1>完成率看板</h1><span class="sub" id="sub"></span><button class="logout-btn" onclick="logout()">退出登录</button><a class="back" href="/quiz-admin">← 管理页</a></header>
+<main id="main-content" class="hidden">
+  <section id="sec-metric">
+    <div class="metric-grid" id="metrics"></div>
+  </section>
+
+  <section>
+    <h2>按角色汇总</h2>
+    <table id="role-table"></table>
+  </section>
+
+  <section>
+    <h2>按区县汇总</h2>
+    <table id="region-table"></table>
+  </section>
+
+  <section>
+    <h2>个人明细</h2>
+    <div class="row" style="margin-bottom:10px">
+      <input type="text" id="f-region" placeholder="按地区筛选（市/县，可空）" style="width:180px">
+      <input type="text" id="f-q" placeholder="按姓名/手机号搜索" style="width:180px">
+      <button class="btn btn-ghost" id="btn-search">查询</button>
+      <span style="flex:1"></span>
+      <a class="btn btn-ok" id="btn-export" href="#" target="_blank">导出 Excel</a>
+    </div>
+    <div style="overflow-x:auto"><table id="detail-table"></table></div>
+    <div class="pager">
+      <span class="muted" id="page-info"></span>
+      <button class="btn btn-ghost" id="btn-prev">上一页</button>
+      <button class="btn btn-ghost" id="btn-next">下一页</button>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+<script src="/static/common.js"></script>
+<script>
+
+function toast(msg, isErr) {
+  const el = document.getElementById('toast');
+  if (!el) { console.error(msg); return; }
+  el.textContent = msg;
+  el.className = 'toast' + (isErr ? ' err' : '');
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(function () { el.style.display = 'none'; }, isErr ? 6000 : 3000);
+}
+
+let quizId = new URLSearchParams(location.search).get('quiz_id') || '';
+let page = 1;
+const PAGE_SIZE = 50;
+let total = 0;
+
+if (requireLoginOrRedirect()) {
+  init();
+}
+
+async function api(path) {
+  const res = await fetch(path, { headers: authHeader() });
+  if (await handle401(res)) return null;
+  if (!res.ok) {
+    let msg = res.status + ' ' + res.statusText;
+    try { const d = await res.json(); if (d.detail) msg = d.detail; } catch (e) {}
+    toast(msg, true);
+    return null;
+  }
+  return res.json();
+}
+
+async function init() {
+  if (!quizId) { toast('缺少 quiz_id 参数', true); return; }
+  const who = await api('/api/admin/quiz/whoami');
+  if (!who || !['市级', '省级'].includes(who.admin_level)) {
+    toast('无管理员权限', true);
+    location.href = '/';
+    return;
+  }
+  $('main-content').classList.remove('hidden');
+  await load();
+}
+
+async function load() {
+  const region = $('f-region').value.trim();
+  const q = $('f-q').value.trim();
+  const d = await api('/api/admin/quiz/stats?quiz_id=' + encodeURIComponent(quizId) +
+    '&page=' + page + '&page_size=' + PAGE_SIZE +
+    (region ? '&region=' + encodeURIComponent(region) : '') +
+    (q ? '&q=' + encodeURIComponent(q) : ''));
+  if (!d) return;
+  total = d.total;
+  $('sub').textContent = (d.month || '') + ' · ' + (d.title || '');
+  const rate = ((d.completion_rate || 0) * 100).toFixed(1);
+  $('metrics').innerHTML = `
+    <div class="metric"><div class="label">选中人数</div><div class="value">${d.total_users}</div></div>
+    <div class="metric"><div class="label">已开始</div><div class="value">${d.started}</div></div>
+    <div class="metric"><div class="label">已完成</div><div class="value">${d.completed}</div></div>
+    <div class="metric"><div class="label">完成率</div><div class="value">${rate}%</div></div>`;
+  $('role-table').innerHTML = '<tr><th>管理员层级</th><th>人数</th><th>已开始</th><th>已完成</th><th>完成率</th></tr>' +
+    (d.by_role || []).map(r => `<tr><td>${escapeHtml(r.label)}</td><td>${r.total}</td><td>${r.started}</td><td>${r.completed}</td><td>${((r.rate || 0) * 100).toFixed(1)}%</td></tr>`).join('') ||
+    '<tr><td colspan="5" class="muted">暂无数据</td></tr>';
+  $('region-table').innerHTML = '<tr><th>区县</th><th>人数</th><th>已完成</th><th>完成率</th></tr>' +
+    (d.by_region || []).map(r => `<tr><td>${escapeHtml(r.region)}</td><td>${r.total}</td><td>${r.completed}</td><td>${((r.rate || 0) * 100).toFixed(1)}%</td></tr>`).join('') ||
+    '<tr><td colspan="4" class="muted">暂无数据</td></tr>';
+  const rows = (d.user_details || []).map(u => `<tr>
+    <td>${escapeHtml(u.province)}</td><td>${escapeHtml(u.city)}</td><td>${escapeHtml(u.county)}</td><td>${escapeHtml(u.community)}</td>
+    <td>${escapeHtml(u.name)}</td><td>${escapeHtml(u.phone)}</td><td>${escapeHtml(u.admin_level)}</td>
+    <td>${escapeHtml(u.status)} ${u.answered}/${u.total}</td>
+  </tr>`).join('');
+  $('detail-table').innerHTML = '<thead><tr><th>省</th><th>市</th><th>县</th><th>调查小区</th><th>姓名</th><th>联系电话</th><th>管理员层级</th><th>作答情况</th></tr></thead><tbody>' + rows + '</tbody>';
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  $('page-info').textContent = '第 ' + page + '/' + pages + ' 页 · 共 ' + total + ' 人';
+  $('btn-prev').disabled = page <= 1;
+  $('btn-next').disabled = page >= pages;
+  // 导出链接（带当前筛选）
+  const exportUrl = '/api/admin/quiz/stats/export?quiz_id=' + encodeURIComponent(quizId) +
+    (region ? '&region=' + encodeURIComponent(region) : '') + (q ? '&q=' + encodeURIComponent(q) : '');
+  $('btn-export').href = exportUrl;
+}
+
+$('btn-search').addEventListener('click', () => { page = 1; load(); });
+$('btn-prev').addEventListener('click', () => { if (page > 1) { page--; load(); } });
+$('btn-next').addEventListener('click', () => { if (page * PAGE_SIZE < total) { page++; load(); } });
+</script>
+</body>
+</html>

@@ -107,3 +107,18 @@ def require_user(authorization: str | None = Header(None)) -> str:
 def get_current_user(phone: str) -> dict | None:
     """鉴权后取完整用户记录（含 region 字段）。返回 None 表示被软删。"""
     return get_user(phone)
+
+
+def require_admin(authorization: str | None = Header(None)) -> str:
+    """FastAPI Depends：登录 + 管理员校验（admin_level ∈ 市级/省级），返回 phone。
+
+    quiz 管理端专用（PRD v3 6.3）：复用白名单既有 admin_level 字段，
+    不改 whitelist schema。区县 / 调查员返回 403。
+    """
+    phone = require_user(authorization)
+    user = get_current_user(phone)
+    if not user:
+        raise HTTPException(401, "登录已失效，请重新登录")
+    if user.get("admin_level") not in ("市级", "省级"):
+        raise HTTPException(403, "无管理员权限")
+    return phone

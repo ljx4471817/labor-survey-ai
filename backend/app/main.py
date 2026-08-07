@@ -12,6 +12,8 @@ from loguru import logger
 from app.api.feedback_admin import router as feedback_admin_router
 from app.api.gaps_admin import router as gaps_admin_router
 from app.api.usage_admin import router as usage_admin_router
+from app.api.quiz import router as quiz_router
+from app.api.quiz_admin import router as quiz_admin_router
 from app.api.whitelist_admin import router as whitelist_admin_router
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
@@ -41,13 +43,16 @@ app.include_router(
     feedback_router, prefix="/api", tags=["feedback"],
     dependencies=[Depends(require_user)],
 )
-for _r in (feedback_admin_router, gaps_admin_router, usage_admin_router, whitelist_admin_router):
+for _r in (feedback_admin_router, gaps_admin_router, usage_admin_router, whitelist_admin_router, quiz_admin_router):
     app.include_router(
         _r,
         prefix="/api/admin",
         tags=[f"admin-{_r.__module__.split('.')[-1].replace('_admin', '')}"],
         dependencies=[Depends(require_user)],
     )
+app.include_router(
+    quiz_router, prefix="/api", tags=["quiz"], dependencies=[Depends(require_user)],
+)
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 # DISABLED(voice) 2026-06-21: 语音路由停用。恢复：取消本行注释。
 # app.include_router(voice_router, tags=["voice"])
@@ -62,7 +67,10 @@ def _serve_static_page(filename: str) -> FileResponse:
     path = STATIC_DIR / filename
     if not path.exists():
         raise HTTPException(404, f"{filename} not found")
-    return FileResponse(str(path))
+    resp = FileResponse(str(path))
+    # 页面不缓存：避免浏览器/内嵌浏览器拿到旧版 JS（如导入按钮无响应）
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
 
 
 @app.get("/", include_in_schema=False)
@@ -75,6 +83,24 @@ def root() -> FileResponse:
 def login_page() -> FileResponse:
     """手机号白名单登录页入口。"""
     return _serve_static_page("login.html")
+
+
+@app.get("/quiz-admin", include_in_schema=False)
+def quiz_admin_page() -> FileResponse:
+    """月度测验管理页入口。"""
+    return _serve_static_page("quiz_admin.html")
+
+
+@app.get("/quiz-stats", include_in_schema=False)
+def quiz_stats_page() -> FileResponse:
+    """完成率看板独立页（新窗口打开）。"""
+    return _serve_static_page("quiz-stats.html")
+
+
+@app.get("/quiz", include_in_schema=False)
+def quiz_page() -> FileResponse:
+    """调查员月度测验页入口。"""
+    return _serve_static_page("quiz.html")
 
 
 @app.get("/dashboard", include_in_schema=False)
@@ -105,8 +131,17 @@ def health() -> HealthResponse:
         logger.warning(f"chroma 健康检查失败: {e}")
         chroma_ok = False
         count = 0
+    counts = {}
+    if chroma_ok:
+        try:
+            from app.rag.retriever import count_by_doc_type
+            counts = count_by_doc_type()
+        except Exception:
+            counts = {}
     return HealthResponse(
         status="ok" if chroma_ok else "degraded",
-        chroma_count=count,
+        chroma_count=counts.get("total", count),
+        qa_count=counts.get("qa", 0),
+        chunk_count=counts.get("chunk", 0),
         llm_configured=bool(settings.llm_api_key),
     )
