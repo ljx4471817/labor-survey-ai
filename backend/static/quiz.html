@@ -187,7 +187,7 @@ function renderDoneItem(q) {
   const scene = q.scene ? `<span class="badge info">${escapeHtml(q.scene)}</span>` : '';
   const scoreTxt = q.completed && q.score != null
     ? `<span class="q-score">${q.score}/${q.total} 分</span>`
-    : `<span>${q.answered}/${q.total} 题</span>`;
+    : '';
   return `<button class="quiz-item" data-quiz="${escapeHtml(q.quiz_id)}">
     <div class="q-title">${escapeHtml(q.title)}</div>
     <div class="q-meta">${scene}${score}<span>${q.answered}/${q.total} 题</span>${scoreTxt}</div>

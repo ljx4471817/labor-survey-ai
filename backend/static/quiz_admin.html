@@ -386,6 +386,7 @@ async function selectQuiz(qid, month, status) {
   $('btn-extract').disabled = false;
   $('btn-generate').disabled = false;
   $('extract-msg').textContent = '';
+  statsPage = 1;
   document.querySelectorAll('.quiz-sel-item').forEach(el => el.classList.toggle('active', el.dataset.q === qid));
   switchAdminTab('workbench');
   renderStepper();
@@ -855,7 +856,7 @@ function renderStepper() {
     publish: curQuizStatus === 'published',
   };
   document.querySelectorAll('#stepper .step-node').forEach(n => {
-    n.classList.toggle('done', !!steps[n.dataset.step]);
+    n.classList.toggle('done', steps[n.dataset.step]);
   });
 }
 
