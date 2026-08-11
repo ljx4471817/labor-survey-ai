@@ -302,13 +302,13 @@ def quiz_question_review(req: QuestionReviewRequest, phone: str = Depends(requir
     if not q:
         raise HTTPException(404, "题目不存在")
     if req.action == "approve":
-        quiz_db.update_question(req.question_id, status="approved")
+        quiz_db.update_question(req.question_id, status="approved", selected=1)  # approved => in publish set
     elif req.action == "reject":
-        quiz_db.update_question(req.question_id, status="draft")  # 打回修改
+        quiz_db.update_question(req.question_id, status="draft", selected=0)  # 打回修改，退出下发
     else:  # edit：应用编辑后视为确认
         if not req.edits:
             raise HTTPException(422, "edit 需要 edits 字段")
-        quiz_db.update_question(req.question_id, status="approved", **req.edits)
+        quiz_db.update_question(req.question_id, status="approved", selected=1, **req.edits)  # 编辑保存即拟下发
     return {"ok": True}
 
 
@@ -341,7 +341,7 @@ def quiz_publish(req: PublishRequest, phone: str = Depends(require_admin)) -> di
         questions = quiz_db.list_questions(req.quiz_id)
         selected_qs = [q for q in questions if q.get("selected")]
         if not selected_qs:
-            raise HTTPException(422, "请先勾选要下发的题目")
+            raise HTTPException(422, "请先确认要下发的题目（确认后即拟下发）")
         if any(q["status"] != "approved" for q in selected_qs):
             raise HTTPException(422, "存在未审核通过的勾选题目，无法下发")
 

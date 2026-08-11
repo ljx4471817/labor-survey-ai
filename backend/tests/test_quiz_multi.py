@@ -179,3 +179,28 @@ def test_import_auto_register_scene(db):
     assert res["quiz_id"]
     names = [s["name"] for s in quiz_db.list_scenes(include_inactive=True)]
     assert "半年培训" in names
+
+
+def test_review_approve_sets_selected(db):
+    """确认题目即拟下发（selected=1）；打回退出下发（selected=0）；编辑保存同样拟下发。"""
+    from app.models.schemas.quiz_admin import QuestionReviewRequest
+    qid = quiz_db.create_quiz("培训测验", scene="新员工培训", created_by="admin")
+    db.replace_questions(qid, [{
+        "question": "q?", "options": '{"A": "a", "B": "b", "C": "c", "D": "d"}',
+        "answer": "A", "explanation": "e", "created_by": "a",
+    }])
+    q = db.list_questions(qid)[0]
+    assert q["selected"] == 0
+    # 确认 → approved + 自动纳入下发
+    quiz_admin_api.quiz_question_review(QuestionReviewRequest(question_id=q["id"], action="approve"), phone="13900000001")
+    q2 = db.get_question(q["id"])
+    assert q2["status"] == "approved" and q2["selected"] == 1
+    # 打回 → draft + 退出下发
+    quiz_admin_api.quiz_question_review(QuestionReviewRequest(question_id=q["id"], action="reject"), phone="13900000001")
+    q3 = db.get_question(q["id"])
+    assert q3["status"] == "draft" and q3["selected"] == 0
+    # 编辑保存 → 视为确认，自动纳入下发
+    quiz_admin_api.quiz_question_review(QuestionReviewRequest(question_id=q["id"], action="edit", edits={"question": "q2?"}), phone="13900000001")
+    q4 = db.get_question(q["id"])
+    assert q4["status"] == "approved" and q4["selected"] == 1 and q4["question"] == "q2?"
+
