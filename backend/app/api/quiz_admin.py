@@ -20,7 +20,7 @@ from loguru import logger
 from pathlib import Path
 
 from app.core.config import PROJECT_ROOT
-from app.core.constants import QUIZ_DEFAULT_VALID_DAYS, QUIZ_MAX_FILE_MB, QUIZ_MAX_QUESTIONS
+from app.core.constants import QUIZ_DEFAULT_VALID_DAYS, QUIZ_MAX_FILE_MB
 
 from app.infra.auth import require_admin
 from app.models.schemas.quiz_admin import (
@@ -29,6 +29,7 @@ from app.models.schemas.quiz_admin import (
     KeypointReviewRequest,
     PublishRequest,
     QuestionReviewRequest,
+    QuestionSelectRequest,
     QuizDeleteRequest,
     SceneAddRequest,
     SceneToggleRequest,
@@ -165,7 +166,8 @@ def _get_llm_chat():
     return chat
 
 
-def _do_extract(import_id: str, quiz_id: str) -> dict:
+def _do_extract(import_id: str, quiz_id: str, keypoint_count: int | None = None) -> dict:
+
     """后台线程：docx → 文本 → LLM 要点 → KB 关联 → 入库。"""
     llm_chat = _get_llm_chat()
 
@@ -175,7 +177,8 @@ def _do_extract(import_id: str, quiz_id: str) -> dict:
     text = extract_file_text(str(tmp_path))
 
     # 提取输出可能 >2000 tokens，提高上限避免截断导致 JSON 非法
-    keypoints = run_extraction(text, lambda msgs: llm_chat(msgs, max_tokens=4000, timeout=90))
+    keypoints = run_extraction(text, lambda msgs: llm_chat(msgs, max_tokens=4000, timeout=90), keypoint_count=keypoint_count)
+
     matched = 0
     for kp in keypoints:
         m = match_kb(kp["content"])
@@ -190,7 +193,8 @@ def _do_extract(import_id: str, quiz_id: str) -> dict:
     quiz_db.replace_keypoints(quiz_id, keypoints)
     quiz_db.update_import(import_id, status="extracted", raw_text_length=len(text))
     tmp_path.unlink(missing_ok=True)
-    return {"quiz_id": quiz_id, "keypoints": len(keypoints), "matched": matched}
+    return {"quiz_id": quiz_id, "keypoints": len(keypoints), "requested": keypoint_count, "matched": matched}
+
 
 
 @router.post("/quiz/extract")
@@ -205,7 +209,8 @@ def quiz_extract(req: ExtractRequest, phone: str = Depends(require_admin)) -> di
     if not imp:
         raise HTTPException(409, "该测验还没有导入记录")
 
-    task_id = _submit_task("extract", _do_extract, imp["id"], req.quiz_id)
+    task_id = _submit_task("extract", _do_extract, imp["id"], req.quiz_id, req.keypoint_count)
+
     return {"task_id": task_id, "status": "processing"}
 
 
@@ -239,10 +244,10 @@ def quiz_keypoint_review(req: KeypointReviewRequest, phone: str = Depends(requir
 
 # --- 出题（异步） -------------------------------------------------------------
 
-def _do_generate(quiz_id: str, keypoints: list[dict], phone: str, count: int | None) -> dict:
+def _do_generate(quiz_id: str, keypoints: list[dict], phone: str) -> dict:
     llm_chat = _get_llm_chat()
     questions, errors = generate_questions(
-        keypoints, lambda msgs: llm_chat(msgs, max_tokens=1500, timeout=90), count=count
+        keypoints, lambda msgs: llm_chat(msgs, max_tokens=1500, timeout=90)
     )
     # over_limit 仅作生成提示（软校验），不入库；按 seq 汇总，前端会话内展示 ⚠
     over_limit: dict[str, list[str]] = {}
@@ -257,7 +262,6 @@ def _do_generate(quiz_id: str, keypoints: list[dict], phone: str, count: int | N
     return {
         "quiz_id": quiz_id,
         "questions": len(questions),
-        "requested": count,
         "keypoints": len(keypoints),
         "errors": errors,
         "over_limit": over_limit,
@@ -275,10 +279,7 @@ def quiz_generate(req: GenerateRequest, phone: str = Depends(require_admin)) -> 
     kps = [kp for kp in quiz_db.list_keypoints(req.quiz_id) if kp["id"] in req.keypoint_ids]
     if not kps:
         raise HTTPException(422, "未选择有效要点")
-    count = req.count
-    if count is not None:
-        count = max(1, min(count, QUIZ_MAX_QUESTIONS))
-    task_id = _submit_task("generate", _do_generate, req.quiz_id, kps, phone, count)
+    task_id = _submit_task("generate", _do_generate, req.quiz_id, kps, phone)
     return {"task_id": task_id, "status": "processing"}
 
 
@@ -311,7 +312,21 @@ def quiz_question_review(req: QuestionReviewRequest, phone: str = Depends(requir
     return {"ok": True}
 
 
-# --- 下发 --------------------------------------------------------------------
+@router.post("/quiz/question/select")
+def quiz_question_select(req: QuestionSelectRequest, phone: str = Depends(require_admin)) -> dict:
+    """勾选/取消题目（试卷题）；仅 draft/reviewing 可调整。"""
+    q = quiz_db.get_question(req.question_id)
+    if not q:
+        raise HTTPException(404, "题目不存在")
+    quiz = quiz_db.get_quiz(q["quiz_id"])
+    if not quiz or quiz["status"] not in ("draft", "reviewing"):
+        raise HTTPException(409, "仅草稿/审核中的测验可调整勾选")
+    quiz_db.update_question(req.question_id, selected=1 if req.selected else 0)
+    return {"ok": True, "selected": req.selected}
+
+
+# --- 下发 --------------------------------------------------------------------
+
 
 @router.post("/quiz/publish")
 def quiz_publish(req: PublishRequest, phone: str = Depends(require_admin)) -> dict:
@@ -323,11 +338,13 @@ def quiz_publish(req: PublishRequest, phone: str = Depends(require_admin)) -> di
     if req.action == "publish":
         if quiz["status"] not in ("draft", "reviewing"):
             raise HTTPException(409, "测验已下发或归档")
-        questions = quiz_db.list_questions(req.quiz_id)
-        if not questions:
-            raise HTTPException(422, "测验没有题目，无法下发")
-        if any(q["status"] != "approved" for q in questions):
-            raise HTTPException(422, "存在未审核通过的题目，无法下发")
+        questions = quiz_db.list_questions(req.quiz_id)
+        selected_qs = [q for q in questions if q.get("selected")]
+        if not selected_qs:
+            raise HTTPException(422, "请先勾选要下发的题目")
+        if any(q["status"] != "approved" for q in selected_qs):
+            raise HTTPException(422, "存在未审核通过的勾选题目，无法下发")
+
         valid_until = _parse_valid_until(req.valid_until, now)
         quiz_db.set_targets(req.quiz_id, req.targets)
         quiz_db.update_quiz(req.quiz_id, status="published", valid_from=now, valid_until=valid_until)

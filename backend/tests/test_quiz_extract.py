@@ -283,3 +283,30 @@ def test_extract_file_text_dispatches(tmp_path):
     p = tmp_path / "材料.pdf"
     _make_pdf(str(p), "Hello Survey PDF")
     assert "Hello Survey PDF" in extract_file_text(str(p))
+
+
+# --- 提取目标要点数（PRD v5）---
+
+
+def test_run_extraction_keypoint_count(monkeypatch):
+    from app.services import quiz_extract as qe
+
+    captured = {}
+
+    def fake_llm_json(messages, llm_chat_fn, parse_fn, what):
+        captured["prompt"] = messages[1]["content"]
+        return [{"section": "审核要点", "content": "要点A"}]
+
+    monkeypatch.setattr(qe, "_llm_json", fake_llm_json)
+    # 默认 10
+    qe.run_extraction("文本", lambda m: "")
+    assert "提取 10 个可出题的要点" in captured["prompt"]
+    # 指定 3
+    qe.run_extraction("文本", lambda m: "", keypoint_count=3)
+    assert "提取 3 个可出题的要点" in captured["prompt"]
+    # 超上限截断到 30
+    qe.run_extraction("文本", lambda m: "", keypoint_count=99)
+    assert "提取 30 个可出题的要点" in captured["prompt"]
+    # 低于下限抬到 1
+    qe.run_extraction("文本", lambda m: "", keypoint_count=0)
+    assert "提取 1 个可出题的要点" in captured["prompt"]

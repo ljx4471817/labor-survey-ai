@@ -110,6 +110,10 @@ def test_full_quiz_flow_e2e(e2e_env, tmp_path):
             r = await c.post("/api/admin/quiz/question/review", json={"question_id": qs[0]["id"], "action": "approve"})
             assert r.status_code == 200
 
+            # 5.5) 勾选题目（下发只发勾选题）
+            r = await c.post("/api/admin/quiz/question/select", json={"question_id": qs[0]["id"], "selected": True})
+            assert r.status_code == 200
+
             # 6) 下发
             valid_until = (datetime.now(UTC8) + timedelta(days=7)).date().isoformat()
             r = await c.post("/api/admin/quiz/publish", json={

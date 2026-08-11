@@ -112,7 +112,7 @@ class QuizSection(str, Enum):
 
 
 # 生成 / 提取的硬约束
-QUIZ_MAX_QUESTIONS: int = 20         # 每套测验生成上限（管理端 1-20 自控）
+QUIZ_MAX_QUESTIONS: int = 20         # 单次生成上限参考（纯函数 generate_questions 用；API 已改为按勾选要点全生成）
 QUIZ_DEFAULT_VALID_DAYS: int = 7     # 默认有效期（天）
 QUIZ_KB_MATCH_THRESHOLD: float = 0.6  # KB 关联向量 cosine 阈值
 QUIZ_EXTRACT_TIMEOUT_S: int = 120     # 提取/出题任务总超时
@@ -124,3 +124,5 @@ QUIZ_MAX_FILE_MB: int = 20            # 文件上传上限（MB）
 QUIZ_DATA_RETENTION_MONTHS: int = 12  # 答题记录保留月数
 QUIZ_RETENTION_DAYS: int = QUIZ_DATA_RETENTION_MONTHS * 30  # 清理阈值（天）
 QUIZ_DEFAULT_SCENES: tuple[str, ...] = ("月度通知", "新员工培训", "季度培训", "年度培训", "其他")  # 场景字典初始值（可自定义新增）
+QUIZ_MAX_KEYPOINTS: int = 30           # 提取要点数量上限（备选出题要点）
+QUIZ_DEFAULT_KEYPOINTS: int = 10       # 提取要点默认数量（留空时）

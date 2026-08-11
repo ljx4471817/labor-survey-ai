@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""多场景改造测试：场景字典 / 删除测验 / my 分组 / 题量 count / 列表筛选（PRD v5）。"""
+"""多场景改造测试：场景字典 / 删除测验 / my 分组 / 提取数量 / 题目勾选 / 列表筛选（PRD v5）。"""
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
@@ -12,7 +12,9 @@ from app.api import quiz as quiz_api
 from app.api import quiz_admin as quiz_admin_api
 from app.models.schemas.quiz import QuizSubmitRequest
 from app.models.schemas.quiz_admin import (
-    GenerateRequest,
+    ExtractRequest,
+    PublishRequest,
+    QuestionSelectRequest,
     QuizDeleteRequest,
     SceneAddRequest,
     SceneToggleRequest,
@@ -38,7 +40,7 @@ def _seed_published(db, title="测试测验", scene="月度通知", month="2026-
         "answer": "C", "explanation": "根据审核要点应判为非劳动力。", "created_by": "admin",
     }])
     for q in db.list_questions(qid):
-        db.update_question(q["id"], status="approved")
+        db.update_question(q["id"], status="approved", selected=1)
     valid_until = (datetime.now(UTC8) + timedelta(days=7)).isoformat(timespec="seconds")
     db.set_targets(qid, [phone])
     db.update_quiz(qid, status="published", valid_from=datetime.now(UTC8).isoformat(timespec="seconds"), valid_until=valid_until)
@@ -96,7 +98,8 @@ def test_my_groups_todo_done(db):
     assert quiz_api.my(phone="13899999999") == {"todo": [], "done": []}
 
 
-def test_do_generate_respects_count(db, monkeypatch):
+def test_do_generate_all_and_selected_reset(db, monkeypatch):
+    """生成不再指定题量：按勾选要点全量生成；生成后 selected 全部重置为 0。"""
     qid = quiz_db.create_quiz("培训测验", scene="新员工培训", created_by="admin", month=None)
     keypoints = [{"content": f"要点{i}", "source_quote": "s"} for i in range(5)]
 
@@ -104,28 +107,57 @@ def test_do_generate_respects_count(db, monkeypatch):
         return '{"question": "q?", "options": {"A": "a", "B": "b", "C": "c", "D": "d"}, "answer": "A", "explanation": "e"}'
 
     monkeypatch.setattr(quiz_admin_api, "_get_llm_chat", lambda: fake_llm)
-    # count 指定 3 题
-    res = quiz_admin_api._do_generate(qid, keypoints, "admin", count=3)
-    assert res["questions"] == 3
-    assert res["requested"] == 3
-    assert len(quiz_db.list_questions(qid)) == 3
-    # 要点不足：count=20 但只有 5 个要点 → 实际 5 题
-    res2 = quiz_admin_api._do_generate(qid, keypoints, "admin", count=20)
-    assert res2["questions"] == 5
-    assert res2["requested"] == 20
+    res = quiz_admin_api._do_generate(qid, keypoints, "admin")
+    assert res["questions"] == 5
     assert len(quiz_db.list_questions(qid)) == 5
+    assert all(q["selected"] == 0 for q in quiz_db.list_questions(qid))
+    # 勾选 2 题后再生成 → 勾选被清空（回到全不选）
+    qs = quiz_db.list_questions(qid)
+    quiz_db.update_question(qs[0]["id"], selected=1)
+    quiz_db.update_question(qs[1]["id"], selected=1)
+    quiz_admin_api._do_generate(qid, keypoints, "admin")
+    assert all(q["selected"] == 0 for q in quiz_db.list_questions(qid))
 
 
-def test_generate_request_count_validation(db):
-    """GenerateRequest.count 校验：合法上限 20 / 缺省 None / 超限拒绝（不触发异步任务）。"""
+def test_extract_request_count_validation(db):
+    """ExtractRequest.keypoint_count 校验：合法上限 30 / 缺省 None / 超限拒绝。"""
     import pydantic
 
-    r = GenerateRequest(quiz_id="Q0001", keypoint_ids=["x"], count=20)
-    assert r.count == 20
-    r2 = GenerateRequest(quiz_id="Q0001", keypoint_ids=["x"])
-    assert r2.count is None
+    r = ExtractRequest(quiz_id="Q0001", keypoint_count=30)
+    assert r.keypoint_count == 30
+    r2 = ExtractRequest(quiz_id="Q0001")
+    assert r2.keypoint_count is None
     with pytest.raises(pydantic.ValidationError):
-        GenerateRequest(quiz_id="Q0001", keypoint_ids=["x"], count=21)
+        ExtractRequest(quiz_id="Q0001", keypoint_count=31)
+
+
+def test_question_select_and_publish_only_selected(db):
+    """勾选题目 → 下发只发勾选题；未勾选下发 422；未勾选题不可答。"""
+    qid = quiz_db.create_quiz("培训测验", scene="新员工培训", created_by="admin")
+    db.replace_questions(qid, [
+        {"question": f"q{i}?", "options": '{"A": "a", "B": "b", "C": "c", "D": "d"}', "answer": "A", "explanation": "e", "created_by": "a"}
+        for i in range(3)
+    ])
+    for q in db.list_questions(qid):
+        quiz_db.update_question(q["id"], status="approved")
+    # 未勾选 → 下发 422
+    with pytest.raises(HTTPException) as e:
+        quiz_admin_api.quiz_publish(PublishRequest(quiz_id=qid, targets=["13800000001"], action="publish", valid_until=None), phone="13900000001")
+    assert e.value.status_code == 422
+    # 勾选 2 题
+    qs = db.list_questions(qid)
+    quiz_admin_api.quiz_question_select(QuestionSelectRequest(question_id=qs[0]["id"], selected=True), phone="13900000001")
+    quiz_admin_api.quiz_question_select(QuestionSelectRequest(question_id=qs[1]["id"], selected=True), phone="13900000001")
+    assert db.list_questions(qid)[0]["selected"] == 1
+    # 发布后用户端只显示勾选 2 题
+    quiz_db.update_quiz(qid, status="published", valid_from="2026-08-01T00:00:00+08:00", valid_until="2026-08-20T00:00:00+08:00")
+    quiz_db.set_targets(qid, ["13800000001"])
+    cur = quiz_api.current(phone="13800000001")
+    assert len(cur["items"][0]["questions"]) == 2
+    # 未勾选题提交 → 409
+    with pytest.raises(HTTPException) as e:
+        quiz_api.submit(QuizSubmitRequest(quiz_id=qid, q_id=qs[2]["id"], selected="A"), phone="13800000001")
+    assert e.value.status_code == 409
 
 
 def test_list_scene_filter(db):

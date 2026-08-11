@@ -122,6 +122,9 @@ textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:
   <section id="sec-extract">
     <h2><span class="step">②</span>LLM 提取要点</h2>
     <div class="row">
+      <span class="muted">目标要点数</span>
+      <input type="number" id="extract-count" min="1" max="30" placeholder="10" style="width:80px">
+      <span class="muted">1-30，留空默认 10（备选出题要点数）</span>
       <button class="btn" id="btn-extract" disabled>开始提取（约 30-60s）</button>
       <span class="muted" id="extract-msg"></span>
     </div>
@@ -131,9 +134,6 @@ textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:
   <section id="sec-generate">
     <h2><span class="step">③</span>生成题目</h2>
     <div class="row">
-      <span class="muted">题量</span>
-      <input type="number" id="gen-count" min="1" max="20" value="7" style="width:80px">
-      <span class="muted">1-20 题，默认=勾选要点数（每要点最多 1 题）</span>
       <button class="btn" id="btn-generate" disabled>用所选要点生成</button>
       <span class="muted" id="generate-msg"></span>
     </div>
@@ -190,6 +190,7 @@ textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:
 <script>
 let curQuizId = null;
 let curQuizMonth = '2026-08';
+let curQuizStatus = 'draft';
 let scenes = [];
 let selectedPhones = new Set();
 let expandedKeys = new Set();  // '城市|角色' 展开的明细
@@ -264,12 +265,12 @@ async function loadQuizList() {
     <td><span class="tag ${q.status === 'published' ? 'ok' : (q.status === 'expired' ? 'warn' : 'info')}">${escapeHtml(q.status)}</span></td>
     <td>${q.questions} 题</td><td>${q.targets} 人</td><td>${q.completed} 完成</td>
     <td>
-      <button class="btn btn-sm" data-q="${escapeHtml(q.quiz_id)}" data-m="${escapeHtml(q.month || '')}">管理</button>
+      <button class="btn btn-sm" data-q="${escapeHtml(q.quiz_id)}" data-m="${escapeHtml(q.month || '')}" data-status="${escapeHtml(q.status)}">管理</button>
       ${(q.status === 'draft' || q.status === 'reviewing') ? `<button class="btn btn-bad btn-sm" data-del="${escapeHtml(q.quiz_id)}">删除</button>` : ''}
     </td>
   </tr>`).join('');
   $('quiz-table').innerHTML = rows ? `<table><tr><th>月份</th><th>标题</th><th>状态</th><th>题目</th><th>目标</th><th>完成</th><th></th></tr>${rows}</table>` : '<div class="muted">暂无测验</div>';
-  $('quiz-table').querySelectorAll('button[data-q]').forEach(b => b.addEventListener('click', () => selectQuiz(b.dataset.q, b.dataset.m)));
+  $('quiz-table').querySelectorAll('button[data-q]').forEach(b => b.addEventListener('click', () => selectQuiz(b.dataset.q, b.dataset.m, b.dataset.status)));
   $('quiz-table').querySelectorAll('button[data-del]').forEach(b => b.addEventListener('click', async () => {
     if (!confirm('确定删除该测验？草稿/审核中的删除不可恢复。')) return;
     await apiPost('/api/admin/quiz/delete', { quiz_id: b.dataset.del });
@@ -278,10 +279,11 @@ async function loadQuizList() {
   }));
 }
 
-async function selectQuiz(qid, month) {
+async function selectQuiz(qid, month, status) {
   curQuizId = qid;
   overLimitMap = {};
   curQuizMonth = month;
+  curQuizStatus = status || 'draft';
   $('btn-extract').disabled = false;
   $('btn-generate').disabled = false;
   $('extract-msg').textContent = '';
@@ -397,8 +399,15 @@ $('btn-extract').addEventListener('click', async () => {
   polling = true;
   $('btn-extract').disabled = true;
   $('extract-msg').textContent = '正在提取，约 30-60 秒…';
-  const d = await apiPost('/api/admin/quiz/extract', { quiz_id: curQuizId });
-  if (d) await pollTask('extract', d.task_id, async () => { await loadKeypoints(); $('extract-msg').textContent = '提取完成'; });
+  const kc = parseInt($('extract-count').value, 10);
+  const d = await apiPost('/api/admin/quiz/extract', { quiz_id: curQuizId, keypoint_count: (kc >= 1 && kc <= 30) ? kc : null });
+  if (d) await pollTask('extract', d.task_id, async (result) => {
+    await loadKeypoints();
+    const r = result || {};
+    let msg = '提取完成：' + r.keypoints + ' 个要点';
+    if (r.requested && r.keypoints < r.requested) msg += '（目标 ' + r.requested + ' 个，实际不足）';
+    $('extract-msg').textContent = msg;
+  });
   polling = false;
   $('btn-extract').disabled = false;
 });
@@ -459,8 +468,6 @@ async function loadKeypoints() {
       </div>
     </div>`).join('')}
   `).join('');
-  const checkedN = document.querySelectorAll('.kp-check:checked').length;
-  if (checkedN > 0) $('gen-count').value = checkedN;
   box.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', async () => {
     const id = b.closest('.kp-item').dataset.id;
     if (b.dataset.act === 'edit') {
@@ -518,27 +525,17 @@ $('btn-generate').addEventListener('click', async () => {
   if (!curQuizId) { toast('请先选择测验'); return; }
   const ids = Array.from(document.querySelectorAll('.kp-check:checked')).map(c => c.closest('.kp-item').dataset.id);
   if (!ids.length) { toast('请先勾选要点（确认过的要点默认勾选）'); return; }
-  let count = parseInt($('gen-count').value, 10);
-  if (!count || count < 1) count = ids.length;
-  if (count > 20) { toast('题量上限 20 题'); return; }
   if (polling) return;
   polling = true;
   $('btn-generate').disabled = true;
-  $('generate-msg').textContent = '正在生成 ' + count + ' 题（约 1-3 分钟）…';
-  const d = await apiPost('/api/admin/quiz/generate', { quiz_id: curQuizId, keypoint_ids: ids, count: count });
+  $('generate-msg').textContent = '正在生成题目（约 1-3 分钟）…';
+  const d = await apiPost('/api/admin/quiz/generate', { quiz_id: curQuizId, keypoint_ids: ids });
   if (d) await pollTask('generate', d.task_id, async (result) => {
     overLimitMap = (result && result.over_limit) || {};
     await loadQuestions();
-    let msg = '题目已生成';
-    const got = result && result.questions;
-    const req = result && result.requested;
     const errs = (result && result.errors) || [];
-    if (req != null && got < req && !errs.length) {
-      msg = '要点不足：实际生成 ' + got + ' 题（你要求 ' + req + ' 题），请返回②补充/拆分要点';
-    } else if (errs.length) {
-      msg = '生成完成：' + got + ' 题，失败 ' + errs.length + ' 个要点';
-    }
-    $('generate-msg').textContent = msg;
+    const n = (result && result.questions) || 0;
+    $('generate-msg').textContent = errs.length ? ('已生成 ' + n + ' 题（失败 ' + errs.length + ' 个要点），请在下方勾选要下发的题目') : ('已生成 ' + n + ' 题，请在下方勾选要下发的题目');
   });
   polling = false;
   $('btn-generate').disabled = false;
@@ -551,6 +548,7 @@ async function loadQuestions() {
   if (!data) return;
   const box = $('question-box');
   if (!data.items.length) { box.innerHTML = '<div class="muted">暂无题目，先生成</div>'; return; }
+  const canSelect = curQuizStatus === 'draft' || curQuizStatus === 'reviewing';
   box.innerHTML = data.items.map(q => {
     let optsObj = q.options;
     if (typeof optsObj === 'string') { try { optsObj = JSON.parse(optsObj || '{}'); } catch (e) { optsObj = {}; } }
@@ -558,9 +556,13 @@ async function loadQuestions() {
     const ol = overLimitMap[String(q.seq)] || [];
     const olLabels = {question: '题干', option_A: '选项A', option_B: '选项B', option_C: '选项C', option_D: '选项D', explanation: '解析'};
     const olTag = ol.length ? `<div class="meta"><span class="tag warn">⚠ 超长：${ol.map(x => olLabels[x] || x).join('、')}</span></div>` : '';
+    const selTag = canSelect
+      ? `<div class="actions" style="margin-top:4px"><label style="font-size:.8rem;display:flex;align-items:center;gap:4px"><input type="checkbox" class="q-check" data-id="${escapeHtml(q.id)}" ${q.selected ? 'checked' : ''}>下发此题</label></div>`
+      : (q.selected ? '<div class="meta"><span class="tag ok">已勾选下发</span></div>' : '');
     return `<div class="q-item" data-id="${escapeHtml(q.id)}">
       <div class="content"><b>Q${q.seq}.</b> ${escapeHtml(q.question)}</div>
       ${olTag}
+      ${selTag}
       <div class="meta">选项：${escapeHtml(opts)}</div>
       <div class="meta">答案：<b>${escapeHtml(q.answer)}</b> · 状态 <span class="tag ${q.status === 'approved' ? 'ok' : 'warn'}">${escapeHtml(q.status)}</span>${q.kb_faq_id ? ' · KB #' + escapeHtml(q.kb_faq_id) : ''}</div>
       <div class="meta">解析：${escapeHtml(q.explanation)}</div>
@@ -579,6 +581,9 @@ async function loadQuestions() {
       await apiPost('/api/admin/quiz/question/review', { question_id: id, action: b.dataset.act });
       loadQuestions();
     }
+  }));
+  box.querySelectorAll('.q-check').forEach(cb => cb.addEventListener('change', async () => {
+    await apiPost('/api/admin/quiz/question/select', { question_id: cb.dataset.id, selected: cb.checked });
   }));
 }
 

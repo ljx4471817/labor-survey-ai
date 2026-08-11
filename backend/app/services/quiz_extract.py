@@ -13,7 +13,7 @@ import re
 from difflib import SequenceMatcher
 from pathlib import Path
 
-from app.core.constants import QUIZ_RETRY_TIMES
+from app.core.constants import QUIZ_DEFAULT_KEYPOINTS, QUIZ_MAX_KEYPOINTS, QUIZ_RETRY_TIMES
 
 # 章节识别关键词（命中且行短 → 视为新章节标题）
 # 允许上传的文档类型：docx 走 python-docx；doc/wps 走本机 Word/WPS COM；
@@ -56,7 +56,7 @@ PROMPT1_SYSTEM = (
     "提取需要调查员记住并应用的要点，只输出 JSON。"
 )
 
-PROMPT1_USER = """从以下文件内容中提取可出题的要点。
+PROMPT1_USER = """从以下文件内容中提取 {keypoint_count} 个可出题的要点。
 
 ## 输入
 {notice_text}
@@ -73,7 +73,8 @@ PROMPT1_USER = """从以下文件内容中提取可出题的要点。
 2. 时间安排、通知对象、流程说明等不提取
 3. 每个要点聚焦一个知识点
 4. 常见错误来自实际填报中的典型误判
-5. 只输出 JSON，不要 markdown 代码块，不要任何解释"""
+5. 目标数量 {keypoint_count} 个：不足时按实际提取数量输出，不凑数、不重复
+6. 只输出 JSON，不要 markdown 代码块，不要任何解释"""
 
 
 def extract_docx_text(path: str) -> str:
@@ -372,12 +373,14 @@ def _llm_call_with_retry(llm_chat_fn, messages: list[dict], retries: int = 2) ->
                 _time.sleep(2 * (attempt + 1))
     raise last if last else RuntimeError("LLM 调用失败")
 
-def run_extraction(notice_text: str, llm_chat_fn) -> list[dict]:
-    """提取编排：分段 → Prompt1 → 解析（重试）→ 补 section/source_quote。"""
+def run_extraction(notice_text: str, llm_chat_fn, keypoint_count: int | None = None) -> list[dict]:
+    """提取编排：分段 → Prompt1（目标要点数）→ 解析（重试）→ 补 section/source_quote。"""
+    target = keypoint_count if keypoint_count is not None else QUIZ_DEFAULT_KEYPOINTS
+    target = max(1, min(int(target), QUIZ_MAX_KEYPOINTS))
     segments = segment_notice(notice_text)
     messages = [
         {"role": "system", "content": PROMPT1_SYSTEM},
-        {"role": "user", "content": PROMPT1_USER.format(notice_text=notice_text[:12000])},
+        {"role": "user", "content": PROMPT1_USER.format(notice_text=notice_text[:12000], keypoint_count=target)},
     ]
     keypoints = _llm_json(messages, llm_chat_fn, parse_keypoints, "要点提取")
     # 为每个要点补 source_quote：优先在其 section 段落里找

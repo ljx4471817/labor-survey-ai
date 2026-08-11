@@ -69,7 +69,7 @@ def _kb_ref(q: dict) -> dict | None:
 
 def _quiz_summary(quiz: dict, phone: str) -> dict:
     """组装单个测验的完整视图（题目 + 已答状态；未答题不泄露答案）。"""
-    questions = quiz_db.list_questions(quiz["id"])
+    questions = quiz_db.list_questions(quiz["id"], selected_only=True)
     answers = {a["q_id"]: a for a in quiz_db.get_answers(quiz["id"], phone)}
     views = []
     for q in questions:
@@ -157,6 +157,8 @@ def submit(req: QuizSubmitRequest, phone: str = Depends(require_user)) -> dict:
     q = quiz_db.get_question(req.q_id)
     if not q or q["quiz_id"] != req.quiz_id:
         raise HTTPException(404, "题目不存在")
+    if not q.get("selected"):
+        raise HTTPException(409, "该题未在本次测验中，不可作答")
     opts = _parse_options(q["options"])
     if not validate_selected(opts, req.selected):
         raise HTTPException(422, "选项不合法")

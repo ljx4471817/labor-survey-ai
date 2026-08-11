@@ -6,11 +6,11 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from app.core.constants import QUIZ_MAX_QUESTIONS
 
 
 class ExtractRequest(BaseModel):
     quiz_id: str = Field(..., min_length=1, max_length=32)
+    keypoint_count: int | None = Field(default=None, ge=1, le=30, description="目标提取要点数（备选出题池）；缺省=10")
 
 
 class KeypointReviewRequest(BaseModel):
@@ -22,7 +22,6 @@ class KeypointReviewRequest(BaseModel):
 class GenerateRequest(BaseModel):
     quiz_id: str = Field(..., min_length=1, max_length=32)
     keypoint_ids: list[str] = Field(..., min_length=1, max_length=20)
-    count: int | None = Field(default=None, ge=1, le=QUIZ_MAX_QUESTIONS, description="生成题数；缺省=全部勾选要点，每要点最多 1 题")
 
 
 class QuestionReviewRequest(BaseModel):
@@ -49,3 +48,8 @@ class SceneToggleRequest(BaseModel):
 
 class QuizDeleteRequest(BaseModel):
     quiz_id: str = Field(..., min_length=1, max_length=32)
+
+
+class QuestionSelectRequest(BaseModel):
+    question_id: str = Field(..., min_length=1, max_length=64)
+    selected: bool = True

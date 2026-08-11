@@ -53,7 +53,7 @@ def _seed_published(db, phone="13800000001", valid_days=7, approved=True):
     }])
     if approved:
         for q in db.list_questions(qid):
-            db.update_question(q["id"], status="approved")
+            db.update_question(q["id"], status="approved", selected=1)
     valid_until = (datetime.now(UTC8) + timedelta(days=valid_days)).isoformat(timespec="seconds")
     db.set_targets(qid, [phone])
     db.update_quiz(qid, status="published", valid_from=_now_iso(), valid_until=valid_until)

@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS questions (
     source_quote TEXT DEFAULT '',
     kb_faq_id    TEXT,
     kb_question  TEXT DEFAULT '',
+    selected     INTEGER NOT NULL DEFAULT 0,
     status       TEXT NOT NULL DEFAULT 'draft',
     created_by   TEXT NOT NULL,
     created_at   TEXT NOT NULL,
@@ -116,7 +117,9 @@ CREATE INDEX IF NOT EXISTS idx_answers_user ON answers(quiz_id, phone);
 CREATE INDEX IF NOT EXISTS idx_answers_phone ON answers(phone);
 """
 
-_MIGRATIONS: tuple[str, ...] = ()
+_MIGRATIONS: tuple[str, ...] = (
+    "ALTER TABLE questions ADD COLUMN selected INTEGER NOT NULL DEFAULT 0",
+)
 
 
 def _now() -> str:
@@ -421,15 +424,13 @@ def replace_questions(quiz_id: str, items: list[dict]) -> int:
         return len(items)
 
 
-def list_questions(quiz_id: str) -> list[dict]:
-    return [
-        dict(r)
-        for r in _get_conn()
-        .execute(
-            "SELECT * FROM questions WHERE quiz_id = ? ORDER BY seq", (quiz_id,)
-        )
-        .fetchall()
-    ]
+def list_questions(quiz_id: str, selected_only: bool = False) -> list[dict]:
+    """题目列表；selected_only=True 时只返回已勾选（试卷）题目。"""
+    sql = "SELECT * FROM questions WHERE quiz_id = ?"
+    if selected_only:
+        sql += " AND selected = 1"
+    sql += " ORDER BY seq"
+    return [dict(r) for r in _get_conn().execute(sql, (quiz_id,))]
 
 
 def get_question(question_id: str) -> dict | None:
@@ -438,17 +439,18 @@ def get_question(question_id: str) -> dict | None:
     )
 
 
-def count_questions(quiz_id: str) -> int:
-    row = _get_conn().execute(
-        "SELECT COUNT(*) AS c FROM questions WHERE quiz_id = ?", (quiz_id,)
-    ).fetchone()
+def count_questions(quiz_id: str, selected_only: bool = False) -> int:
+    sql = "SELECT COUNT(*) AS c FROM questions WHERE quiz_id = ?"
+    if selected_only:
+        sql += " AND selected = 1"
+    row = _get_conn().execute(sql, (quiz_id,)).fetchone()
     return row["c"] if row else 0
 
 
 def update_question(question_id: str, **fields) -> None:
     allowed = {
         "question", "options", "answer", "explanation", "source_quote",
-        "kb_faq_id", "kb_question", "status",
+        "kb_faq_id", "kb_question", "status", "selected",
     }
     sets, params = [], []
     for k, v in fields.items():
