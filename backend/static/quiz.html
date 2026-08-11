@@ -35,6 +35,9 @@ header a { font-size:13px; color:var(--c-brand); text-decoration:none; }
 main { padding:18px 16px; display:flex; flex-direction:column; gap:14px; }
 .card { background:var(--c-bg-elev); border:1px solid var(--c-line); border-radius:var(--radius-card); padding:16px; box-shadow:var(--shadow-1); }
 .section-title { font-size:13px; color:var(--c-ink-3); margin:6px 2px 10px; font-weight:600; letter-spacing:.03em; }
+.tab-row { display:flex; gap:8px; margin-bottom:12px; background:var(--c-bg-tint); border-radius:var(--radius-pill); padding:4px; }
+.tab-btn { flex:1; border:none; background:transparent; padding:8px 0; font-size:14px; font-weight:600; color:var(--c-ink-3); border-radius:var(--radius-pill); cursor:pointer; }
+.tab-btn.active { background:#fff; color:var(--c-brand); box-shadow:var(--shadow-1); }
 .quiz-item { display:block; width:100%; text-align:left; background:var(--c-bg-elev); border:1px solid var(--c-line); border-radius:var(--radius-card); padding:14px 16px; cursor:pointer; box-shadow:var(--shadow-1); margin-bottom:10px; }
 .quiz-item .q-title { font-size:15px; font-weight:600; color:var(--c-ink); }
 .quiz-item .q-meta { font-size:12px; color:var(--c-ink-3); margin-top:6px; display:flex; gap:8px; flex-wrap:wrap; }
@@ -88,15 +91,17 @@ main { padding:18px 16px; display:flex; flex-direction:column; gap:14px; }
 <body>
 <header>
   <a href="/">← 返回</a>
-  <h1 id="page-title">本月测验</h1>
+  <h1 id="page-title">我的测验</h1>
   <button class="logout-btn" onclick="logout()">退出登录</button>
 </header>
 <main id="app">
   <div id="view-list">
-    <p class="section-title">📝 本月测验</p>
-    <div id="current-box"></div>
-    <p class="section-title">🕘 历史记录</p>
-    <div id="history-box"></div>
+    <div class="tab-row">
+      <button class="tab-btn active" id="tab-todo">待完成</button>
+      <button class="tab-btn" id="tab-done">已完成 / 过期</button>
+    </div>
+    <div id="tab-todo-panel"><div id="current-box"></div></div>
+    <div id="tab-done-panel" style="display:none"><div id="history-box"></div></div>
   </div>
   <div id="view-quiz" style="display:none"></div>
 </main>
@@ -135,23 +140,53 @@ window.addEventListener('unhandledrejection', function (e) {
 
 async function init() {
   try {
-    await loadCurrent();
+    await loadMy();
   } catch (e) { /* 401 已由 handle401 处理 */ }
-  try {
-    await loadHistory();
-  } catch (e) { /* ignore */ }
 }
 
 function renderQuizItem(q) {
   const statusBadge = q.completed
     ? '<span class="badge ok">已完成</span>'
     : (q.answered > 0 ? '<span class="badge warn">进行中</span>' : '<span class="badge info">未做</span>');
+  const scene = q.scene ? `<span class="badge info">${escapeHtml(q.scene)}</span>` : '';
   const days = q.remaining_days != null ? `剩余 ${q.remaining_days} 天` : '';
   return `<button class="quiz-item" data-quiz="${escapeHtml(q.quiz_id)}">
     <div class="q-title">${escapeHtml(q.title)}</div>
-    <div class="q-meta">${statusBadge}<span>${q.answered}/${q.total} 题</span><span>${escapeHtml(days)}</span></div>
+    <div class="q-meta">${scene}${statusBadge}<span>${q.answered}/${q.total} 题</span><span>${escapeHtml(days)}</span></div>
   </button>`;
 }
+
+function renderDoneItem(q) {
+  const score = q.completed ? '<span class="badge ok">已完成</span>' : '<span class="badge warn">已过期</span>';
+  const scene = q.scene ? `<span class="badge info">${escapeHtml(q.scene)}</span>` : '';
+  return `<button class="quiz-item" data-quiz="${escapeHtml(q.quiz_id)}">
+    <div class="q-title">${escapeHtml(q.title)}</div>
+    <div class="q-meta">${scene}${score}<span>${q.answered}/${q.total} 题</span></div>
+  </button>`;
+}
+
+async function loadMy() {
+  const res = await fetch('/api/quiz/my', { headers: authHeader() });
+  if (await handle401(res)) return;
+  const data = await res.json();
+  const todo = data.todo || [];
+  const done = data.done || [];
+  const todoBox = $('current-box');
+  const doneBox = $('history-box');
+  todoBox.innerHTML = todo.length ? todo.map(renderQuizItem).join('') : '<div class="empty">暂无待完成测验</div>';
+  doneBox.innerHTML = done.length ? done.map(renderDoneItem).join('') : '<div class="empty">暂无已完成 / 过期测验</div>';
+  todoBox.querySelectorAll('.quiz-item').forEach(el => el.addEventListener('click', () => openQuiz(todo.find(i => i.quiz_id === el.dataset.quiz))));
+  doneBox.querySelectorAll('.quiz-item').forEach(el => el.addEventListener('click', () => openQuiz(done.find(i => i.quiz_id === el.dataset.quiz))));
+}
+
+function switchTab(which) {
+  $('tab-todo').classList.toggle('active', which === 'todo');
+  $('tab-done').classList.toggle('active', which === 'done');
+  $('tab-todo-panel').style.display = which === 'todo' ? '' : 'none';
+  $('tab-done-panel').style.display = which === 'done' ? '' : 'none';
+}
+$('tab-todo').addEventListener('click', () => switchTab('todo'));
+$('tab-done').addEventListener('click', () => switchTab('done'));
 
 async function loadCurrent() {
   const res = await fetch('/api/quiz/current', { headers: authHeader() });
@@ -227,6 +262,7 @@ function renderQuestion() {
 
   box.innerHTML = `
     <div class="card">
+      ${curQuiz.scene ? `<div class="q-meta"><span class="badge info">${escapeHtml(curQuiz.scene)}</span></div>` : ''}
       <div class="q-meta"><span class="badge info">第 ${curIndex + 1}/${curQuiz.total} 题</span><span style="font-size:12px;color:var(--c-ink-3)">已答 ${answeredCount}/${curQuiz.total}</span></div>
       <div class="progress-bar"><i style="width:${progress}%"></i></div>
       <p style="font-size:16px;font-weight:600;margin-bottom:14px">${escapeHtml(q.question)}</p>
@@ -281,15 +317,22 @@ function renderQuestion() {
 function showSummary() {
   const box = $('view-quiz');
   box.innerHTML = `<div class="card" style="text-align:center;padding:32px 20px">
-    <p style="color:var(--c-ink-3);font-size:14px">本月测验完成</p>
+    <p style="color:var(--c-ink-3);font-size:14px">测验完成</p>
     <div style="margin:16px 0"><span class="summary-num">${correctCount}</span><span style="font-size:20px;color:var(--c-ink-3)"> / ${curQuiz.total} 题掌握</span></div>
-    <p style="color:var(--c-ink-2);font-size:14px">答错的题目可到「历史记录」中复习。</p>
+    <p style="color:var(--c-ink-2);font-size:14px">答错的题目可到「已完成 / 过期」中复习。</p>
     <div class="row" style="justify-content:center;margin-top:22px">
-      <button class="btn btn-ghost" id="back-btn">返回首页</button>
+      <button class="btn btn-ghost" id="back-btn">返回测验列表</button>
     </div>
   </div>`;
-  $('back-btn').addEventListener('click', () => { location.href = '/'; });
+  $('back-btn').addEventListener('click', showList);
   $('page-title').textContent = '总结';
+}
+
+function showList() {
+  $('view-quiz').style.display = 'none';
+  $('view-list').style.display = '';
+  $('page-title').textContent = '我的测验';
+  loadMy();
 }
 
 function bindKbLinks() {

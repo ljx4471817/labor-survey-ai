@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:,">
-<title>月度测验管理 · 劳动力调查 AI 助手</title>
+<title>测验管理 · 劳动力调查 AI 助手</title>
 <style>
 :root {
   --ink-blue:#1E3A5F; --ink-blue-soft:#2d4f7a; --paper:#F7F4EE; --paper-dim:#ebe6da;
@@ -89,25 +89,31 @@ textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:
 </style>
 </head>
 <body>
-<header><h1>月度测验管理</h1><a class="back" href="/dashboard">← 看板</a><button class="logout-btn" onclick="logout()">退出登录</button></header>
+<header><h1>测验管理</h1><a class="back" href="/dashboard">← 看板</a><button class="logout-btn" onclick="logout()">退出登录</button></header>
 <main>
-  <div class="notice">流程：导入文档(.doc/.docx/.wps) → 提取要点 → 审核要点 → 生成题目 → 审核题目 → 下发 → 看统计。写操作即时生效。</div>
+  <div class="notice">流程：导入文件(.doc/.docx/.wps/.pdf/.pptx) → 提取要点 → 审核要点 → 生成题目 → 审核题目 → 下发 → 看统计。多场景：月度通知 / 新员工培训 / 季度年度培训等。写操作即时生效。</div>
 
   <section id="sec-list">
     <h2>测验列表</h2>
     <div class="row">
-      <input type="month" id="f-month" value="2026-08">
+      <select id="f-scene" style="min-width:140px"></select>
+      <input type="month" id="f-month" placeholder="按月份筛选（可选）">
       <button class="btn btn-ghost" id="btn-list">查询</button>
+      <button class="btn btn-ghost" id="btn-scenes">场景管理</button>
       <span style="flex:1"></span>
     </div>
     <div id="quiz-table" style="margin-top:10px"></div>
   </section>
 
   <section id="sec-import">
-    <h2><span class="step">①</span>导入月度通知</h2>
+    <h2><span class="step">①</span>导入文件</h2>
+    <div class="row" style="margin-bottom:8px">
+      <input type="text" id="imp-title" placeholder="测验标题（如：8月工作提示测试 / 新员工上岗培训测验）" style="flex:1">
+    </div>
     <div class="row">
-      <input type="month" id="imp-month" value="2026-08">
-      <input type="file" id="imp-file" accept=".doc,.docx,.wps">
+      <select id="imp-scene" style="min-width:140px"></select>
+      <input type="month" id="imp-month" placeholder="关联月份（可选）">
+      <input type="file" id="imp-file" accept=".doc,.docx,.wps,.pdf,.pptx" style="flex:1">
       <button class="btn" id="btn-import">上传并导入</button>
       <span class="muted" id="imp-msg"></span>
     </div>
@@ -123,8 +129,11 @@ textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:
   </section>
 
   <section id="sec-generate">
-    <h2><span class="step">③</span>生成题目（≤7 题）</h2>
+    <h2><span class="step">③</span>生成题目</h2>
     <div class="row">
+      <span class="muted">题量</span>
+      <input type="number" id="gen-count" min="1" max="20" value="7" style="width:80px">
+      <span class="muted">1-20 题，默认=勾选要点数（每要点最多 1 题）</span>
       <button class="btn" id="btn-generate" disabled>用所选要点生成</button>
       <span class="muted" id="generate-msg"></span>
     </div>
@@ -162,11 +171,26 @@ textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:
   </section>
 </main>
 
+<div id="scene-manager" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:50;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:10px;padding:18px;width:440px;max-width:92%">
+    <h2 style="margin-bottom:10px">场景管理</h2>
+    <p class="muted" style="margin-bottom:10px">场景用于测验分类与统计分组；可自定义新增（如半年培训），停用后历史测验仍保留场景名。</p>
+    <div id="scene-manager-body"></div>
+    <div class="row" style="margin-top:12px">
+      <input type="text" id="scene-new-name" placeholder="新场景名称" style="flex:1">
+      <button class="btn btn-sm" id="scene-add">新增场景</button>
+    </div>
+    <div class="row" style="margin-top:12px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" id="scene-close">关闭</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 <script src="/static/common.js"></script>
 <script>
 let curQuizId = null;
 let curQuizMonth = '2026-08';
+let scenes = [];
 let selectedPhones = new Set();
 let expandedKeys = new Set();  // '城市|角色' 展开的明细
 let polling = false;
@@ -224,21 +248,34 @@ async function init() {
   // 默认有效期 = 今天 + 7 天
   const d = new Date(); d.setDate(d.getDate() + 7);
   $('valid-until').value = d.toISOString().slice(0, 10);
+  await loadScenes();
   await loadQuizList();
   await loadTargets();  // 进入页面即加载下发对象，避免导入直通流程时目标列表空白
 }
 
 async function loadQuizList() {
-  const data = await api('/api/admin/quiz/list?month=' + encodeURIComponent($('f-month').value));
+  const params = new URLSearchParams();
+  if ($('f-month').value) params.set('month', $('f-month').value);
+  if ($('f-scene').value) params.set('scene', $('f-scene').value);
+  const data = await api('/api/admin/quiz/list?' + params.toString());
   if (!data) return;
   const rows = data.items.map(q => `<tr>
-    <td>${escapeHtml(q.month)}</td><td>${escapeHtml(q.title)}</td>
+    <td>${escapeHtml(q.month || '—')}</td><td><span class="tag info">${escapeHtml(q.scene || '其他')}</span> ${escapeHtml(q.title)}</td>
     <td><span class="tag ${q.status === 'published' ? 'ok' : (q.status === 'expired' ? 'warn' : 'info')}">${escapeHtml(q.status)}</span></td>
     <td>${q.questions} 题</td><td>${q.targets} 人</td><td>${q.completed} 完成</td>
-    <td><button class="btn btn-sm" data-q="${escapeHtml(q.quiz_id)}" data-m="${escapeHtml(q.month)}">管理</button></td>
+    <td>
+      <button class="btn btn-sm" data-q="${escapeHtml(q.quiz_id)}" data-m="${escapeHtml(q.month || '')}">管理</button>
+      ${(q.status === 'draft' || q.status === 'reviewing') ? `<button class="btn btn-bad btn-sm" data-del="${escapeHtml(q.quiz_id)}">删除</button>` : ''}
+    </td>
   </tr>`).join('');
   $('quiz-table').innerHTML = rows ? `<table><tr><th>月份</th><th>标题</th><th>状态</th><th>题目</th><th>目标</th><th>完成</th><th></th></tr>${rows}</table>` : '<div class="muted">暂无测验</div>';
-  $('quiz-table').querySelectorAll('button').forEach(b => b.addEventListener('click', () => selectQuiz(b.dataset.q, b.dataset.m)));
+  $('quiz-table').querySelectorAll('button[data-q]').forEach(b => b.addEventListener('click', () => selectQuiz(b.dataset.q, b.dataset.m)));
+  $('quiz-table').querySelectorAll('button[data-del]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('确定删除该测验？草稿/审核中的删除不可恢复。')) return;
+    await apiPost('/api/admin/quiz/delete', { quiz_id: b.dataset.del });
+    if (curQuizId === b.dataset.del) { curQuizId = null; $('keypoint-box').innerHTML = ''; $('question-box').innerHTML = ''; }
+    loadQuizList();
+  }));
 }
 
 async function selectQuiz(qid, month) {
@@ -255,33 +292,82 @@ async function selectQuiz(qid, month) {
 }
 
 $('btn-list').addEventListener('click', loadQuizList);
+$('f-scene').addEventListener('change', loadQuizList);
+$('btn-scenes').addEventListener('click', openSceneManager);
 $('f-month').addEventListener('change', loadQuizList);
+
+// --- 场景字典 / 题量默认值 ---
+async function loadScenes() {
+  const d = await api('/api/admin/quiz/scenes');
+  if (!d) return;
+  scenes = d.items || [];
+  const impSel = $('imp-scene');
+  impSel.innerHTML = scenes.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('') + '<option value="__new__">＋ 新增场景…</option>';
+  const fSel = $('f-scene');
+  fSel.innerHTML = '<option value="">全部场景</option>' + scenes.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
+}
+function impSelChange() {
+  if ($('imp-scene').value === '__new__') {
+    const name = prompt('新场景名称（如：半年培训）：');
+    if (name && name.trim()) {
+      apiPost('/api/admin/quiz/scenes', { name: name.trim() }).then(() => { loadScenes(); $('imp-scene').value = name.trim(); });
+    } else {
+      loadScenes();
+    }
+  }
+}
+$('imp-scene').addEventListener('change', impSelChange);
+function openSceneManager() {
+  api('/api/admin/quiz/scenes?include_inactive=true').then(d => {
+    if (!d) return;
+    const items = (d.items || []).map(s => `<div class="row" style="margin-bottom:6px">
+      <span style="flex:1">${escapeHtml(s.name)}</span>
+      <span class="tag ${s.active ? 'ok' : 'warn'}">${s.active ? '启用' : '停用'}</span>
+      <button class="btn btn-ghost btn-sm" data-scene="${escapeHtml(s.name)}" data-act="${s.active ? 'off' : 'on'}">${s.active ? '停用' : '启用'}</button>
+    </div>`).join('');
+    const box = $('scene-manager-body');
+    box.innerHTML = items || '<div class="muted">暂无场景</div>';
+    box.querySelectorAll('button[data-scene]').forEach(b => b.addEventListener('click', async () => {
+      await apiPost('/api/admin/quiz/scenes/toggle', { name: b.dataset.scene, active: b.dataset.act === 'on' });
+      openSceneManager(); loadScenes();
+    }));
+    $('scene-manager').style.display = 'flex';
+  });
+}
+$('scene-close').addEventListener('click', () => $('scene-manager').style.display = 'none');
+$('scene-add').addEventListener('click', async () => {
+  const name = $('scene-new-name').value.trim();
+  if (!name) { toast('请输入场景名称'); return; }
+  await apiPost('/api/admin/quiz/scenes', { name });
+  $('scene-new-name').value = '';
+  openSceneManager(); loadScenes();
+});
 
 // --- 导入 ---
 $('btn-import').addEventListener('click', async function () {
   var btn = $('btn-import');
   var orig = btn.textContent;
-  // 点击立即反馈：按钮变「导入中…」+ 底部提示，任何后续错误都会显示
   btn.disabled = true;
   btn.textContent = '导入中…';
   toast('正在上传并导入…');
-  console.log('import click: start');
   try {
+    var title = $('imp-title').value.trim();
+    if (!title) { toast('请填写测验标题', true); return; }
+    var scene = $('imp-scene').value;
+    if (!scene || scene === '__new__') { toast('请选择场景（可在场景管理/下拉中新增）', true); return; }
     var file = $('imp-file').files[0];
-    if (!file) {
-      toast('请先选择 .doc/.docx/.wps 文件（文件输入框右侧）再点导入', true);
-      return;
-    }
+    if (!file) { toast('请先选择文件（.doc/.docx/.wps/.pdf/.pptx）', true); return; }
     var ext = file.name.split('.').pop().toLowerCase();
-    if (['doc', 'docx', 'wps'].indexOf(ext) === -1) {
-      toast('仅支持 .doc/.docx/.wps 文件（当前：' + escapeHtml(file.name) + '）', true);
+    if (['doc', 'docx', 'wps', 'pdf', 'pptx'].indexOf(ext) === -1) {
+      toast('仅支持 .doc/.docx/.wps/.pdf/.pptx 文件（当前：' + file.name + '）', true);
       return;
     }
     var fd = new FormData();
-    fd.append('month', $('imp-month').value);
+    fd.append('title', title);
+    fd.append('scene', scene);
+    fd.append('month', $('imp-month').value || '');
     fd.append('file', file);
     var res = await fetch('/api/admin/quiz/import', { method: 'POST', headers: authHeader(), body: fd });
-    console.log('import response:', res.status);
     if (await handle401(res)) return;
     var data = {};
     try { data = await res.json(); } catch (e) { data = {}; }
@@ -289,7 +375,7 @@ $('btn-import').addEventListener('click', async function () {
     $('imp-msg').textContent = '已导入：' + data.filename;
     curQuizId = data.quiz_id;
     overLimitMap = {};
-    curQuizMonth = $('imp-month').value;
+    curQuizMonth = $('imp-month').value || '';
     $('btn-extract').disabled = false;
     $('btn-generate').disabled = false;
     $('sec-extract').scrollIntoView({ behavior: 'smooth' });
@@ -373,6 +459,8 @@ async function loadKeypoints() {
       </div>
     </div>`).join('')}
   `).join('');
+  const checkedN = document.querySelectorAll('.kp-check:checked').length;
+  if (checkedN > 0) $('gen-count').value = checkedN;
   box.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', async () => {
     const id = b.closest('.kp-item').dataset.id;
     if (b.dataset.act === 'edit') {
@@ -430,12 +518,28 @@ $('btn-generate').addEventListener('click', async () => {
   if (!curQuizId) { toast('请先选择测验'); return; }
   const ids = Array.from(document.querySelectorAll('.kp-check:checked')).map(c => c.closest('.kp-item').dataset.id);
   if (!ids.length) { toast('请先勾选要点（确认过的要点默认勾选）'); return; }
+  let count = parseInt($('gen-count').value, 10);
+  if (!count || count < 1) count = ids.length;
+  if (count > 20) { toast('题量上限 20 题'); return; }
   if (polling) return;
   polling = true;
   $('btn-generate').disabled = true;
-  $('generate-msg').textContent = '正在生成题目（最多7题，约 1-3 分钟）…';
-  const d = await apiPost('/api/admin/quiz/generate', { quiz_id: curQuizId, keypoint_ids: ids });
-  if (d) await pollTask('generate', d.task_id, async (result) => { overLimitMap = (result && result.over_limit) || {}; await loadQuestions(); $('generate-msg').textContent = '题目已生成'; });
+  $('generate-msg').textContent = '正在生成 ' + count + ' 题（约 1-3 分钟）…';
+  const d = await apiPost('/api/admin/quiz/generate', { quiz_id: curQuizId, keypoint_ids: ids, count: count });
+  if (d) await pollTask('generate', d.task_id, async (result) => {
+    overLimitMap = (result && result.over_limit) || {};
+    await loadQuestions();
+    let msg = '题目已生成';
+    const got = result && result.questions;
+    const req = result && result.requested;
+    const errs = (result && result.errors) || [];
+    if (req != null && got < req && !errs.length) {
+      msg = '要点不足：实际生成 ' + got + ' 题（你要求 ' + req + ' 题），请返回②补充/拆分要点';
+    } else if (errs.length) {
+      msg = '生成完成：' + got + ' 题，失败 ' + errs.length + ' 个要点';
+    }
+    $('generate-msg').textContent = msg;
+  });
   polling = false;
   $('btn-generate').disabled = false;
 });

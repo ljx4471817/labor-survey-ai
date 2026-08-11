@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""月度测验：管理端 API（import / extract / keypoints / generate / questions / publish / targets / stats / kb-search）。
+"""测验：管理端 API（import / extract / keypoints / generate / questions / publish / targets / stats / kb-search / scenes / delete）。
+
 
 权限：require_user + require_admin（admin_level ∈ 市级/省级，PRD v3 6.3）。
 异步任务：进程内内存任务表 + 线程池（单进程 uvicorn 假设，PRD v3 6.4）。
@@ -19,17 +20,23 @@ from loguru import logger
 from pathlib import Path
 
 from app.core.config import PROJECT_ROOT
-from app.core.constants import QUIZ_DEFAULT_VALID_DAYS, QUIZ_MAX_FILE_MB
+from app.core.constants import QUIZ_DEFAULT_VALID_DAYS, QUIZ_MAX_FILE_MB, QUIZ_MAX_QUESTIONS
+
 from app.infra.auth import require_admin
-from app.models.schemas.quiz_admin import (
-    ExtractRequest,
-    GenerateRequest,
-    KeypointReviewRequest,
-    PublishRequest,
-    QuestionReviewRequest,
-)
+from app.models.schemas.quiz_admin import (
+    ExtractRequest,
+    GenerateRequest,
+    KeypointReviewRequest,
+    PublishRequest,
+    QuestionReviewRequest,
+    QuizDeleteRequest,
+    SceneAddRequest,
+    SceneToggleRequest,
+)
+
 from app.persistence import quiz_db, whitelist_db
-from app.services.quiz_extract import ALLOWED_DOC_EXTENSIONS, extract_doc_text, run_extraction
+from app.services.quiz_extract import ALLOWED_DOC_EXTENSIONS, extract_file_text, run_extraction
+
 from app.services.quiz_generator import generate_questions, is_expired, match_kb, options_to_json
 
 router = APIRouter()
@@ -100,38 +107,34 @@ def _load_faq() -> list[dict]:
 
 # --- 导入 --------------------------------------------------------------------
 
-@router.post("/quiz/import")
-def quiz_import(
-    month: str = Form(..., pattern=r"^\d{4}-\d{2}$"),
-    file: UploadFile = File(...),
-    phone: str = Depends(require_admin),
-) -> dict:
-    """上传月度通知 docx（≤10MB，仅 .docx）。"""
-    filename = (file.filename or "").strip()
-    ext = Path(filename).suffix.lower()
-    if ext not in ALLOWED_DOC_EXTENSIONS:
-        raise HTTPException(400, "仅支持 .doc/.docx/.wps 文件")
-    raw = file.file.read()
-    if len(raw) > MAX_FILE_BYTES:
-        raise HTTPException(400, f"文件超过 {QUIZ_MAX_FILE_MB}MB 上限")
-    if quiz_db.has_published_quiz(month):
-        raise HTTPException(409, "该月已下发测验，不可重复导入")
-
-    import_id = quiz_db.create_import(month, filename, len(raw), phone)
-    # 复用或新建该月 draft/reviewing 的 quiz（重复导入 = 覆盖重建）
-    existing = [q for q in quiz_db.list_quizzes(month=month) if q["status"] in ("draft", "reviewing")]
-    if existing:
-        quiz_id = existing[0]["id"]
-        quiz_db.replace_keypoints(quiz_id, [])
-        quiz_db.replace_questions(quiz_id, [])
-    else:
-        quiz_id = quiz_db.create_quiz(month, f"{month} 劳动力调查月度测验", phone)
-
-    TMP_DIR.mkdir(parents=True, exist_ok=True)
-    tmp_path = TMP_DIR / f"{import_id}{ext}"
-    tmp_path.write_bytes(raw)
-    logger.info(f"quiz import: {import_id} quiz={quiz_id} size={len(raw)} by={phone[:3]}****")
-    return {"import_id": import_id, "quiz_id": quiz_id, "filename": filename}
+@router.post("/quiz/import")
+def quiz_import(
+    title: str = Form(..., min_length=1, max_length=80),
+    scene: str = Form(..., min_length=1, max_length=30),
+    month: str | None = Form(None, pattern=r"^\d{4}-\d{2}$"),
+    file: UploadFile = File(...),
+    phone: str = Depends(require_admin),
+) -> dict:
+    """导入上层文件（.doc/.docx/.wps/.pdf/.pptx，≤20MB）→ 新建测验（标题+场景+可选月份）。"""
+    filename = (file.filename or "").strip()
+    ext = Path(filename).suffix.lower()
+    if ext not in ALLOWED_DOC_EXTENSIONS:
+        raise HTTPException(400, "仅支持 .doc/.docx/.wps/.pdf/.pptx 文件")
+    raw = file.file.read()
+    if len(raw) > MAX_FILE_BYTES:
+        raise HTTPException(400, f"文件超过 {QUIZ_MAX_FILE_MB}MB 上限")
+    # 每次导入创建独立测验（多场景不再按月份防重）
+    month_val = (month or "").strip() or None
+    quiz_id = quiz_db.create_quiz(title=title.strip(), scene=scene.strip(), created_by=phone, month=month_val)
+    if scene.strip() not in {s["name"] for s in quiz_db.list_scenes(include_inactive=True)}:
+        quiz_db.add_scene(scene.strip())  # 场景不存在时自动登记（幂等）
+    import_id = quiz_db.create_import(quiz_id, month_val, filename, len(raw), phone)
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
+    tmp_path = TMP_DIR / f"{import_id}{ext}"
+    tmp_path.write_bytes(raw)
+    logger.info(f"quiz import: {import_id} quiz={quiz_id} scene={scene} size={len(raw)} by={phone[:3]}****")
+    return {"import_id": import_id, "quiz_id": quiz_id, "filename": filename, "title": title, "scene": scene}
+
 
 
 # --- 提取（异步） -------------------------------------------------------------
@@ -169,7 +172,8 @@ def _do_extract(import_id: str, quiz_id: str) -> dict:
     imp = quiz_db.get_import(import_id)
     ext = Path((imp or {}).get("filename", ".docx")).suffix
     tmp_path = TMP_DIR / f"{import_id}{ext}"
-    text = extract_doc_text(str(tmp_path))
+    text = extract_file_text(str(tmp_path))
+
     # 提取输出可能 >2000 tokens，提高上限避免截断导致 JSON 非法
     keypoints = run_extraction(text, lambda msgs: llm_chat(msgs, max_tokens=4000, timeout=90))
     matched = 0
@@ -196,9 +200,11 @@ def quiz_extract(req: ExtractRequest, phone: str = Depends(require_admin)) -> di
         raise HTTPException(404, "测验不存在")
     if quiz["status"] not in ("draft", "reviewing"):
         raise HTTPException(409, "测验已下发或归档，不可提取")
-    imp = quiz_db.latest_import_for_month(quiz["month"])
+    imp = quiz_db.latest_import_for_quiz(req.quiz_id)
+
     if not imp:
-        raise HTTPException(409, "该月还没有导入记录")
+        raise HTTPException(409, "该测验还没有导入记录")
+
     task_id = _submit_task("extract", _do_extract, imp["id"], req.quiz_id)
     return {"task_id": task_id, "status": "processing"}
 
@@ -233,10 +239,10 @@ def quiz_keypoint_review(req: KeypointReviewRequest, phone: str = Depends(requir
 
 # --- 出题（异步） -------------------------------------------------------------
 
-def _do_generate(quiz_id: str, keypoints: list[dict], phone: str) -> dict:
+def _do_generate(quiz_id: str, keypoints: list[dict], phone: str, count: int | None) -> dict:
     llm_chat = _get_llm_chat()
     questions, errors = generate_questions(
-        keypoints, lambda msgs: llm_chat(msgs, max_tokens=1500, timeout=90)
+        keypoints, lambda msgs: llm_chat(msgs, max_tokens=1500, timeout=90), count=count
     )
     # over_limit 仅作生成提示（软校验），不入库；按 seq 汇总，前端会话内展示 ⚠
     over_limit: dict[str, list[str]] = {}
@@ -248,22 +254,33 @@ def _do_generate(quiz_id: str, keypoints: list[dict], phone: str) -> dict:
         store_q = {k: v for k, v in q.items() if k != "over_limit"}
         store_items.append({**store_q, "options": options_to_json(q["options"]), "created_by": phone})
     quiz_db.replace_questions(quiz_id, store_items)
-    return {"quiz_id": quiz_id, "questions": len(questions), "errors": errors, "over_limit": over_limit}
+    return {
+        "quiz_id": quiz_id,
+        "questions": len(questions),
+        "requested": count,
+        "keypoints": len(keypoints),
+        "errors": errors,
+        "over_limit": over_limit,
+    }
 
 
 
 @router.post("/quiz/generate")
-def quiz_generate(req: GenerateRequest, phone: str = Depends(require_admin)) -> dict:
-    quiz = quiz_db.get_quiz(req.quiz_id)
-    if not quiz:
-        raise HTTPException(404, "测验不存在")
-    if quiz["status"] not in ("draft", "reviewing"):
-        raise HTTPException(409, "测验已下发或归档，不可生成题目")
-    kps = [kp for kp in quiz_db.list_keypoints(req.quiz_id) if kp["id"] in req.keypoint_ids]
-    if not kps:
-        raise HTTPException(422, "未选择有效要点")
-    task_id = _submit_task("generate", _do_generate, req.quiz_id, kps, phone)
-    return {"task_id": task_id, "status": "processing"}
+def quiz_generate(req: GenerateRequest, phone: str = Depends(require_admin)) -> dict:
+    quiz = quiz_db.get_quiz(req.quiz_id)
+    if not quiz:
+        raise HTTPException(404, "测验不存在")
+    if quiz["status"] not in ("draft", "reviewing"):
+        raise HTTPException(409, "测验已下发或归档，不可生成题目")
+    kps = [kp for kp in quiz_db.list_keypoints(req.quiz_id) if kp["id"] in req.keypoint_ids]
+    if not kps:
+        raise HTTPException(422, "未选择有效要点")
+    count = req.count
+    if count is not None:
+        count = max(1, min(count, QUIZ_MAX_QUESTIONS))
+    task_id = _submit_task("generate", _do_generate, req.quiz_id, kps, phone, count)
+    return {"task_id": task_id, "status": "processing"}
+
 
 
 @router.get("/quiz/generate/status/{task_id}")
@@ -414,26 +431,32 @@ def quiz_whoami(phone: str = Depends(require_admin)) -> dict:
     return {"admin_level": (user or {}).get("admin_level", "")}
 
 
-@router.get("/quiz/list")
-def quiz_list(month: str | None = Query(None, pattern=r"^\d{4}-\d{2}$"), phone: str = Depends(require_admin)) -> dict:
-    """管理端测验列表（含基础统计）。"""
-    quiz_db.sync_expired()
-    items = []
-    for q in quiz_db.list_quizzes(month=month):
-        total = quiz_db.count_questions(q["id"])
-        items.append({
-            "quiz_id": q["id"],
-            "month": q["month"],
-            "title": q["title"],
-            "status": q["status"],
-            "valid_from": q.get("valid_from"),
-            "valid_until": q.get("valid_until"),
-            "questions": total,
-            "targets": quiz_db.count_targets(q["id"]),
-            "completed": _count_completed(q["id"], total),
-            "created_at": q.get("created_at"),
-        })
-    return {"items": items}
+@router.get("/quiz/list")
+def quiz_list(
+    month: str | None = Query(None, pattern=r"^\d{4}-\d{2}$"),
+    scene: str | None = Query(None, max_length=30),
+    phone: str = Depends(require_admin),
+) -> dict:
+    """管理端测验列表（含基础统计）；可按可选月份/场景筛选。"""
+    quiz_db.sync_expired()
+    items = []
+    for q in quiz_db.list_quizzes(month=month, scene=scene):
+        total = quiz_db.count_questions(q["id"])
+        items.append({
+            "quiz_id": q["id"],
+            "month": q["month"],
+            "scene": q.get("scene") or "",
+            "title": q["title"],
+            "status": q["status"],
+            "valid_from": q.get("valid_from"),
+            "valid_until": q.get("valid_until"),
+            "questions": total,
+            "targets": quiz_db.count_targets(q["id"]),
+            "completed": _count_completed(q["id"], total),
+            "created_at": q.get("created_at"),
+        })
+    return {"items": items}
+
 
 
 def _count_completed(quiz_id: str, total: int) -> int:
@@ -562,3 +585,43 @@ def quiz_kb_search(q: str = Query(..., min_length=1, max_length=50), phone: str 
             break
     return {"items": items}
 
+
+# --- 场景字典 / 删除 ----------------------------------------------------------
+
+@router.get("/quiz/scenes")
+def quiz_scenes(include_inactive: bool = Query(False), phone: str = Depends(require_admin)) -> dict:
+    """场景字典列表（含内置默认场景）。"""
+    quiz_db.ensure_default_scenes()
+    return {"items": quiz_db.list_scenes(include_inactive=include_inactive)}
+
+
+@router.post("/quiz/scenes")
+def quiz_scene_add(req: SceneAddRequest, phone: str = Depends(require_admin)) -> dict:
+    """新增场景（重名返回 created=False，不报错）。"""
+    try:
+        created = quiz_db.add_scene(req.name)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    return {"ok": True, "created": created}
+
+
+@router.post("/quiz/scenes/toggle")
+def quiz_scene_toggle(req: SceneToggleRequest, phone: str = Depends(require_admin)) -> dict:
+    """停用/启用场景（历史测验保留场景名）。"""
+    if not quiz_db.set_scene_active(req.name, req.active):
+        raise HTTPException(404, "场景不存在")
+    return {"ok": True}
+
+
+@router.post("/quiz/delete")
+def quiz_delete(req: QuizDeleteRequest, phone: str = Depends(require_admin)) -> dict:
+    """删除测验（仅 draft/reviewing；连带清要点/题目/目标/答题/导入）。"""
+    quiz = quiz_db.get_quiz(req.quiz_id)
+    if not quiz:
+        raise HTTPException(404, "测验不存在")
+    if quiz["status"] not in ("draft", "reviewing"):
+        raise HTTPException(409, "仅草稿/审核中的测验可删除")
+    quiz_db.delete_quiz(req.quiz_id)
+    logger.info(f"quiz delete: {req.quiz_id} by={phone[:3]}****")
+    return {"ok": True}
+

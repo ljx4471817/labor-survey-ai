@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from app.core.constants import QUIZ_KB_MATCH_THRESHOLD, QUIZ_MAX_QUESTIONS
+from app.core.constants import QUIZ_KB_MATCH_THRESHOLD
 from app.services import quiz_generator as qg
 
 
@@ -38,13 +38,35 @@ def test_parse_question_answer_not_in_options():
     assert qg.parse_question(bad) is None
 
 
-def test_generate_questions_respects_max():
+def test_generate_questions_count_cap():
+    def fake_llm(messages):
+        return _valid_qraw()
+
+    keypoints = [{"content": f"要点{i}", "source_quote": "s"} for i in range(10)]
+    # count 指定题数：取前 N 个要点
+    qs, errs = qg.generate_questions(keypoints, fake_llm, count=5)
+    assert len(qs) == 5
+    assert errs == []
+
+
+def test_generate_questions_count_none_all():
     def fake_llm(messages):
         return _valid_qraw()
 
     keypoints = [{"content": f"要点{i}", "source_quote": "s"} for i in range(10)]
     qs, errs = qg.generate_questions(keypoints, fake_llm)
-    assert len(qs) == QUIZ_MAX_QUESTIONS
+    assert len(qs) == 10
+    assert errs == []
+
+
+def test_generate_questions_count_over_keypoints():
+    def fake_llm(messages):
+        return _valid_qraw()
+
+    keypoints = [{"content": f"要点{i}", "source_quote": "s"} for i in range(3)]
+    # 要点不足：实际生成 min(count, 要点数) 题
+    qs, errs = qg.generate_questions(keypoints, fake_llm, count=20)
+    assert len(qs) == 3
     assert errs == []
 
 
@@ -59,7 +81,7 @@ def test_generate_questions_skips_failing_keypoint():
         return _valid_qraw()
 
     keypoints = [{"content": "坏要点", "source_quote": "s"}, {"content": "好要点", "source_quote": "s"}]
-    qs, errs = qg.generate_questions(keypoints, fake_llm, max_questions=2)
+    qs, errs = qg.generate_questions(keypoints, fake_llm, count=2)
     # 坏要点重试后仍失败 → 跳过并记录 error；好要点成功
     assert len(errs) == 1
     assert len(qs) == 1

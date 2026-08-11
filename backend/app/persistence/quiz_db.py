@@ -1,13 +1,14 @@
 ﻿# -*- coding: utf-8 -*-
-"""月度测验系统 SQLite 持久化。
+"""测验系统 SQLite 持久化（多场景：月度通知 / 培训 / 自定义）。
 
-独立于 whitelist.db / query_log.db 的新库 backend/data/quiz.db（PRD v3 C1 已确认）。
-schema 见 PRD v3 5.1 DDL。模式参照 persistence/whitelist_db.py：
+独立于 whitelist.db / query_log.db 的新库 backend/data/quiz.db。
+schema 见 PRD v5 5.1 DDL。模式参照 persistence/whitelist_db.py：
 - _SCHEMA + 幂等迁移 + 懒连接 + WAL
 - 时区一律 UTC+8 ISO8601 seconds
 
-quiz（套）是下发与统计的最小单位；month 仅筛选。过期状态读取时推导，
-清理任务负责归档与 12 个月数据保留。
+quiz（套）是下发与统计的最小单位；month 是可选标签（统一字段，不参与
+唯一/排序），scene 是场景名称（scenes 字典，可自定义新增）。过期状态
+读取时推导，清理任务负责归档与 12 个月数据保留。
 """
 from __future__ import annotations
 
@@ -18,7 +19,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 from app.core.config import PROJECT_ROOT
-from app.core.constants import QUIZ_RETENTION_DAYS
+from app.core.constants import QUIZ_DEFAULT_SCENES, QUIZ_RETENTION_DAYS
 
 # QUIZ_DB_PATH 可用环境变量覆盖（测试/演示隔离库用）；默认 backend/data/quiz.db
 DB_PATH = Path(os.environ.get("QUIZ_DB_PATH", str(PROJECT_ROOT / "backend" / "data" / "quiz.db")))
@@ -27,7 +28,8 @@ UTC8 = timezone(timedelta(hours=8))
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS quizzes (
     id          TEXT PRIMARY KEY,
-    month       TEXT NOT NULL,
+    month       TEXT,
+    scene       TEXT NOT NULL DEFAULT '',
     title       TEXT NOT NULL,
     status      TEXT NOT NULL DEFAULT 'draft',
     valid_from  TEXT,
@@ -38,9 +40,17 @@ CREATE TABLE IF NOT EXISTS quizzes (
 );
 CREATE INDEX IF NOT EXISTS idx_quizzes_month ON quizzes(month);
 
+CREATE TABLE IF NOT EXISTS scenes (
+    name       TEXT PRIMARY KEY,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    active     INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS imports (
     id              TEXT PRIMARY KEY,
-    month           TEXT NOT NULL,
+    quiz_id         TEXT NOT NULL,
+    month           TEXT,
     filename        TEXT NOT NULL,
     file_size       INTEGER NOT NULL,
     status          TEXT NOT NULL DEFAULT 'imported',
@@ -163,10 +173,6 @@ def _row(d: dict | None) -> dict | None:
 
 # --- id 生成 -----------------------------------------------------------------
 
-def _month_digits(month: str) -> str:
-    return month.replace("-", "")
-
-
 def _next_seq(table: str, column: str, prefix: str) -> int:
     """按前缀统计序号，用于 Q/IMP 的月份内序号。"""
     conn = _get_conn()
@@ -179,17 +185,17 @@ def _next_seq(table: str, column: str, prefix: str) -> int:
 
 # --- quizzes -----------------------------------------------------------------
 
-def create_quiz(month: str, title: str, created_by: str) -> str:
-    """新建 quiz（draft）。id = Q + YYYYMM + 月份内序号。"""
+def create_quiz(title: str, scene: str = "", created_by: str = "", month: str | None = None) -> str:
+    """新建 quiz（draft）。id = Q + 全局序号；month 为可选标签（多场景统一字段）。"""
     now = _now()
     with _WRITE_LOCK:
-        seq = _next_seq("quizzes", "id", "Q" + _month_digits(month))
-        quiz_id = f"Q{_month_digits(month)}{seq:02d}"
+        seq = _next_seq("quizzes", "id", "Q")
+        quiz_id = f"Q{seq:04d}"
         conn = _get_conn()
         conn.execute(
-            "INSERT INTO quizzes (id, month, title, status, created_by, created_at, updated_at) "
-            "VALUES (?, ?, ?, 'draft', ?, ?, ?)",
-            (quiz_id, month, title, created_by, now, now),
+            "INSERT INTO quizzes (id, month, scene, title, status, created_by, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, 'draft', ?, ?, ?)",
+            (quiz_id, month, scene, title, created_by, now, now),
         )
         conn.commit()
     return quiz_id
@@ -201,24 +207,27 @@ def get_quiz(quiz_id: str) -> dict | None:
     ).fetchone()
     return _row(row)
 
-def list_quizzes(month: str | None = None, status: str | None = None) -> list[dict]:
+def list_quizzes(month: str | None = None, scene: str | None = None, status: str | None = None) -> list[dict]:
     sql = "SELECT * FROM quizzes"
     clauses, params = [], []
     if month:
         clauses.append("month = ?")
         params.append(month)
+    if scene:
+        clauses.append("scene = ?")
+        params.append(scene)
     if status:
         clauses.append("status = ?")
         params.append(status)
     if clauses:
         sql += " WHERE " + " AND ".join(clauses)
-    sql += " ORDER BY month DESC, id DESC"
+    sql += " ORDER BY created_at DESC, id DESC"
     return [dict(r) for r in _get_conn().execute(sql, params)]
 
 
 def update_quiz(quiz_id: str, **fields) -> None:
     """按字段白名单更新 quiz。"""
-    allowed = {"title", "status", "valid_from", "valid_until"}
+    allowed = {"title", "status", "valid_from", "valid_until", "month", "scene"}
     sets, params = [], []
     for k, v in fields.items():
         if k not in allowed:
@@ -237,14 +246,6 @@ def update_quiz(quiz_id: str, **fields) -> None:
         conn.commit()
 
 
-def has_published_quiz(month: str) -> bool:
-    row = _get_conn().execute(
-        "SELECT 1 FROM quizzes WHERE month = ? AND status IN ('published', 'expired') LIMIT 1",
-        (month,),
-    ).fetchone()
-    return row is not None
-
-
 def sync_expired(now_iso: str | None = None) -> int:
     """把超过有效期的 published quiz 批量置为 expired，返回更新条数。"""
     now_iso = now_iso or _now()
@@ -261,16 +262,17 @@ def sync_expired(now_iso: str | None = None) -> int:
 
 # --- imports -----------------------------------------------------------------
 
-def create_import(month: str, filename: str, file_size: int, extracted_by: str) -> str:
+def create_import(quiz_id: str, month: str | None, filename: str, file_size: int, extracted_by: str) -> str:
+    """新建导入记录，关联 quiz（替代旧的按 month 关联）。id = IMP + 全局序号。"""
     now = _now()
     with _WRITE_LOCK:
-        seq = _next_seq("imports", "id", "IMP" + _month_digits(month))
-        import_id = f"IMP{_month_digits(month)}{seq:02d}"
+        seq = _next_seq("imports", "id", "IMP")
+        import_id = f"IMP{seq:04d}"
         conn = _get_conn()
         conn.execute(
-            "INSERT INTO imports (id, month, filename, file_size, status, extracted_by, extracted_at) "
-            "VALUES (?, ?, ?, ?, 'imported', ?, ?)",
-            (import_id, month, filename, file_size, extracted_by, now),
+            "INSERT INTO imports (id, quiz_id, month, filename, file_size, status, extracted_by, extracted_at) "
+            "VALUES (?, ?, ?, ?, ?, 'imported', ?, ?)",
+            (import_id, quiz_id, month, filename, file_size, extracted_by, now),
         )
         conn.commit()
     return import_id
@@ -301,11 +303,11 @@ def update_import(import_id: str, **fields) -> None:
         conn.commit()
 
 
-def latest_import_for_month(month: str) -> dict | None:
-    """返回该月最近的导入记录（用于按 quiz 触发提取）。"""
+def latest_import_for_quiz(quiz_id: str) -> dict | None:
+    """返回该测验最近的导入记录（用于触发提取）。"""
     row = _get_conn().execute(
-        "SELECT * FROM imports WHERE month = ? ORDER BY extracted_at DESC, id DESC LIMIT 1",
-        (month,),
+        "SELECT * FROM imports WHERE quiz_id = ? ORDER BY extracted_at DESC, id DESC LIMIT 1",
+        (quiz_id,),
     ).fetchone()
     return _row(row)
 
@@ -614,10 +616,73 @@ def list_active_for_user(phone: str, now_iso: str | None = None) -> list[dict]:
         "SELECT q.* FROM quizzes q JOIN targets t ON q.id = t.quiz_id "
         "WHERE t.phone = ? AND q.status = 'published' "
         "AND (q.valid_until IS NULL OR q.valid_until >= ?) "
-        "ORDER BY q.month DESC, q.id DESC",
+        "ORDER BY q.created_at DESC, q.id DESC",
         (phone, now_iso),
     ).fetchall()
     return [dict(r) for r in rows]
+
+
+# --- 场景字典（可自定义新增/停用）-----------------------------------------------
+
+def ensure_default_scenes() -> None:
+    """首次初始化内置场景（幂等，已存在不覆盖）。"""
+    with _WRITE_LOCK:
+        conn = _get_conn()
+        for i, name in enumerate(QUIZ_DEFAULT_SCENES, start=1):
+            conn.execute(
+                "INSERT OR IGNORE INTO scenes (name, sort_order, active, created_at) VALUES (?, ?, 1, ?)",
+                (name, i, _now()),
+            )
+        conn.commit()
+
+
+def list_scenes(include_inactive: bool = False) -> list[dict]:
+    """场景字典；默认只返回启用项，按 sort_order 排序。"""
+    sql = "SELECT * FROM scenes"
+    if not include_inactive:
+        sql += " WHERE active = 1"
+    sql += " ORDER BY sort_order, name"
+    return [dict(r) for r in _get_conn().execute(sql)]
+
+
+def add_scene(name: str) -> bool:
+    """新增场景；重名返回 False（保持原名，避免统计分裂）。"""
+    name = (name or "").strip()
+    if not name:
+        raise ValueError("场景名称不能为空")
+    with _WRITE_LOCK:
+        conn = _get_conn()
+        exists = conn.execute("SELECT 1 FROM scenes WHERE name = ?", (name,)).fetchone()
+        if exists:
+            return False
+        row = conn.execute("SELECT COALESCE(MAX(sort_order), 0) AS m FROM scenes").fetchone()
+        conn.execute(
+            "INSERT INTO scenes (name, sort_order, active, created_at) VALUES (?, ?, 1, ?)",
+            (name, (row["m"] or 0) + 1, _now()),
+        )
+        conn.commit()
+        return True
+
+
+def set_scene_active(name: str, active: bool) -> bool:
+    """停用/启用场景；返回是否更新成功（历史测验仍保留场景名）。"""
+    with _WRITE_LOCK:
+        conn = _get_conn()
+        cur = conn.execute(
+            "UPDATE scenes SET active = ? WHERE name = ?", (1 if active else 0, name)
+        )
+        conn.commit()
+        return cur.rowcount > 0
+
+
+def delete_quiz(quiz_id: str) -> None:
+    """删除测验：连带清 keypoints/questions/targets/answers/imports（API 层仅放行 draft/reviewing）。"""
+    with _WRITE_LOCK:
+        conn = _get_conn()
+        for tbl in ("answers", "targets", "questions", "keypoints", "imports"):
+            conn.execute(f"DELETE FROM {tbl} WHERE quiz_id = ?", (quiz_id,))
+        conn.execute("DELETE FROM quizzes WHERE id = ?", (quiz_id,))
+        conn.commit()
 
 
 # --- 清理 / 保留 -------------------------------------------------------------
@@ -631,16 +696,15 @@ def cleanup_expired(now_iso: str | None = None) -> dict:
     with _WRITE_LOCK:
         conn = _get_conn()
         rows = conn.execute(
-            "SELECT id, month FROM quizzes "
+            "SELECT id FROM quizzes "
             "WHERE status != 'archived' AND valid_until IS NOT NULL AND valid_until < ?",
             (cutoff,),
         ).fetchall()
         archived = 0
         for r in rows:
-            qid, month = r["id"], r["month"]
-            for tbl in ("answers", "targets", "questions", "keypoints"):
+            qid = r["id"]
+            for tbl in ("answers", "targets", "questions", "keypoints", "imports"):
                 conn.execute(f"DELETE FROM {tbl} WHERE quiz_id = ?", (qid,))
-            conn.execute("DELETE FROM imports WHERE month = ?", (month,))
             conn.execute(
                 "UPDATE quizzes SET status = 'archived', updated_at = ? WHERE id = ?",
                 (now_iso, qid),

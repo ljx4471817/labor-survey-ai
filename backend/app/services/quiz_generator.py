@@ -121,19 +121,20 @@ def _generate_one(kp: dict, llm_chat_fn) -> tuple[dict | None, dict | None]:
 def generate_questions(
     keypoints: list[dict],
     llm_chat_fn,
-    max_questions: int = QUIZ_MAX_QUESTIONS,
+    count: int | None = None,
 ) -> tuple[list[dict], list[dict]]:
-    """逐要点生成题目（≤max_questions），并行调用 LLM 缩短耗时。
+    """按要点生成题目；count 指定生成题数（每要点最多 1 题，实际取 min(count, 要点数)）。
 
-    单个要点失败（连续非法 JSON）→ 跳过并记录 errors，不影响其它要点。
+    count=None 表示全部要点；单个要点失败（连续非法 JSON）→ 跳过并记录 errors。
     返回 (questions, errors)，顺序与 keypoints 一致。
     """
     from concurrent.futures import ThreadPoolExecutor
 
+    take = keypoints[: max(0, min(count, len(keypoints)))] if count is not None else keypoints
     questions: list[dict] = []
     errors: list[dict] = []
     with ThreadPoolExecutor(max_workers=4) as ex:
-        futures = [ex.submit(_generate_one, kp, llm_chat_fn) for kp in keypoints[:max_questions]]
+        futures = [ex.submit(_generate_one, kp, llm_chat_fn) for kp in take]
         for fut in futures:
             q, err = fut.result()
             if err:

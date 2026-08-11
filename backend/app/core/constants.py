@@ -112,7 +112,7 @@ class QuizSection(str, Enum):
 
 
 # 生成 / 提取的硬约束
-QUIZ_MAX_QUESTIONS: int = 7          # 每套测验上限
+QUIZ_MAX_QUESTIONS: int = 20         # 每套测验生成上限（管理端 1-20 自控）
 QUIZ_DEFAULT_VALID_DAYS: int = 7     # 默认有效期（天）
 QUIZ_KB_MATCH_THRESHOLD: float = 0.6  # KB 关联向量 cosine 阈值
 QUIZ_EXTRACT_TIMEOUT_S: int = 120     # 提取/出题任务总超时
@@ -120,6 +120,7 @@ QUIZ_RETRY_TIMES: int = 2             # LLM JSON 解析重试次数
 QUIZ_QUESTION_MAX_LEN: int = 45   # 题干最大字数（降阅读压力）
 QUIZ_OPTION_MAX_LEN: int = 15     # 单选项最大字数
 QUIZ_EXPLANATION_MAX_LEN: int = 80  # 解析最大字数
-QUIZ_MAX_FILE_MB: int = 10            # docx 上传上限
+QUIZ_MAX_FILE_MB: int = 20            # 文件上传上限（MB）
 QUIZ_DATA_RETENTION_MONTHS: int = 12  # 答题记录保留月数
 QUIZ_RETENTION_DAYS: int = QUIZ_DATA_RETENTION_MONTHS * 30  # 清理阈值（天）
+QUIZ_DEFAULT_SCENES: tuple[str, ...] = ("月度通知", "新员工培训", "季度培训", "年度培训", "其他")  # 场景字典初始值（可自定义新增）

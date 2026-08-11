@@ -76,7 +76,7 @@ def test_full_quiz_flow_e2e(e2e_env, tmp_path):
             with open(docx_path, "rb") as f:
                 r = await c.post(
                     "/api/admin/quiz/import",
-                    data={"month": "2026-08"},
+                    data={"title": "8月工作提示测试", "scene": "月度通知", "month": "2026-08"},
                     files={"file": ("8月工作提示.docx", f, "application/octet-stream")},
                 )
             assert r.status_code == 200, r.text

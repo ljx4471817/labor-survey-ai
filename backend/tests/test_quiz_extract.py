@@ -224,3 +224,62 @@ class _FakeTmp:
 
     def __exit__(self, *a):
         pass
+# --- 多格式文本提取（PRD v5：word/ppt/pdf）---
+
+
+def _make_pdf(path: str, text: str = "Hello Survey PDF") -> None:
+    """构造最小合法 PDF（Helvetica 文本层），供 pdfplumber 提取。"""
+    from pathlib import Path
+    objs = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+    ]
+    stream = f"BT /F1 18 Tf 100 700 Td ({text}) Tj ET".encode()
+    objs.append(b"<< /Length " + str(len(stream)).encode() + b" >>\nstream\n" + stream + b"\nendstream")
+    objs.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+    out = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for i, o in enumerate(objs, 1):
+        offsets.append(len(out))
+        out += f"{i} 0 obj\n".encode() + o + b"\nendobj\n"
+    xref_pos = len(out)
+    out += f"xref\n0 {len(objs) + 1}\n".encode()
+    out += b"0000000000 65535 f \n"
+    for off in offsets[1:]:
+        out += f"{off:010d} 00000 n \n".encode()
+    out += f"trailer\n<< /Size {len(objs) + 1} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF".encode()
+    Path(path).write_bytes(bytes(out))
+
+
+def test_extract_pdf_text(tmp_path):
+    from app.services.quiz_extract import extract_pdf_text
+
+    p = tmp_path / "材料.pdf"
+    _make_pdf(str(p), "Hello Survey PDF")
+    text = extract_pdf_text(str(p))
+    assert "Hello Survey PDF" in text
+
+
+def test_extract_pptx_text(tmp_path):
+    from app.services.quiz_extract import extract_pptx_text
+    from pptx import Presentation
+    from pptx.util import Inches
+
+    p = tmp_path / "培训.pptx"
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    tb = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(6), Inches(1))
+    tb.text_frame.text = "新员工上岗培训要点：参考周为8月3-9日"
+    slide.notes_slide.notes_text_frame.text = "备注：强调参考周"
+    prs.save(p)
+    text = extract_pptx_text(str(p))
+    assert "参考周" in text and "备注" in text
+
+
+def test_extract_file_text_dispatches(tmp_path):
+    from app.services.quiz_extract import extract_file_text
+
+    p = tmp_path / "材料.pdf"
+    _make_pdf(str(p), "Hello Survey PDF")
+    assert "Hello Survey PDF" in extract_file_text(str(p))

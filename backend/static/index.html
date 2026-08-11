@@ -842,22 +842,27 @@
 
 
 
-    // 本月测验入口：目标用户且存在 published 未过期测验才显示
+    // 我的测验入口：存在待做/已完成测验才显示（多场景并存）
     (async function () {
       const qc = document.getElementById('quiz-card');
       if (!qc) return;
       try {
-        const res = await fetch('/api/quiz/current', { headers: authHeader() });
+        const res = await fetch('/api/quiz/my', { headers: authHeader() });
         if (await handle401(res)) return;
         const data = await res.json();
-        if (!data.items || data.items.length === 0) return;
-        const q = data.items[0];
-        const badge = q.completed ? '已完成'
-          : (q.answered > 0 ? '进行中' : (q.remaining_days != null ? q.remaining_days + ' 天' : '未做'));
-        const sub = q.completed ? '本月测验已完成，可查看历史记录'
-          : ('已答 ' + q.answered + '/' + q.total + ' 题 · 剩余 ' + (q.remaining_days != null ? q.remaining_days + ' 天' : '有效期至 ' + (q.valid_until || '').slice(0, 10)));
+        const todo = data.todo || [];
+        const done = data.done || [];
+        if (!todo.length && !done.length) return;
+        const badge = todo.length ? '待做 ' + todo.length + ' 套' : '全部完成';
+        let sub;
+        if (todo.length) {
+          const q = todo[0];
+          sub = (todo.length > 1 ? '共 ' + todo.length + ' 套待做 · ' : '') + (q.scene ? q.scene + ' ' : '') + (q.remaining_days != null ? '剩余 ' + q.remaining_days + ' 天' : '已答 ' + q.answered + '/' + q.total + ' 题');
+        } else {
+          sub = '暂无待做测验，可查看已完成 / 过期记录';
+        }
         qc.innerHTML =
-          '<div class="qc-head">📝 本月测验<span class="qc-badge">' + badge + '</span></div>' +
+          '<div class="qc-head">📝 我的测验<span class="qc-badge">' + badge + '</span></div>' +
           '<div class="qc-sub">' + sub + '</div>';
         qc.style.display = 'block';
         qc.addEventListener('click', function () { location.href = '/quiz'; });

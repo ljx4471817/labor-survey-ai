@@ -36,7 +36,7 @@ def _now_iso() -> str:
 
 
 def _seed_published(db, phone="13800000001", valid_days=7, approved=True):
-    qid = db.create_quiz("2026-08", "测试测验", "admin")
+    qid = db.create_quiz("测试测验", created_by="admin", month="2026-08")
     db.replace_keypoints(qid, [{
         "section": "审核要点",
         "content": "家务劳动者无收入应判为非劳动力",
@@ -152,24 +152,28 @@ def test_faq_detail(db):
 
 # --- 管理端 ---
 
-def test_import_rejects_published_month(db):
-    _seed_published(db)
-    f = UploadFile(filename="x.docx", file=BytesIO(b"hello"))
-    with pytest.raises(HTTPException) as e:
-        quiz_admin_api.quiz_import(month="2026-08", file=f, phone="13900000001")
-    assert e.value.status_code == 409
+def test_import_allows_multiple_quizzes_same_month(db):
+    """多场景改造：同月可重复导入（每次导入 = 独立测验），不再 409。"""
+    f1 = UploadFile(filename="a.docx", file=BytesIO(b"x"))
+    r1 = quiz_admin_api.quiz_import(title="第一套", scene="月度通知", month="2026-08", file=f1, phone="13900000001")
+    f2 = UploadFile(filename="b.docx", file=BytesIO(b"y"))
+    r2 = quiz_admin_api.quiz_import(title="第二套", scene="新员工培训", month="2026-08", file=f2, phone="13900000001")
+    assert r1["quiz_id"] != r2["quiz_id"]
+    assert quiz_db.get_quiz(r2["quiz_id"])["scene"] == "新员工培训"
 
 
 def test_import_accepts_docx(db, tmp_path):
     f = UploadFile(filename="通知.docx", file=BytesIO(b"docx-bytes"))
-    res = quiz_admin_api.quiz_import(month="2026-09", file=f, phone="13900000001")
-    assert res["import_id"].startswith("IMP202609")
-    assert res["quiz_id"].startswith("Q202609")
+    res = quiz_admin_api.quiz_import(title="9月工作提示测试", scene="月度通知", month="2026-09", file=f, phone="13900000001")
+    assert res["import_id"].startswith("IMP")
+    assert res["quiz_id"].startswith("Q")
+    quiz = quiz_db.get_quiz(res["quiz_id"])
+    assert quiz["scene"] == "月度通知" and quiz["month"] == "2026-09" and quiz["title"] == "9月工作提示测试"
     assert quiz_db.get_import(res["import_id"])["status"] == "imported"
 
 
 def test_keypoint_review(db):
-    qid = db.create_quiz("2026-08", "t", "admin")
+    qid = db.create_quiz("t", created_by="admin", month="2026-08")
     db.replace_keypoints(qid, [{"section": "审核要点", "content": "要点"}])
     kp = db.list_keypoints(qid)[0]
     quiz_admin_api.quiz_keypoint_review(KeypointReviewRequest(keypoint_id=kp["id"], action="approve"), phone="13900000001")
@@ -179,7 +183,7 @@ def test_keypoint_review(db):
 
 
 def test_question_review(db):
-    qid = db.create_quiz("2026-08", "t", "admin")
+    qid = db.create_quiz("t", created_by="admin", month="2026-08")
     db.replace_questions(qid, [{"question": "q?", "options": '{"A": "1", "B": "2", "C": "3", "D": "4"}', "answer": "A", "explanation": "e", "created_by": "a"}])
     q = db.list_questions(qid)[0]
     quiz_admin_api.quiz_question_review(QuestionReviewRequest(question_id=q["id"], action="approve"), phone="13900000001")
@@ -280,19 +284,19 @@ def test_require_admin_matrix(monkeypatch):
             assert e.value.status_code == 403
 
 
-def test_import_accepts_doc_and_wps(db):
-    for fn in ("通知.doc", "通知.wps", "通知.docx"):
+def test_import_accepts_supported_exts(db):
+    for fn in ("通知.doc", "通知.wps", "通知.docx", "培训.pdf", "培训.pptx"):
         f = UploadFile(filename=fn, file=BytesIO(b"doc-bytes"))
-        res = quiz_admin_api.quiz_import(month="2026-09", file=f, phone="13900000001")
-        assert res["import_id"].startswith("IMP202609"), fn
+        res = quiz_admin_api.quiz_import(title="t", scene="月度通知", month="", file=f, phone="13900000001")
+        assert res["quiz_id"].startswith("Q"), fn
     # 非法类型拒绝
-    f = UploadFile(filename="a.pdf", file=BytesIO(b"x"))
+    f = UploadFile(filename="a.exe", file=BytesIO(b"x"))
     with pytest.raises(HTTPException) as e:
-        quiz_admin_api.quiz_import(month="2026-09", file=f, phone="13900000001")
+        quiz_admin_api.quiz_import(title="t", scene="月度通知", month="", file=f, phone="13900000001")
     assert e.value.status_code == 400
 
 
-def test_stats_export_xlsx(monkeypatch):
+def test_stats_export_xlsx(db, monkeypatch):
     """导出 Excel：列=8 字段，行数=全部目标（不受分页限制）。"""
     users = [
         {"phone": "13800000001", "name": "张三", "province": "贵州省", "city": "贵阳市", "county": "南明区", "community": "A社区", "admin_level": "调查员", "active": 1},
@@ -308,7 +312,7 @@ def test_stats_export_xlsx(monkeypatch):
     monkeypatch.setattr(quiz_db, "latest_answer_ts", lambda q, p: "2026-08-03T10:00:00+08:00")
     monkeypatch.setattr(quiz_db, "sync_expired", lambda *a, **k: 0)
     monkeypatch.setattr(quiz_db, "cleanup_expired", lambda *a, **k: {"archived": 0})
-    qid = quiz_db.create_quiz("2026-08", "测试", "admin")
+    qid = quiz_db.create_quiz("测试", created_by="admin", month="2026-08")
     try:
         resp = quiz_admin_api.quiz_stats_export(quiz_id=qid, region=None, q=None, phone="13900000001")
         from openpyxl import load_workbook

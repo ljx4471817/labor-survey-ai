@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""月度测验：要点提取服务（docx → 文本 → 章节 → LLM 要点 → JSON 解析）。
+"""测验：要点提取服务（docx/pdf/pptx → 文本 → 章节 → LLM 要点 → JSON 解析）。
 
 分层（PRD v3 6.1 / 6.5）：
 - 纯函数（本模块，可单测）：extract_docx_text / segment_notice / strip_json_fence /
@@ -16,8 +16,9 @@ from pathlib import Path
 from app.core.constants import QUIZ_RETRY_TIMES
 
 # 章节识别关键词（命中且行短 → 视为新章节标题）
-# 允许上传的文档类型：docx 走 python-docx；doc/wps 走本机 Word/WPS COM 转文本
-ALLOWED_DOC_EXTENSIONS: tuple[str, ...] = (".docx", ".doc", ".wps")
+# 允许上传的文档类型：docx 走 python-docx；doc/wps 走本机 Word/WPS COM；
+# pdf 走 pdfplumber（文字层）；pptx 走 python-pptx（文本框+备注，图片内容不提取）
+ALLOWED_DOC_EXTENSIONS: tuple[str, ...] = (".docx", ".doc", ".wps", ".pdf", ".pptx")
 
 
 SECTION_HEADER_KEYWORDS: tuple[str, ...] = (
@@ -51,25 +52,25 @@ def _is_section_header(line: str) -> bool:
     return bool(re.match(r"^[（(]?[一二三四五六七八九十百]+[）)]?[、.．]?\s*", s))
 
 PROMPT1_SYSTEM = (
-    "你是劳动力调查专家。请从月度工作提示中提取需要调查员记住并应用的要点，"
-    "只输出 JSON。"
+    "你是劳动力调查专家。请从给定的文件内容（通知、培训材料、制度文件等）中"
+    "提取需要调查员记住并应用的要点，只输出 JSON。"
 )
 
-PROMPT1_USER = """从以下月度工作提示中提取可出题的要点。
+PROMPT1_USER = """从以下文件内容中提取可出题的要点。
 
 ## 输入
 {notice_text}
 
 ## 输出格式
 返回 JSON 数组，每项包含：
-- section: 章节名称（"问卷要点"/"审核要点"/"填报口径微调"/其它原文章节名）
+- section: 章节名称（"审核要点"/"问卷要点"/"填报口径微调"/其它原文章节名）
 - content: 要点内容（一句话概括）
 - common_error: 常见错误（如果有）
 - suggest_quiz: 是否建议出题（true/false）
 
 ## 规则
 1. 只提取需要调查员"记住并应用"的内容
-2. 时间安排、通知对象等信息不提取
+2. 时间安排、通知对象、流程说明等不提取
 3. 每个要点聚焦一个知识点
 4. 常见错误来自实际填报中的典型误判
 5. 只输出 JSON，不要 markdown 代码块，不要任何解释"""
@@ -94,14 +95,62 @@ def extract_docx_text(path: str) -> str:
     return "\n".join(parts)
 
 
-def extract_doc_text(path: str) -> str:
-    """按扩展名提取文档文本：.docx 用 python-docx；.doc/.wps 用本机 Word/WPS COM。"""
-    from pathlib import Path
+def extract_pdf_text(path: str) -> str:
+    """用 pdfplumber 读取 PDF 每页文字层文本（扫描件无文字层 → 按约定不做 OCR）。"""
+    import pdfplumber
 
+    parts: list[str] = []
+    with pdfplumber.open(path) as pdf:
+        for page in pdf.pages:
+            t = (page.extract_text() or "").strip()
+            if t:
+                parts.append(t)
+    return "\n".join(parts)
+
+
+def extract_pptx_text(path: str) -> str:
+    """用 python-pptx 读取 PPTX 每页文本框 + 表格 + 备注文本（图片内容不提取）。"""
+    from pptx import Presentation
+
+    prs = Presentation(path)
+    parts: list[str] = []
+    for idx, slide in enumerate(prs.slides, start=1):
+        lines: list[str] = []
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                t = (shape.text_frame.text or "").strip()
+                if t:
+                    lines.append(t)
+            if getattr(shape, "has_table", False):
+                for row in shape.table.rows:
+                    cells = [(c.text or "").strip() for c in row.cells]
+                    line = " ".join(x for x in cells if x)
+                    if line:
+                        lines.append(line)
+        if slide.has_notes_slide:
+            notes = (slide.notes_slide.notes_text_frame.text or "").strip()
+            if notes:
+                lines.append("【备注】" + notes)
+        if lines:
+            parts.append(f"第{idx}页：" + "；".join(lines))
+    return "\n".join(parts)
+
+
+def extract_file_text(path: str) -> str:
+    """按扩展名提取文件文本：docx→python-docx；doc/wps→COM；pdf→pdfplumber；pptx→python-pptx。"""
     ext = Path(path).suffix.lower()
     if ext == ".docx":
         return extract_docx_text(path)
+    if ext == ".pdf":
+        return extract_pdf_text(path)
+    if ext == ".pptx":
+        return extract_pptx_text(path)
     return _extract_legacy_doc_text(path)
+
+
+def extract_doc_text(path: str) -> str:
+    """兼容别名：转发到 extract_file_text（旧引用/测试）。"""
+    return extract_file_text(path)
 
 
 def _try_soffice(path: str) -> str | None:

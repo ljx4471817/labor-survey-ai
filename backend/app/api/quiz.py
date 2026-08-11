@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-"""月度测验：调查员端 API（current / submit / history / faq）。
+"""测验：调查员端 API（current / my / submit / history / faq）。
 
 权限：全部 require_user（token 解析 phone，答题数据仅本人可见）。
 响应风格：plain dict + HTTPException（与 whitelist_admin 一致）。
@@ -95,6 +95,7 @@ def _quiz_summary(quiz: dict, phone: str) -> dict:
     return {
         "quiz_id": quiz["id"],
         "month": quiz["month"],
+        "scene": quiz.get("scene") or "",
         "title": quiz["title"],
         "status": quiz["status"],
         "valid_until": quiz.get("valid_until"),
@@ -113,6 +114,31 @@ def current(phone: str = Depends(require_user)) -> dict:
     quiz_db.sync_expired(now)
     quizzes = quiz_db.list_active_for_user(phone, now)
     return {"items": [_quiz_summary(q, phone) for q in quizzes]}
+
+
+@router.get("/quiz/my")
+def my(phone: str = Depends(require_user)) -> dict:
+    """我的测验（多场景并存）：待完成 / 已完成·过期 两组。"""
+    now = _now()
+    quiz_db.sync_expired(now)
+    todo: list[dict] = []
+    todo_ids: set[str] = set()
+    for q in quiz_db.list_active_for_user(phone, now):
+        s = _quiz_summary(q, phone)
+        if not s["completed"]:
+            todo_ids.add(q["id"])
+            todo.append(s)
+    done: list[dict] = []
+    for q in quiz_db.list_quizzes():
+        if q["id"] in todo_ids or q["status"] == "archived":
+            continue
+        if not (quiz_db.is_target(q["id"], phone) or quiz_db.count_answers(q["id"], phone) > 0):
+            continue
+        s = _quiz_summary(q, phone)
+        if not s["completed"] and not is_expired(q.get("valid_until"), now):
+            continue  # 未完成且未过期 → 属于待完成组（理论上不会走到）
+        done.append(s)
+    return {"todo": todo, "done": done}
 
 
 @router.post("/quiz/submit")
@@ -172,6 +198,7 @@ def history(
         items.append({
             "quiz_id": q["id"],
             "month": q["month"],
+            "scene": q.get("scene") or "",
             "title": q["title"],
             "total": total,
             "answered": answered,
@@ -180,7 +207,7 @@ def history(
             "status": q["status"],
             "submitted_at": quiz_db.latest_answer_ts(q["id"], phone),
         })
-    items.sort(key=lambda x: (x["month"], x["quiz_id"]), reverse=True)
+    items.sort(key=lambda x: (x["month"] or "", x["quiz_id"]), reverse=True)  # month 可空：空排后
     total = len(items)
     start = (page - 1) * page_size
     return {"items": items[start : start + page_size], "total": total, "page": page, "page_size": page_size}
