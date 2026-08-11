@@ -243,6 +243,7 @@ async function loadQuizList() {
 
 async function selectQuiz(qid, month) {
   curQuizId = qid;
+  overLimitMap = {};
   curQuizMonth = month;
   $('btn-extract').disabled = false;
   $('btn-generate').disabled = false;
@@ -287,6 +288,7 @@ $('btn-import').addEventListener('click', async function () {
     if (!res.ok) { toast(data.detail || ('导入失败 HTTP ' + res.status), true); return; }
     $('imp-msg').textContent = '已导入：' + data.filename;
     curQuizId = data.quiz_id;
+    overLimitMap = {};
     curQuizMonth = $('imp-month').value;
     $('btn-extract').disabled = false;
     $('btn-generate').disabled = false;
