@@ -11,12 +11,19 @@ from __future__ import annotations
 import json
 from datetime import datetime
 
-from app.core.constants import QUIZ_KB_MATCH_THRESHOLD, QUIZ_MAX_QUESTIONS, QUIZ_RETRY_TIMES
+from app.core.constants import (
+    QUIZ_EXPLANATION_MAX_LEN,
+    QUIZ_KB_MATCH_THRESHOLD,
+    QUIZ_MAX_QUESTIONS,
+    QUIZ_OPTION_MAX_LEN,
+    QUIZ_QUESTION_MAX_LEN,
+    QUIZ_RETRY_TIMES,
+)
 from app.services.quiz_extract import _llm_json, parse_llm_json
 
 PROMPT2_SYSTEM = "你是劳动力调查出题专家。根据要点生成 4 选 1 选择题，只输出 JSON。"
 
-PROMPT2_USER = """根据以下要点生成 4 选 1 选择题。
+PROMPT2_USER = """根据以下要点生成 4 选 1 选择题，面向阅读能力有限的调查员，务必简短易懂。
 
 ## 输入
 要点：{keypoint_content}
@@ -25,17 +32,20 @@ PROMPT2_USER = """根据以下要点生成 4 选 1 选择题。
 
 ## 输出格式
 返回 JSON：
-{{"question": "题干（情境化，基于实际案例）",
- "options": {{"A": "选项A", "B": "选项B", "C": "选项C", "D": "选项D"}},
+{{"question": "题干（1句话情境，≤45字）",
+ "options": {{"A": "选项A（≤15字）", "B": "选项B（≤15字）", "C": "选项C（≤15字）", "D": "选项D（≤15字）"}},
  "answer": "正确答案（A/B/C/D）",
- "explanation": "解析（引用来源段落，说明为什么对/错）"}}
+ "explanation": "解析（结论+依据，≤80字）"}}
 
 ## 规则
-1. 题干基于实际填报场景，情境化出题
-2. 干扰项来自常见错误，有迷惑性但明确错误
-3. 解析必须引用来源段落原文
-4. 答案唯一且确定
-5. 只输出 JSON，不要 markdown 代码块，不要任何解释"""
+1. 题干：1 句话情境化，只保留 1 个关键条件；用「调查员」泛指，不出现具体人名和多余铺垫；只考 1 个考点；≤45 字
+2. 选项：短语化，每选项只表达 1 个判断；共同部分移入题干，选项只留差异点；每选项 ≤15 字
+3. 干扰项：必须具体可信（来自常见错误），不能因简短而写成明显错误的空话
+4. 术语：单题只出现 1 个指标编号；专业词首次出现用大白话括注（如「住本户时间（在这户住了多久）」）
+5. 问法：只准正向提问（「以下做法正确的是？」），禁止双重否定或嵌套逻辑句式
+6. 解析：先给结论（「选 X：…」），再引来源段落关键半句作依据；不逐个选项解释为什么错；≤80 字
+7. 答案唯一且确定
+8. 只输出 JSON，不要 markdown 代码块，不要任何解释"""
 
 
 def build_prompt2(keypoint: dict) -> list[dict]:
@@ -51,6 +61,23 @@ def build_prompt2(keypoint: dict) -> list[dict]:
             ),
         },
     ]
+
+
+def length_check(question: str, options: dict, explanation: str) -> list[str]:
+    """检查题干/选项/解析是否超长，返回超限字段列表（空 = 全部达标）。
+
+    阈值：题干 ≤45 字、每选项 ≤15 字、解析 ≤80 字（按字符数计）。
+    软校验：超长只标记（over_limit），不拒绝题目，避免触发 repair 重试导致生成失败。
+    """
+    over: list[str] = []
+    if len(question) > QUIZ_QUESTION_MAX_LEN:
+        over.append("question")
+    for key in ("A", "B", "C", "D"):
+        if len((options.get(key) or "").strip()) > QUIZ_OPTION_MAX_LEN:
+            over.append("option_" + key)
+    if len(explanation) > QUIZ_EXPLANATION_MAX_LEN:
+        over.append("explanation")
+    return over
 
 
 def parse_question(raw: str) -> dict | None:
@@ -76,6 +103,7 @@ def parse_question(raw: str) -> dict | None:
         "options": norm_options,
         "answer": answer,
         "explanation": explanation,
+        "over_limit": length_check(question, norm_options, explanation),
     }
 
 

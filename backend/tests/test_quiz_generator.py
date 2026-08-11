@@ -117,3 +117,34 @@ def test_options_to_json_roundtrip():
 
     opts = {"A": "1", "B": "2", "C": "3", "D": "4"}
     assert json.loads(qg.options_to_json(opts)) == opts
+
+
+def test_length_check_within_limits():
+    q = "大学生寒假回家暂住，应如何登记？"
+    opts = {"A": "学校登记，家中不登记", "B": "家中登记，不扣寒暑假时间", "C": "家中登记，扣寒暑假时间", "D": "学校和家中都登记"}
+    assert qg.length_check(q, opts, "选A。平时住校大学生寒暑假视同在校居住。") == []
+
+
+def test_length_check_boundaries():
+    assert qg.length_check("题" * 45, {"A": "选" * 15, "B": "b", "C": "c", "D": "d"}, "析" * 80) == []
+    assert qg.length_check("题" * 46, {"A": "选" * 15, "B": "b", "C": "c", "D": "d"}, "析" * 80) == ["question"]
+    assert qg.length_check("题", {"A": "选" * 16, "B": "b", "C": "c", "D": "d"}, "析" * 80) == ["option_A"]
+    assert qg.length_check("题", {"A": "a", "B": "b", "C": "c", "D": "d"}, "析" * 81) == ["explanation"]
+
+
+def test_length_check_multiple_fields():
+    over = qg.length_check("题" * 46, {"A": "a", "B": "b", "C": "c", "D": "d"}, "析" * 81)
+    assert "question" in over and "explanation" in over
+
+
+def test_parse_question_includes_over_limit():
+    raw = '{"question": "' + "题" * 46 + '", "options": {"A": "a", "B": "b", "C": "c", "D": "d"}, "answer": "A", "explanation": "e"}'
+    q = qg.parse_question(raw)
+    assert q is not None
+    assert q["over_limit"] == ["question"]
+
+
+def test_parse_question_over_limit_empty():
+    q = qg.parse_question(_valid_qraw())
+    assert q is not None
+    assert q["over_limit"] == []

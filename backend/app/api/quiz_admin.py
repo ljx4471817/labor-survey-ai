@@ -233,16 +233,23 @@ def quiz_keypoint_review(req: KeypointReviewRequest, phone: str = Depends(requir
 
 # --- 出题（异步） -------------------------------------------------------------
 
-def _do_generate(quiz_id: str, keypoints: list[dict], phone: str) -> dict:
-    llm_chat = _get_llm_chat()
-
-    questions, errors = generate_questions(
-        keypoints, lambda msgs: llm_chat(msgs, max_tokens=1500, timeout=90)
-    )
-    quiz_db.replace_questions(quiz_id, [
-        {**q, "options": options_to_json(q["options"]), "created_by": phone} for q in questions
-    ])
-    return {"quiz_id": quiz_id, "questions": len(questions), "errors": errors}
+def _do_generate(quiz_id: str, keypoints: list[dict], phone: str) -> dict:
+    llm_chat = _get_llm_chat()
+    questions, errors = generate_questions(
+        keypoints, lambda msgs: llm_chat(msgs, max_tokens=1500, timeout=90)
+    )
+    # over_limit 仅作生成提示（软校验），不入库；按 seq 汇总，前端会话内展示 ⚠
+    over_limit: dict[str, list[str]] = {}
+    store_items: list[dict] = []
+    for i, q in enumerate(questions, start=1):
+        ol = q.get("over_limit") or []
+        if ol:
+            over_limit[str(i)] = ol
+        store_q = {k: v for k, v in q.items() if k != "over_limit"}
+        store_items.append({**store_q, "options": options_to_json(q["options"]), "created_by": phone})
+    quiz_db.replace_questions(quiz_id, store_items)
+    return {"quiz_id": quiz_id, "questions": len(questions), "errors": errors, "over_limit": over_limit}
+
 
 
 @router.post("/quiz/generate")

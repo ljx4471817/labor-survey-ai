@@ -170,6 +170,7 @@ let curQuizMonth = '2026-08';
 let selectedPhones = new Set();
 let expandedKeys = new Set();  // '城市|角色' 展开的明细
 let polling = false;
+let overLimitMap = {};
 
 
 function toast(msg, isErr) {
@@ -432,7 +433,7 @@ $('btn-generate').addEventListener('click', async () => {
   $('btn-generate').disabled = true;
   $('generate-msg').textContent = '正在生成题目（最多7题，约 1-3 分钟）…';
   const d = await apiPost('/api/admin/quiz/generate', { quiz_id: curQuizId, keypoint_ids: ids });
-  if (d) await pollTask('generate', d.task_id, async () => { await loadQuestions(); $('generate-msg').textContent = '题目已生成'; });
+  if (d) await pollTask('generate', d.task_id, async (result) => { overLimitMap = (result && result.over_limit) || {}; await loadQuestions(); $('generate-msg').textContent = '题目已生成'; });
   polling = false;
   $('btn-generate').disabled = false;
 });
@@ -448,8 +449,12 @@ async function loadQuestions() {
     let optsObj = q.options;
     if (typeof optsObj === 'string') { try { optsObj = JSON.parse(optsObj || '{}'); } catch (e) { optsObj = {}; } }
     const opts = Object.entries(optsObj || {}).map(([k, v]) => `${k}. ${v}`).join('；');
+    const ol = overLimitMap[String(q.seq)] || [];
+    const olLabels = {question: '题干', option_A: '选项A', option_B: '选项B', option_C: '选项C', option_D: '选项D', explanation: '解析'};
+    const olTag = ol.length ? `<div class="meta"><span class="tag warn">⚠ 超长：${ol.map(x => olLabels[x] || x).join('、')}</span></div>` : '';
     return `<div class="q-item" data-id="${escapeHtml(q.id)}">
       <div class="content"><b>Q${q.seq}.</b> ${escapeHtml(q.question)}</div>
+      ${olTag}
       <div class="meta">选项：${escapeHtml(opts)}</div>
       <div class="meta">答案：<b>${escapeHtml(q.answer)}</b> · 状态 <span class="tag ${q.status === 'approved' ? 'ok' : 'warn'}">${escapeHtml(q.status)}</span>${q.kb_faq_id ? ' · KB #' + escapeHtml(q.kb_faq_id) : ''}</div>
       <div class="meta">解析：${escapeHtml(q.explanation)}</div>
