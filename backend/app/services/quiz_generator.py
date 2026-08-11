@@ -17,7 +17,6 @@ from app.core.constants import (
     QUIZ_MAX_QUESTIONS,
     QUIZ_OPTION_MAX_LEN,
     QUIZ_QUESTION_MAX_LEN,
-    QUIZ_RETRY_TIMES,
 )
 from app.services.quiz_extract import _llm_json, parse_llm_json
 
