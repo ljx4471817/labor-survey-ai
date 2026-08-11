@@ -137,6 +137,7 @@ def my(phone: str = Depends(require_user)) -> dict:
         s = _quiz_summary(q, phone)
         if not s["completed"] and not is_expired(q.get("valid_until"), now):
             continue  # 未完成且未过期 → 属于待完成组（理论上不会走到）
+        s["score"] = quiz_db.count_correct(q["id"], phone)
         done.append(s)
     return {"todo": todo, "done": done}
 

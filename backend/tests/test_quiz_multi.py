@@ -94,6 +94,7 @@ def test_my_groups_todo_done(db):
     assert data2["todo"] == []
     assert len(data2["done"]) == 1
     assert data2["done"][0]["scene"] == "月度通知"
+    assert data2["done"][0]["score"] == 1  # 答对 1 题
     # 非目标不可见
     assert quiz_api.my(phone="13899999999") == {"todo": [], "done": []}
 

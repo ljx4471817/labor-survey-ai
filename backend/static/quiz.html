@@ -86,6 +86,28 @@ main { padding:18px 16px; display:flex; flex-direction:column; gap:14px; }
 .logout-btn { border:1px solid var(--c-line); background:var(--c-bg-elev); color:var(--c-ink-2); font-size:12px; padding:5px 12px; border-radius:var(--radius-pill); cursor:pointer; }
 .logout-btn:hover { color:var(--c-danger); border-color:var(--c-danger); }
 
+
+/* ===== 精致化增强 ===== */
+.empty { color:var(--c-ink-3); font-size:14px; padding:28px 10px; text-align:center; line-height:1.9; }
+.empty .empty-ico { font-size:32px; display:block; margin-bottom:6px; }
+.quiz-item { transition:border-color .15s, box-shadow .15s, transform .1s; }
+.quiz-item:active { transform:scale(.992); }
+.q-progress { height:5px; background:var(--c-bg-tint); border-radius:999px; overflow:hidden; margin-top:11px; }
+.q-progress > i { display:block; height:100%; background:var(--c-brand-2); border-radius:999px; transition:width .3s; }
+.q-score { font-weight:700; color:var(--c-brand); font-size:13px; }
+.q-scene-title { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.q-scene-title .q-title-txt { font-size:15px; font-weight:650; color:var(--c-ink); flex:1; min-width:0; }
+.q-question { font-size:17px; font-weight:650; line-height:1.6; margin:2px 0 16px; color:var(--c-ink); }
+.opt { display:flex; align-items:flex-start; gap:10px; }
+.opt-key { display:inline-flex; width:22px; height:22px; border-radius:6px; background:var(--c-bg-tint); color:var(--c-ink-2);
+  align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; margin-top:1px;
+  transition:background .15s, color .15s; }
+.opt.selected .opt-key { background:var(--c-brand-2); color:#fff; }
+.opt.correct .opt-key { background:var(--c-ok); color:#fff; }
+.opt.wrong .opt-key { background:var(--c-danger); color:#fff; }
+.opt .opt-mark { margin-left:auto; flex-shrink:0; }
+.opt:focus-visible { outline:2px solid var(--c-brand-2); outline-offset:1px; }
+
 </style>
 </head>
 <body>
@@ -149,19 +171,26 @@ function renderQuizItem(q) {
     ? '<span class="badge ok">已完成</span>'
     : (q.answered > 0 ? '<span class="badge warn">进行中</span>' : '<span class="badge info">未做</span>');
   const scene = q.scene ? `<span class="badge info">${escapeHtml(q.scene)}</span>` : '';
-  const days = q.remaining_days != null ? `剩余 ${q.remaining_days} 天` : '';
+  const days = q.remaining_days != null ? `剩余 <b>${q.remaining_days}</b> 天` : '';
+  const prog = (!q.completed && q.answered > 0)
+    ? `<div class="q-progress"><i style="width:${Math.min(100, Math.round((q.answered / Math.max(1, q.total)) * 100))}%"></i></div>`
+    : '';
   return `<button class="quiz-item" data-quiz="${escapeHtml(q.quiz_id)}">
     <div class="q-title">${escapeHtml(q.title)}</div>
-    <div class="q-meta">${scene}${statusBadge}<span>${q.answered}/${q.total} 题</span><span>${escapeHtml(days)}</span></div>
+    ${prog}
+    <div class="q-meta">${scene}${statusBadge}<span>已答 ${q.answered}/${q.total} 题</span><span>${escapeHtml(days)}</span></div>
   </button>`;
 }
 
 function renderDoneItem(q) {
   const score = q.completed ? '<span class="badge ok">已完成</span>' : '<span class="badge warn">已过期</span>';
   const scene = q.scene ? `<span class="badge info">${escapeHtml(q.scene)}</span>` : '';
+  const scoreTxt = q.completed && q.score != null
+    ? `<span class="q-score">${q.score}/${q.total} 分</span>`
+    : `<span>${q.answered}/${q.total} 题</span>`;
   return `<button class="quiz-item" data-quiz="${escapeHtml(q.quiz_id)}">
     <div class="q-title">${escapeHtml(q.title)}</div>
-    <div class="q-meta">${scene}${score}<span>${q.answered}/${q.total} 题</span></div>
+    <div class="q-meta">${scene}${score}<span>${q.answered}/${q.total} 题</span>${scoreTxt}</div>
   </button>`;
 }
 
@@ -173,8 +202,8 @@ async function loadMy() {
   const done = data.done || [];
   const todoBox = $('current-box');
   const doneBox = $('history-box');
-  todoBox.innerHTML = todo.length ? todo.map(renderQuizItem).join('') : '<div class="empty">暂无待完成测验</div>';
-  doneBox.innerHTML = done.length ? done.map(renderDoneItem).join('') : '<div class="empty">暂无已完成 / 过期测验</div>';
+  todoBox.innerHTML = todo.length ? todo.map(renderQuizItem).join('') : '<div class="empty"><span class="empty-ico">\ud83d\udded</span>暂无待完成测验<br>有新测验下发时会显示在这里</div>';
+  doneBox.innerHTML = done.length ? done.map(renderDoneItem).join('') : '<div class="empty"><span class="empty-ico">\ud83d\uddc2\ufe0f</span>暂无已完成 / 过期测验</div>';
   todoBox.querySelectorAll('.quiz-item').forEach(el => el.addEventListener('click', () => openQuiz(todo.find(i => i.quiz_id === el.dataset.quiz))));
   doneBox.querySelectorAll('.quiz-item').forEach(el => el.addEventListener('click', () => openQuiz(done.find(i => i.quiz_id === el.dataset.quiz))));
 }
@@ -244,10 +273,10 @@ function renderQuestion() {
 
   let optionsHtml = (Object.entries(q.options || {})).map(([k, v]) => {
     let cls = 'opt';
-    let mark = `${k}. ${escapeHtml(v)}`;
+    let mark = `<span class="opt-key">${escapeHtml(k)}</span><span style="flex:1">${escapeHtml(v)}</span>`;
     if (answered) {
-      if (k === q.answer) { cls += ' correct'; mark = '✓ ' + mark; }
-      else if (k === q.answered) { cls += ' wrong'; mark = '✗ ' + mark; }
+      if (k === q.answer) { cls += ' correct'; mark = `<span class="opt-key">${escapeHtml(k)}</span><span style="flex:1">${escapeHtml(v)}</span><span class="opt-mark" style="color:var(--c-ok);font-weight:700">✓</span>`; }
+      else if (k === q.answered) { cls += ' wrong'; mark = `<span class="opt-key">${escapeHtml(k)}</span><span style="flex:1">${escapeHtml(v)}</span><span class="opt-mark" style="color:var(--c-danger);font-weight:700">✗</span>`; }
     }
     return `<button class="${cls}" data-key="${k}" ${answered ? 'disabled' : ''}>${mark}</button>`;
   }).join('');
@@ -262,13 +291,16 @@ function renderQuestion() {
 
   box.innerHTML = `
     <div class="card">
-      ${curQuiz.scene ? `<div class="q-meta"><span class="badge info">${escapeHtml(curQuiz.scene)}</span></div>` : ''}
+      <div class="q-scene-title">
+        ${curQuiz.scene ? `<span class="badge info">${escapeHtml(curQuiz.scene)}</span>` : ''}
+        <span class="q-title-txt">${escapeHtml(curQuiz.title || '')}</span>
+      </div>
       <div class="q-meta"><span class="badge info">第 ${curIndex + 1}/${curQuiz.total} 题</span><span style="font-size:12px;color:var(--c-ink-3)">已答 ${answeredCount}/${curQuiz.total}</span></div>
       <div class="progress-bar"><i style="width:${progress}%"></i></div>
-      <p style="font-size:16px;font-weight:600;margin-bottom:14px">${escapeHtml(q.question)}</p>
+      <p class="q-question">${escapeHtml(q.question)}</p>
       <div id="opts">${optionsHtml}</div>
       <div id="fb">${feedbackHtml}</div>
-      <div class="row" style="margin-top:14px;justify-content:space-between">
+      <div class="row" style="margin-top:16px;justify-content:space-between">
         <button class="btn btn-ghost" id="prev-btn" ${curIndex === 0 ? 'disabled' : ''}>上一题</button>
         <span style="flex:1"></span>
         ${!answered ? '<button class="btn" id="submit-btn" disabled>提交</button>' : (curIndex < curQuiz.total - 1 ? '<button class="btn" id="next-btn">下一题</button>' : '<button class="btn" id="finish-btn">查看总结</button>')}
@@ -316,9 +348,10 @@ function renderQuestion() {
 
 function showSummary() {
   const box = $('view-quiz');
-  box.innerHTML = `<div class="card" style="text-align:center;padding:32px 20px">
+  box.innerHTML = `<div class="card" style="text-align:center;padding:34px 20px">
+    <div style="font-size:42px;margin-bottom:10px">${correctCount >= curQuiz.total ? '🎉' : '📋'}</div>
     <p style="color:var(--c-ink-3);font-size:14px">测验完成</p>
-    <div style="margin:16px 0"><span class="summary-num">${correctCount}</span><span style="font-size:20px;color:var(--c-ink-3)"> / ${curQuiz.total} 题掌握</span></div>
+    <div style="margin:14px 0"><span class="summary-num">${correctCount}</span><span style="font-size:20px;color:var(--c-ink-3)"> / ${curQuiz.total} 题掌握</span></div>
     <p style="color:var(--c-ink-2);font-size:14px">答错的题目可到「已完成 / 过期」中复习。</p>
     <div class="row" style="justify-content:center;margin-top:22px">
       <button class="btn btn-ghost" id="back-btn">返回测验列表</button>

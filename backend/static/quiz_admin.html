@@ -86,26 +86,85 @@ textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:
 .logout-btn { border:1px solid var(--line); background:#fff; color:var(--text-dim); font-size:.8rem; padding:5px 12px; border-radius:999px; cursor:pointer; margin-left:auto; }
 .logout-btn:hover { color:var(--bad); border-color:var(--bad); }
 
+
+/* ===== 两栏布局 / 侧边栏 / 工作台 / 步骤条 / 完成率 tab ===== */
+main.layout { max-width:1200px; align-items:flex-start; }
+.sidebar { width:302px; flex-shrink:0; position:sticky; top:72px; max-height:calc(100vh - 92px); overflow-y:auto;
+  background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px;
+  box-shadow:0 1px 2px rgba(30,58,95,.05),0 4px 16px rgba(30,58,95,.06); }
+.sidebar h2 { font-size:.92rem; color:var(--ink-blue); margin:0; }
+.btn-new { width:100%; padding:10px 16px; font-size:.9rem; box-shadow:0 2px 6px rgba(30,58,95,.18); }
+#quiz-sidebar-list { display:flex; flex-direction:column; gap:8px; padding-bottom:8px; }
+.quiz-sel-item { border:1px solid var(--line); border-radius:10px; padding:10px 12px; cursor:pointer; background:#fff;
+  transition:border-color .15s, box-shadow .15s, background .15s; position:relative; }
+.quiz-sel-item:hover { border-color:var(--ink-blue-soft); box-shadow:0 2px 8px rgba(30,58,95,.10); }
+.quiz-sel-item.active { border-color:var(--ink-blue); background:var(--info-soft); box-shadow:inset 3px 0 0 var(--ink-blue); }
+.qsi-top { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+.qsi-del { margin-left:auto; border:none; background:transparent; color:var(--text-dim); font-size:1.05rem; line-height:1;
+  padding:2px 7px; border-radius:6px; cursor:pointer; opacity:.55; }
+.quiz-sel-item:hover .qsi-del { opacity:1; }
+.qsi-del:hover { color:var(--bad); background:var(--bad-soft); }
+.qsi-title { font-size:.86rem; font-weight:600; margin-top:5px; line-height:1.45; color:var(--text); }
+.qsi-meta { font-size:.72rem; color:var(--text-dim); margin-top:4px; }
+.workbench { flex:1; min-width:0; display:flex; flex-direction:column; gap:14px; }
+.tab-bar { display:flex; gap:6px; background:var(--paper-dim); border-radius:10px; padding:4px; }
+.tab-btn { flex:1; border:none; background:transparent; padding:9px 0; font-size:.9rem; font-weight:600;
+  color:var(--text-dim); border-radius:8px; cursor:pointer; transition:background .15s, color .15s; }
+.tab-btn.active { background:#fff; color:var(--ink-blue); box-shadow:0 1px 3px rgba(30,58,95,.14); }
+.pane { display:none; }
+.pane.active { display:flex; flex-direction:column; gap:14px; }
+.stepper { display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 16px; }
+.step-node { display:flex; align-items:center; gap:7px; }
+.step-ico { width:24px; height:24px; border-radius:999px; background:var(--paper-dim); color:var(--text-dim);
+  display:flex; align-items:center; justify-content:center; font-size:.74rem; font-weight:700; flex-shrink:0; transition:background .2s, color .2s; }
+.step-label { font-size:.78rem; color:var(--text-dim); white-space:nowrap; }
+.step-node.done .step-ico { background:var(--good); color:#fff; }
+.step-node.done .step-label { color:var(--good); font-weight:600; }
+.step-line { flex:1; height:2px; background:var(--line); margin:0 10px; min-width:12px; transition:background .2s; }
+.step-node.done + .step-line { background:var(--good); }
+.empty-state { text-align:center; color:var(--text-dim); padding:34px 14px; line-height:1.8; }
+.empty-state .ico { font-size:1.9rem; display:block; margin-bottom:6px; }
+a.btn { text-decoration:none; display:inline-block; text-align:center; }
+.pager { display:flex; align-items:center; gap:10px; margin-top:12px; justify-content:flex-end; }
+.stats-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+@media (max-width:900px) {
+  main.layout { flex-direction:column; }
+  .sidebar { width:100%; position:static; max-height:none; }
+}
+
 </style>
 </head>
 <body>
 <header><h1>测验管理</h1><a class="back" href="/dashboard">← 看板</a><button class="logout-btn" onclick="logout()">退出登录</button></header>
-<main>
-  <div class="notice">流程：导入文件(.doc/.docx/.wps/.pdf/.pptx) → 提取要点 → 审核要点 → 生成题目 → 审核题目 → 下发 → 看统计。多场景：月度通知 / 新员工培训 / 季度年度培训等。写操作即时生效。</div>
-
-  <section id="sec-list">
-    <h2>测验列表</h2>
+<main class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-head"><h2>测验列表</h2></div>
     <div class="row">
-      <select id="f-scene" style="min-width:140px"></select>
-      <input type="month" id="f-month" placeholder="按月份筛选（可选）">
-      <button class="btn btn-ghost" id="btn-list">查询</button>
-      <button class="btn btn-ghost" id="btn-scenes">场景管理</button>
-      <span style="flex:1"></span>
+      <select id="f-scene" style="flex:1;min-width:120px"></select>
+      <input type="month" id="f-month" placeholder="按月份筛选" style="width:132px">
     </div>
-    <div id="quiz-table" style="margin-top:10px"></div>
-  </section>
-
-  <section id="sec-import">
+    <div class="row">
+      <button class="btn btn-ghost" id="btn-list" style="flex:1">查询</button>
+      <button class="btn btn-ghost btn-sm" id="btn-scenes">场景管理</button>
+    </div>
+    <button class="btn btn-new" id="btn-new">＋ 新建测验</button>
+    <div id="quiz-sidebar-list"></div>
+  </aside>
+  <div class="workbench">
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-workbench">工作台</button>
+      <button class="tab-btn" id="tab-stats">完成率</button>
+    </div>
+    <div class="pane active" id="pane-workbench">
+      <div class="stepper" id="stepper">
+        <div class="step-node" data-step="import"><span class="step-ico">1</span><span class="step-label">导入</span></div><div class="step-line"></div>
+        <div class="step-node" data-step="extract"><span class="step-ico">2</span><span class="step-label">提取要点</span></div><div class="step-line"></div>
+        <div class="step-node" data-step="keypoints"><span class="step-ico">3</span><span class="step-label">审核要点</span></div><div class="step-line"></div>
+        <div class="step-node" data-step="questions"><span class="step-ico">4</span><span class="step-label">生成勾选</span></div><div class="step-line"></div>
+        <div class="step-node" data-step="publish"><span class="step-ico">5</span><span class="step-label">下发</span></div>
+      </div>
+<div class="notice">流程：导入文件(.doc/.docx/.wps/.pdf/.pptx) → 提取要点 → 审核要点 → 生成题目 → 审核题目 → 下发 → 看统计。多场景：月度通知 / 新员工培训 / 季度年度培训等。写操作即时生效。</div>
+<section id="sec-import">
     <h2><span class="step">①</span>导入文件</h2>
     <div class="row" style="margin-bottom:8px">
       <input type="text" id="imp-title" placeholder="测验标题（如：8月工作提示测试 / 新员工上岗培训测验）" style="flex:1">
@@ -118,8 +177,7 @@ textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:
       <span class="muted" id="imp-msg"></span>
     </div>
   </section>
-
-  <section id="sec-extract">
+<section id="sec-extract">
     <h2><span class="step">②</span>LLM 提取要点</h2>
     <div class="row">
       <span class="muted">目标要点数</span>
@@ -130,8 +188,7 @@ textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:
     </div>
     <div id="keypoint-box" style="margin-top:10px"></div>
   </section>
-
-  <section id="sec-generate">
+<section id="sec-generate">
     <h2><span class="step">③</span>生成题目</h2>
     <div class="row">
       <button class="btn" id="btn-generate" disabled>用所选要点生成</button>
@@ -139,8 +196,7 @@ textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:
     </div>
     <div id="question-box" style="margin-top:10px"></div>
   </section>
-
-  <section id="sec-publish">
+<section id="sec-publish">
     <h2><span class="step">④</span>选择下发对象并下发</h2>
     <div class="row" style="margin-bottom:10px">
       <input type="search" id="target-search" placeholder="按姓名/手机号搜索">
@@ -159,16 +215,37 @@ textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:
       <span class="muted" id="publish-msg"></span>
     </div>
   </section>
-
-  <section id="sec-stats">
-    <h2><span class="step">⑤</span>完成率看板</h2>
-    <div class="row">
-      <button class="btn btn-ghost" id="btn-stats">查看统计</button>
-      <input type="text" id="stats-region" placeholder="按地区筛选（可选）" style="width:160px">
-      <span class="muted" id="stats-msg"></span>
     </div>
-    <div id="stats-box" style="margin-top:12px"></div>
-  </section>
+    <div class="pane" id="pane-stats">
+      <section id="sec-stats">
+        <div class="stats-head">
+          <span class="muted" id="stats-sub" style="font-weight:600;color:var(--ink-blue)"></span>
+          <span style="flex:1"></span>
+          <a class="btn btn-ghost btn-sm" id="btn-stats-open" href="#" target="_blank">新窗口打开完整看板</a>
+        </div>
+        <div class="muted" id="stats-msg" style="margin-bottom:10px"></div>
+        <div class="metric-grid" id="stats-metrics"></div>
+        <h2>按角色汇总</h2>
+        <table id="stats-role-table"></table>
+        <h2>按区县汇总</h2>
+        <table id="stats-region-table"></table>
+        <h2>个人明细</h2>
+        <div class="row" style="margin-bottom:10px">
+          <input type="text" id="stats-f-region" placeholder="按地区筛选（市/县，可空）" style="width:170px">
+          <input type="text" id="stats-f-q" placeholder="按姓名/手机号搜索" style="width:170px">
+          <button class="btn btn-ghost btn-sm" id="stats-btn-search">查询</button>
+          <span style="flex:1"></span>
+          <a class="btn btn-ok btn-sm" id="stats-btn-export" href="#" target="_blank">导出 Excel</a>
+        </div>
+        <table id="stats-detail-table"></table>
+        <div class="pager">
+          <span class="muted" id="stats-page-info"></span>
+          <button class="btn btn-ghost btn-sm" id="stats-btn-prev">上一页</button>
+          <button class="btn btn-ghost btn-sm" id="stats-btn-next">下一页</button>
+        </div>
+      </section>
+    </div>
+  </div>
 </main>
 
 <div id="scene-manager" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:50;align-items:center;justify-content:center">
@@ -196,6 +273,12 @@ let selectedPhones = new Set();
 let expandedKeys = new Set();  // '城市|角色' 展开的明细
 let polling = false;
 let overLimitMap = {};
+let hasKeypoints = false;
+let hasApprovedKeypoints = false;
+let hasQuestions = false;
+let statsPage = 1;
+const STATS_PAGE_SIZE = 50;
+let statsTotal = 0;
 
 
 function toast(msg, isErr) {
@@ -260,21 +343,36 @@ async function loadQuizList() {
   if ($('f-scene').value) params.set('scene', $('f-scene').value);
   const data = await api('/api/admin/quiz/list?' + params.toString());
   if (!data) return;
-  const rows = data.items.map(q => `<tr>
-    <td>${escapeHtml(q.month || '—')}</td><td><span class="tag info">${escapeHtml(q.scene || '其他')}</span> ${escapeHtml(q.title)}</td>
-    <td><span class="tag ${q.status === 'published' ? 'ok' : (q.status === 'expired' ? 'warn' : 'info')}">${escapeHtml(q.status)}</span></td>
-    <td>${q.questions} 题</td><td>${q.targets} 人</td><td>${q.completed} 完成</td>
-    <td>
-      <button class="btn btn-sm" data-q="${escapeHtml(q.quiz_id)}" data-m="${escapeHtml(q.month || '')}" data-status="${escapeHtml(q.status)}">管理</button>
-      ${(q.status === 'draft' || q.status === 'reviewing') ? `<button class="btn btn-bad btn-sm" data-del="${escapeHtml(q.quiz_id)}">删除</button>` : ''}
-    </td>
-  </tr>`).join('');
-  $('quiz-table').innerHTML = rows ? `<table><tr><th>月份</th><th>标题</th><th>状态</th><th>题目</th><th>目标</th><th>完成</th><th></th></tr>${rows}</table>` : '<div class="muted">暂无测验</div>';
-  $('quiz-table').querySelectorAll('button[data-q]').forEach(b => b.addEventListener('click', () => selectQuiz(b.dataset.q, b.dataset.m, b.dataset.status)));
-  $('quiz-table').querySelectorAll('button[data-del]').forEach(b => b.addEventListener('click', async () => {
+  const box = $('quiz-sidebar-list');
+  if (!data.items.length) {
+    box.innerHTML = '<div class="empty-state"><span class="ico">\ud83d\uddc2\ufe0f</span>暂无测验<br><span class="muted">点「＋ 新建测验」导入文件开始</span></div>';
+    return;
+  }
+  box.innerHTML = data.items.map(q => {
+    const del = (q.status === 'draft' || q.status === 'reviewing')
+      ? `<button class="qsi-del" data-del="${escapeHtml(q.quiz_id)}" title="删除">×</button>` : '';
+    return `<div class="quiz-sel-item ${q.quiz_id === curQuizId ? 'active' : ''}" data-q="${escapeHtml(q.quiz_id)}" data-m="${escapeHtml(q.month || '')}" data-status="${escapeHtml(q.status)}">
+      <div class="qsi-top">
+        <span class="tag info">${escapeHtml(q.scene || '其他')}</span>
+        <span class="tag ${q.status === 'published' ? 'ok' : (q.status === 'expired' ? 'warn' : 'info')}">${escapeHtml(q.status)}</span>
+        ${del}
+      </div>
+      <div class="qsi-title">${escapeHtml(q.title)}</div>
+      <div class="qsi-meta">${q.questions} 题 · 目标 ${q.targets} 人 · 完成 ${q.completed}</div>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('.quiz-sel-item').forEach(el => el.addEventListener('click', () => selectQuiz(el.dataset.q, el.dataset.m, el.dataset.status)));
+  box.querySelectorAll('.qsi-del').forEach(b => b.addEventListener('click', async (e) => {
+    e.stopPropagation();
     if (!confirm('确定删除该测验？草稿/审核中的删除不可恢复。')) return;
     await apiPost('/api/admin/quiz/delete', { quiz_id: b.dataset.del });
-    if (curQuizId === b.dataset.del) { curQuizId = null; $('keypoint-box').innerHTML = ''; $('question-box').innerHTML = ''; }
+    if (curQuizId === b.dataset.del) {
+      curQuizId = null;
+      hasKeypoints = hasApprovedKeypoints = hasQuestions = false;
+      renderStepper();
+      $('keypoint-box').innerHTML = '';
+      $('question-box').innerHTML = '';
+    }
     loadQuizList();
   }));
 }
@@ -282,12 +380,15 @@ async function loadQuizList() {
 async function selectQuiz(qid, month, status) {
   curQuizId = qid;
   overLimitMap = {};
+  hasKeypoints = hasApprovedKeypoints = hasQuestions = false;
   curQuizMonth = month;
   curQuizStatus = status || 'draft';
   $('btn-extract').disabled = false;
   $('btn-generate').disabled = false;
   $('extract-msg').textContent = '';
-  $('sec-extract').scrollIntoView({ behavior: 'smooth' });
+  document.querySelectorAll('.quiz-sel-item').forEach(el => el.classList.toggle('active', el.dataset.q === qid));
+  switchAdminTab('workbench');
+  renderStepper();
   await loadKeypoints();
   await loadQuestions();
   await loadTargets();
@@ -441,6 +542,9 @@ async function loadKeypoints() {
   if (!curQuizId) return;
   const data = await api('/api/admin/quiz/keypoints?quiz_id=' + encodeURIComponent(curQuizId));
   if (!data) return;
+  hasKeypoints = data.items.length > 0;
+  hasApprovedKeypoints = data.items.some(k => k.status === 'approved');
+  renderStepper();
   const box = $('keypoint-box');
   if (!data.items.length) { box.innerHTML = '<div class="muted">暂无要点，先执行提取</div>'; return; }
   const sections = {};
@@ -546,6 +650,8 @@ async function loadQuestions() {
   if (!curQuizId) return;
   const data = await api('/api/admin/quiz/questions?quiz_id=' + encodeURIComponent(curQuizId));
   if (!data) return;
+  hasQuestions = data.items.length > 0;
+  renderStepper();
   const box = $('question-box');
   if (!data.items.length) { box.innerHTML = '<div class="muted">暂无题目，先生成</div>'; return; }
   const canSelect = curQuizStatus === 'draft' || curQuizStatus === 'reviewing';
@@ -717,7 +823,7 @@ $('btn-publish').addEventListener('click', async () => {
     quiz_id: curQuizId, action: 'publish', targets: Array.from(selectedPhones),
     valid_until: $('valid-until').value || null,
   });
-  if (r) { $('publish-msg').textContent = '已下发，目标 ' + r.total_users + ' 人，有效期至 ' + (r.valid_until || '').slice(0, 10); toast('已下发：' + r.total_users + ' 人'); loadQuizList(); }
+  if (r) { $('publish-msg').textContent = '已下发，目标 ' + r.total_users + ' 人，有效期至 ' + (r.valid_until || '').slice(0, 10); toast('已下发：' + r.total_users + ' 人'); loadQuizList(); curQuizStatus = 'published'; renderStepper(); }
 });
 $('btn-append').addEventListener('click', async () => {
   if (!curQuizId || !selectedPhones.size) { toast('请选择测验与对象'); return; }
@@ -730,12 +836,102 @@ $('btn-remove').addEventListener('click', async () => {
   if (r) { $('publish-msg').textContent = '已移除 ' + r.removed.length + ' 人（已答用户保留）'; toast('已移除 ' + r.removed.length + ' 人'); loadQuizList(); }
 });
 
-// --- 统计 ---
-$('btn-stats').addEventListener('click', () => {
-  if (!curQuizId) { toast('请先选择测验'); return; }
-  // 新窗口打开独立完成率看板
-  window.open('/quiz-stats?quiz_id=' + encodeURIComponent(curQuizId), '_blank');
+// --- 工作台/完成率 tab ---
+function switchAdminTab(which) {
+  $('tab-workbench').classList.toggle('active', which === 'workbench');
+  $('tab-stats').classList.toggle('active', which === 'stats');
+  $('pane-workbench').classList.toggle('active', which === 'workbench');
+  $('pane-stats').classList.toggle('active', which === 'stats');
+  if (which === 'stats') loadStats();
+}
+$('tab-workbench').addEventListener('click', () => switchAdminTab('workbench'));
+$('tab-stats').addEventListener('click', () => switchAdminTab('stats'));
+
+// --- 步骤条：按数据状态自动打勾 ---
+function renderStepper() {
+  const steps = {
+    import: !!curQuizId,
+    extract: hasKeypoints,
+    keypoints: hasApprovedKeypoints,
+    questions: hasQuestions,
+    publish: curQuizStatus === 'published',
+  };
+  document.querySelectorAll('#stepper .step-node').forEach(n => {
+    n.classList.toggle('done', !!steps[n.dataset.step]);
+  });
+}
+
+// --- ＋新建：清空导入表单并聚焦导入区 ---
+$('btn-new').addEventListener('click', () => {
+  curQuizId = null;
+  hasKeypoints = hasApprovedKeypoints = hasQuestions = false;
+  renderStepper();
+  $('imp-title').value = '';
+  $('imp-month').value = '';
+  $('imp-file').value = '';
+  $('imp-msg').textContent = '';
+  const sel = $('imp-scene');
+  sel.selectedIndex = 0;
+  switchAdminTab('workbench');
+  $('sec-import').scrollIntoView({ behavior: 'smooth' });
+  $('imp-title').focus();
 });
+
+// --- 完成率 tab：内嵌当前选中测验统计（复用 /api/admin/quiz/stats）---
+async function loadStats() {
+  const sub = $('stats-sub');
+  if (!curQuizId) {
+    sub.textContent = '';
+    $('stats-msg').textContent = '请先从左侧选择一个测验';
+    $('stats-metrics').innerHTML = '';
+    $('stats-role-table').innerHTML = '';
+    $('stats-region-table').innerHTML = '';
+    $('stats-detail-table').innerHTML = '';
+    $('stats-page-info').textContent = '';
+    return;
+  }
+  const region = $('stats-f-region').value.trim();
+  const q = $('stats-f-q').value.trim();
+  const d = await api('/api/admin/quiz/stats?quiz_id=' + encodeURIComponent(curQuizId) +
+    '&page=' + statsPage + '&page_size=' + STATS_PAGE_SIZE +
+    (region ? '&region=' + encodeURIComponent(region) : '') +
+    (q ? '&q=' + encodeURIComponent(q) : ''));
+  if (!d) return;
+  statsTotal = d.total;
+  sub.textContent = (d.month || '') + ' · ' + (d.title || '');
+  $('stats-msg').textContent = '';
+  $('btn-stats-open').href = '/quiz-stats?quiz_id=' + encodeURIComponent(curQuizId);
+  const rate = ((d.completion_rate || 0) * 100).toFixed(1);
+  $('stats-metrics').innerHTML = `
+    <div class="metric"><div class="label">选中人数</div><div class="value">${d.total_users}</div></div>
+    <div class="metric"><div class="label">已开始</div><div class="value">${d.started}</div></div>
+    <div class="metric"><div class="label">已完成</div><div class="value">${d.completed}</div></div>
+    <div class="metric"><div class="label">完成率</div><div class="value">${rate}%</div></div>`;
+  $('stats-role-table').innerHTML = '<tr><th>管理员层级</th><th>人数</th><th>已开始</th><th>已完成</th><th>完成率</th></tr>' +
+    (d.by_role || []).map(r => `<tr><td>${escapeHtml(r.label)}</td><td>${r.total}</td><td>${r.started}</td><td>${r.completed}</td><td>${((r.rate || 0) * 100).toFixed(1)}%</td></tr>`).join('') ||
+    '<tr><td colspan="5" class="muted">暂无数据</td></tr>';
+  $('stats-region-table').innerHTML = '<tr><th>区县</th><th>人数</th><th>已完成</th><th>完成率</th></tr>' +
+    (d.by_region || []).map(r => `<tr><td>${escapeHtml(r.region)}</td><td>${r.total}</td><td>${r.completed}</td><td>${((r.rate || 0) * 100).toFixed(1)}%</td></tr>`).join('') ||
+    '<tr><td colspan="4" class="muted">暂无数据</td></tr>';
+  const rows = (d.user_details || []).map(u => `<tr>
+    <td>${escapeHtml(u.province)}</td><td>${escapeHtml(u.city)}</td><td>${escapeHtml(u.county)}</td><td>${escapeHtml(u.community)}</td>
+    <td>${escapeHtml(u.name)}</td><td>${escapeHtml(u.phone)}</td><td>${escapeHtml(u.admin_level)}</td>
+    <td>${escapeHtml(u.status)} ${u.answered}/${u.total}</td>
+  </tr>`).join('');
+  $('stats-detail-table').innerHTML = '<thead><tr><th>省</th><th>市</th><th>县</th><th>调查小区</th><th>姓名</th><th>联系电话</th><th>管理员层级</th><th>作答情况</th></tr></thead><tbody>' + rows + '</tbody>';
+  const pages = Math.max(1, Math.ceil(statsTotal / STATS_PAGE_SIZE));
+  $('stats-page-info').textContent = '第 ' + statsPage + '/' + pages + ' 页 · 共 ' + statsTotal + ' 人';
+  $('stats-btn-prev').disabled = statsPage <= 1;
+  $('stats-btn-next').disabled = statsPage >= pages;
+  const exportUrl = '/api/admin/quiz/stats/export?quiz_id=' + encodeURIComponent(curQuizId) +
+    (region ? '&region=' + encodeURIComponent(region) : '') + (q ? '&q=' + encodeURIComponent(q) : '');
+  $('stats-btn-export').href = exportUrl;
+}
+$('stats-btn-search').addEventListener('click', () => { statsPage = 1; loadStats(); });
+$('stats-f-region').addEventListener('keydown', e => { if (e.key === 'Enter') { statsPage = 1; loadStats(); } });
+$('stats-f-q').addEventListener('keydown', e => { if (e.key === 'Enter') { statsPage = 1; loadStats(); } });
+$('stats-btn-prev').addEventListener('click', () => { if (statsPage > 1) { statsPage--; loadStats(); } });
+$('stats-btn-next').addEventListener('click', () => { if (statsPage * STATS_PAGE_SIZE < statsTotal) { statsPage++; loadStats(); } });
 </script>
 </body>
 </html>
