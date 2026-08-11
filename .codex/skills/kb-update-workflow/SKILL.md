@@ -1,4 +1,4 @@
-﻿---
+---
 name: kb-update-workflow
 description: >
   知识库（KB）5 阶段入库流程触发器。

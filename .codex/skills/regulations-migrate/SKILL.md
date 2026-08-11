@@ -1,4 +1,4 @@
-﻿---
+---
 name: regulations-migrate
 description: >
   Annual knowledge-base sync when the labor survey system document changes.
