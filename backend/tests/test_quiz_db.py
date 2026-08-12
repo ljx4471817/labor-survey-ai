@@ -156,3 +156,16 @@ def test_latest_import_for_quiz(db):
     latest = db.latest_import_for_quiz(qid)
     assert latest["id"] == imp2
     assert db.latest_import_for_quiz("Q9999") is None
+
+
+def test_next_seq_max_after_delete(db):
+    """删除中间行后 id 仍递增（MAX+1，不重复 COUNT 方案的主键冲突）。"""
+    q1 = db.create_quiz("A", scene="x", created_by="admin")
+    q2 = db.create_quiz("B", scene="x", created_by="admin")
+    assert (q1, q2) == ("Q0001", "Q0002")
+    # 模拟用户清理数据：删除 Q0001，只剩 Q0002
+    conn = quiz_db._get_conn()
+    conn.execute("DELETE FROM quizzes WHERE id = ?", (q1,))
+    conn.commit()
+    q3 = db.create_quiz("C", scene="x", created_by="admin")
+    assert q3 == "Q0003"  # 修复前 COUNT=1 -> Q0002 主键冲突

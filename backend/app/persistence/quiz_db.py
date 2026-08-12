@@ -177,14 +177,14 @@ def _row(d: dict | None) -> dict | None:
 # --- id 生成 -----------------------------------------------------------------
 
 def _next_seq(table: str, column: str, prefix: str) -> int:
-    """按前缀统计序号，用于 Q/IMP 的月份内序号。"""
+    """按前缀取最大序号 +1（删除中间行后不冲突）。"""
     conn = _get_conn()
     row = conn.execute(
-        f"SELECT COUNT(*) AS c FROM {table} WHERE id LIKE ?",
+        f"SELECT MAX(CAST(SUBSTR({column}, {len(prefix) + 1}) AS INTEGER)) AS m "
+        f"FROM {table} WHERE {column} LIKE ?",
         (prefix + "%",),
     ).fetchone()
-    return (row["c"] if row else 0) + 1
-
+    return (row["m"] if row and row["m"] is not None else 0) + 1
 
 # --- quizzes -----------------------------------------------------------------
 
