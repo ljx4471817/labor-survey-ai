@@ -12,6 +12,7 @@ from loguru import logger
 from app.api.feedback_admin import router as feedback_admin_router
 from app.api.gaps_admin import router as gaps_admin_router
 from app.api.usage_admin import router as usage_admin_router
+from app.api.llm_admin import router as llm_admin_router
 from app.api.quiz import router as quiz_router
 from app.api.quiz_admin import router as quiz_admin_router
 from app.api.whitelist_admin import router as whitelist_admin_router
@@ -43,7 +44,7 @@ app.include_router(
     feedback_router, prefix="/api", tags=["feedback"],
     dependencies=[Depends(require_user)],
 )
-for _r in (feedback_admin_router, gaps_admin_router, usage_admin_router, whitelist_admin_router, quiz_admin_router):
+for _r in (feedback_admin_router, gaps_admin_router, usage_admin_router, whitelist_admin_router, quiz_admin_router, llm_admin_router):
     app.include_router(
         _r,
         prefix="/api/admin",
@@ -115,8 +116,17 @@ def whitelist_admin() -> FileResponse:
     return _serve_static_page("whitelist.html")
 
 
+@app.on_event("startup")
+def startup():
+    # LLM routing scheduler: poll MiniMax 5h quota every 10 min, switch primary/fallback.
+    from app.services.llm_switch_job import scheduler
+    scheduler.start()
+
+
 @app.on_event("shutdown")
 def shutdown():
+    from app.services.llm_switch_job import scheduler
+    scheduler.stop()
     from app.rag.retriever import shutdown_executor
     shutdown_executor()
 

@@ -96,3 +96,6 @@ backend/data/*.db-wal
 
 # 临时调试脚本（下划线开头）
 scripts/_*.py
+
+# LLM routing runtime state
+backend/data/llm_route.json

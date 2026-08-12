@@ -66,10 +66,10 @@ def _load() -> Settings:
         llm_api_key = os.environ.get("DEEPSEEK_API_KEY", "")
         llm_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
         llm_url = "https://api.deepseek.com/v1/chat/completions"
-    elif llm_provider == "dashscope":
-        llm_api_key = os.environ.get("DASHSCOPE_API_KEY", "")
-        llm_model = os.environ.get("DASHSCOPE_LLM_MODEL", "qwen-plus")
-        llm_url = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+    elif llm_provider == "minimax":
+        llm_api_key = os.environ.get("MINIMAX_API_KEY", "")
+        llm_model = os.environ.get("MINIMAX_MODEL", "MiniMax-M2.7-highspeed")
+        llm_url = "https://api.minimaxi.com/v1/chat/completions"
     else:
         llm_api_key = ""
         llm_model = ""

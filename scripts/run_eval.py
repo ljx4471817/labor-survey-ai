@@ -35,6 +35,23 @@ def login(url: str, phone: str) -> str:
     return r.json()["token"]
 
 
+_NEGATIONS = (
+    "\u4e0d\u5f97", "\u4e0d\u80fd", "\u4e0d\u8981", "\u7981\u6b62", "\u8bf7\u52ff",
+    "\u907f\u514d", "\u5207\u52ff", "\u4e0d\u5e94", "\u4e0d\u53ef", "\u522b",
+)
+
+
+def _bad_word_hit(answer: str, bad: str) -> bool:
+    """True if a forbidden word appears in a non-negated sentence.
+
+    Avoids false positives like "must not estimate" (negated) being flagged.
+    """
+    for sent in re.split(r"[\u3002\uff01\uff1f!?;\n]", answer):
+        if bad in sent and not any(neg in sent for neg in _NEGATIONS):
+            return True
+    return False
+
+
 def evaluate_item(item: dict, response: dict) -> dict:
     """对单题评估，返回 {passed, reason, details}。"""
     q_type = item["type"]
@@ -112,7 +129,7 @@ def evaluate_item(item: dict, response: dict) -> dict:
 
     # 4. 禁词检查
     for bad in item.get("should_not_contain", []):
-        if bad in answer:
+        if _bad_word_hit(answer, bad):
             checks.append((False, f"含禁词：{bad}"))
 
     passed = all(c[0] for c in checks)

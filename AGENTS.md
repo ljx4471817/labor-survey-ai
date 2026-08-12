@@ -78,6 +78,7 @@
 | `0011-不引入ponytail.md` | 2026-07-30 评估后决定不引入（与项目分层规则冲突，无实际痛点驱动） | 开发规范 |
 | `0012-月度测验系统.md` | 6 表 SQLite + LLM 要点提取 + 4 选 1 选择题 + 完成率看板 | 测验系统 |
 | 013-rag-规则冲突裁决.md | system prompt 硬规则 + FAQ scope + eval 三层冲突裁决 | 检索治理 |
+| `0014-llm-主备切换.md` | MiniMax 主用 / DeepSeek 备用，5h/7d 用量超阈值切换 | LLM 路由 |
 
 ## 目录约定
 
@@ -91,7 +92,7 @@
 | `knowledge-base/indicator_catalog.json` | **制度指标目录**（按模块组织的 F/H 编号 + 名称），schema v1 核心 | 制度变更时改 |
 | `knowledge-base/migration_map.json` | **迁移映射**（renamed/removed/added），每次制度变更生成一份 | 自由修改（按需） |
 | `backend/app/` | FastAPI 应用代码 | 自由修改 |
-| `backend/app/api/` | 各业务模块路由（chat / feedback / feedback_admin / usage_admin / whitelist_admin / gaps_admin / auth / voice / **quiz / quiz_admin**） | 自由修改 |
+| `backend/app/api/` | 各业务模块路由（chat / feedback / feedback_admin / usage_admin / whitelist_admin / gaps_admin / auth / voice / **quiz / quiz_admin** / llm_admin） | 自由修改 |
 | `backend/app/core/` | 配置 + 枚举常量（config.py / constants.py） | 自由修改 |
 | `backend/app/models/schemas/` | Pydantic 请求/响应模型子包（common / chat / admin） | 自由修改 |
 | `backend/app/rag/` | 检索算法（pure.py = 纯函数 / retriever.py = IO 层 / bm25 / llm / prompts） | 自由修改 |
@@ -222,7 +223,7 @@ cd backend && pip install -r requirements.txt
 - **数据库 schema 变更/数据迁移前先问我**
 - 未经明确要求不 push 到 main / 默认分支
 
-**当前 `.env` 含的 API Key**：DeepSeek（对话）、DashScope（向量 Embedding）；讯飞 2026-06-21 起停用，环境变量保留供未来恢复。
+**当前 API Key 配置**：MiniMax（对话 Token Plan，在 .env）、DeepSeek（对话，系统环境变量）、DashScope（向量 Embedding，在 .env）；讯飞 2026-06-21 起停用，环境变量保留供未来恢复。
 
 ## 知识库质量标准
 
@@ -250,6 +251,14 @@ cd backend && pip install -r requirements.txt
 - 题目审核即下发选择：管理端「确认」/「编辑保存」题目 -> 自动 selected=1（拟下发）；「打回」 -> selected=0（退出下发）。没有独立的「下发此题」勾选框，发布时下发所有 selected=1 且 approved 的题目。
 - 管理端 quiz_admin.html 为「侧边栏测验列表 + 工作台」两栏，顶部步骤条（导入→提取→要点→生成勾选→下发）按数据状态自动打勾；完成率内嵌在「完成率」 tab（/api/admin/quiz/stats），独立 /quiz-stats 页保留。
 - 用户端 quiz.html「已完成·过期」项显示得分（/api/quiz/my done 项 score = 答对数）。
+
+## LLM 主备切换约定
+
+- 主用 MiniMax M2.7-highspeed，备用 DeepSeek flash（deepseek-v4-flash）。
+- 切换阈值：5h >=85% 或 7d >=90% -> 切 DeepSeek；5h <70% 且 7d <85% 且冷却 >=30 分钟 -> 切回。
+- 状态文件 backend/data/llm_route.json；用量查询用 MINIMAX_API_KEY（Bearer），不需要 _token。
+- 用量检查连续失败 3 次自动切 DeepSeek 兜底。
+- 查看当前模型/用量：GET /api/admin/llm/route（dashboard 使用监测 tab）。
 
 ## 待办
 
