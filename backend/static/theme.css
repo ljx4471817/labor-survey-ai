@@ -1,0 +1,294 @@
+/* ============================================================
+ * theme.css - shared design system (AI-native, stats blue #03499F)
+ * Loaded BEFORE each page's inline <style>, so pages keep overrides.
+ * Defines both token families: --c-* (index/quiz) and
+ * --ink-* and --paper (login/dashboard/whitelist/quiz_admin/quiz-stats).
+ * Dark mode: html[data-theme="dark"] set by common.js applyTheme().
+ * ============================================================ */
+
+/* ---------- Light (default) ---------- */
+:root {
+  color-scheme: light;
+  /* c-family */
+  --c-ink: #0F172A;
+  --c-ink-2: #475569;
+  --c-ink-3: #64748B;
+  --c-ink-4: #94A3B8;
+  --c-bg: #F7F8FA;
+  --c-bg-elev: #FFFFFF;
+  --c-bg-tint: #EEF2F7;
+  --c-line: #E2E8F0;
+  --c-line-soft: #EAEEF4;
+  --c-brand: #03499F;
+  --c-brand-2: #0250AC;
+  --c-brand-soft: #E8F0FA;
+  --c-ok: #16A34A;
+  --c-ok-soft: #E8F6EE;
+  --c-warn: #D97706;
+  --c-warn-soft: #FCF3E3;
+  --c-danger: #DC2626;
+  --c-danger-soft: #FDEBEB;
+  --c-info: #0369A1;
+  --c-info-soft: #E8F4FB;
+  --shadow-1: 0 1px 2px rgba(15,23,42,.05), 0 1px 3px rgba(15,23,42,.05);
+  --shadow-2: 0 1px 3px rgba(15,23,42,.06), 0 10px 28px rgba(3,73,159,.10);
+  --radius-bubble: 14px;
+  --radius-card: 14px;
+  --radius-btn: 10px;
+  --radius-pill: 999px;
+  --ease: cubic-bezier(.4,0,.2,1);
+  --t-fast: 150ms;
+  --t-base: 220ms;
+
+  /* ink-family */
+  --ink-blue: #03499F;
+  --ink-blue-soft: #0250AC;
+  --paper: #F7F8FA;
+  --paper-dim: #EEF2F7;
+  --line: #E2E8F0;
+  --text: #0F172A;
+  --text-dim: #64748B;
+  --accent: #03499F;
+  --accent-soft: #E8F0FA;
+  --good: #16A34A;
+  --bad: #DC2626;
+  --bad-soft: #FDEBEB;
+  --info-soft: #E8F4FB;
+  --ok-soft: #E8F6EE;
+}
+
+/* ---------- Dark ---------- */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --c-ink: #E6EAF2;
+  --c-ink-2: #B6C2D4;
+  --c-ink-3: #8AA0BC;
+  --c-ink-4: #64748B;
+  --c-bg: #0B1220;
+  --c-bg-elev: #121B2E;
+  --c-bg-tint: #182238;
+  --c-line: #22304A;
+  --c-line-soft: #1C2940;
+  --c-brand: #3D8BFF;
+  --c-brand-2: #5B9CFF;
+  --c-brand-soft: #14304F;
+  --c-ok: #34D399;
+  --c-ok-soft: #0F2E23;
+  --c-warn: #FBBF24;
+  --c-warn-soft: #33260C;
+  --c-danger: #F87171;
+  --c-danger-soft: #3A1A1A;
+  --c-info: #38BDF8;
+  --c-info-soft: #0E2A38;
+  --shadow-1: 0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.35);
+  --shadow-2: 0 1px 3px rgba(0,0,0,.40), 0 10px 30px rgba(0,0,0,.45);
+
+  --ink-blue: #3D8BFF;
+  --ink-blue-soft: #5B9CFF;
+  --paper: #0B1220;
+  --paper-dim: #121B2E;
+  --line: #22304A;
+  --text: #E6EAF2;
+  --text-dim: #8AA0BC;
+  --accent: #3D8BFF;
+  --accent-soft: #14304F;
+  --good: #34D399;
+  --bad: #F87171;
+  --bad-soft: #3A1A1A;
+  --info-soft: #0E2A38;
+  --ok-soft: #0F2E23;
+}
+
+/* ---------- Base: focus ring ---------- */
+:focus-visible {
+  outline: 2px solid var(--c-brand);
+  outline-offset: 2px;
+}
+
+/* ---------- Theme toggle button (header) ---------- */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-btn);
+  background: var(--c-bg-elev);
+  color: var(--c-ink-2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.theme-toggle:hover { color: var(--c-brand); border-color: var(--c-brand); transform: translateY(-1px); }
+.theme-toggle svg { width: 17px; height: 17px; display: block; }
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+html[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+html[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+/* ---------- Typing indicator (AI thinking) ---------- */
+.typing-dots { display: inline-flex; align-items: center; gap: 5px; padding: 4px 2px; }
+.typing-dots i {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--c-ink-3);
+  animation: typing-bounce 1.2s var(--ease) infinite;
+}
+.typing-dots i:nth-child(2) { animation-delay: .15s; }
+.typing-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: .45; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ---------- Mascot float (empty state / AI avatar) ---------- */
+@keyframes mascot-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.mascot-float { animation: mascot-float 3.2s ease-in-out infinite; }
+
+/* ---------- Message entrance ---------- */
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg-in { animation: msg-in var(--t-base) var(--ease) both; }
+
+/* ---------- Card hover lift ---------- */
+.lift { transition: transform var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease); }
+.lift:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+/* ============================================================
+ * Dark-mode fixes for hardcoded colors in page inline styles.
+ * Higher specificity than inline rules, so they win in dark.
+ * ============================================================ */
+html[data-theme="dark"] body { background: var(--c-bg); }
+
+/* frosted header (index/quiz) */
+html[data-theme="dark"] header { background: rgba(18, 27, 46, 0.86); }
+
+/* solid brand header (dashboard/whitelist/quiz_admin/quiz-stats) */
+html[data-theme="dark"] header h1,
+html[data-theme="dark"] header .sub,
+html[data-theme="dark"] header .back,
+html[data-theme="dark"] header a { color: #B6C2D4; }
+
+/* big surfaces that hardcode white */
+html[data-theme="dark"] .card,
+html[data-theme="dark"] section,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .table-wrap,
+html[data-theme="dark"] .pager select,
+html[data-theme="dark"] .kp-item,
+html[data-theme="dark"] .q-item,
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] .quiz-sel-item,
+html[data-theme="dark"] .stepper,
+html[data-theme="dark"] .recent-item .a,
+html[data-theme="dark"] .tab-btn.active,
+html[data-theme="dark"] .opt,
+html[data-theme="dark"] input[type=text],
+html[data-theme="dark"] input[type=month],
+html[data-theme="dark"] input[type=date],
+html[data-theme="dark"] input[type=search],
+html[data-theme="dark"] select { background-color: var(--c-bg-elev); }
+
+/* quiz feedback text on soft bg stays readable */
+html[data-theme="dark"] .feedback.ok { color: #86EFAC; }
+html[data-theme="dark"] .feedback.bad { color: #FCA5A5; }
+
+/* chat row / turn entrance */
+.msg-row, .turn { animation: msg-in var(--t-base) var(--ease) both; }
+
+/* empty-state mascot gentle float */
+.empty-state .empty-mascot { animation: mascot-float 3.2s ease-in-out infinite; }
+
+/* primary CTA gradient */
+html #send-btn { background: linear-gradient(135deg, var(--c-brand), #2FA8E0); }
+html .progress-bar > i, html .q-progress > i { background: linear-gradient(90deg, var(--c-brand), #2FA8E0); }
+
+/* option micro-interaction */
+.opt { transition: transform 150ms var(--ease), border-color 150ms var(--ease), box-shadow 150ms var(--ease); }
+.opt:active { transform: scale(0.99); }
+
+/* chat entrance (scoped to chat page) */
+#chat .msg-row, #chat .turn { animation: msg-in var(--t-base) var(--ease) both; }
+
+/* plain admin buttons (dashboard/whitelist) flip to dark surface */
+html[data-theme="dark"] button:not(.primary):not(.btn):not(.theme-toggle):not(.logout-btn):not(.tab-btn) {
+  background-color: var(--c-bg-elev);
+  color: var(--c-ink-2);
+}
+
+/* ============================================================
+ * Admin panel (TailAdmin/Tabler) - unified for all pages.
+ * Light: slate-150 page bg + white cards + slate-300 border.
+ * Dark: same surfaces fall back to dark tokens (higher specificity).
+ * ============================================================ */
+html { background: #E9EEF5; }
+html[data-theme="dark"] { background: var(--c-bg); }
+html body:not(.blue-bg) { background: #E9EEF5; }
+html[data-theme="dark"] body:not(.blue-bg) { background: var(--c-bg); }
+
+/* big surfaces: white card, slate-300 border, soft shadow */
+html body:not(.blue-bg) section,
+html body:not(.blue-bg) .card,
+html body:not(.blue-bg) .table-wrap,
+html body:not(.blue-bg) .sidebar,
+html body:not(.blue-bg) .metric,
+html body:not(.blue-bg) .stepper,
+html body:not(.blue-bg) .kp-item,
+html body:not(.blue-bg) .q-item,
+html body:not(.blue-bg) .quiz-item {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+}
+html body:not(.blue-bg) section,
+html body:not(.blue-bg) .table-wrap,
+html body:not(.blue-bg) .sidebar {
+  box-shadow: 0 1px 2px rgba(15,23,42,.05), 0 2px 6px rgba(15,23,42,.06), 0 10px 24px rgba(15,23,42,.09);
+}
+html[data-theme="dark"] body:not(.blue-bg) section,
+html[data-theme="dark"] body:not(.blue-bg) .card,
+html[data-theme="dark"] body:not(.blue-bg) .table-wrap,
+html[data-theme="dark"] body:not(.blue-bg) .sidebar,
+html[data-theme="dark"] body:not(.blue-bg) .metric,
+html[data-theme="dark"] body:not(.blue-bg) .stepper,
+html[data-theme="dark"] body:not(.blue-bg) .kp-item,
+html[data-theme="dark"] body:not(.blue-bg) .q-item,
+html[data-theme="dark"] body:not(.blue-bg) .quiz-item {
+  background: var(--c-bg-elev);
+  border-color: var(--c-line);
+  box-shadow: var(--shadow-1);
+}
+
+/* module header strip: slate-50 bar + dark slate title */
+html body:not(.blue-bg) section h2 {
+  margin: -16px -18px 14px;
+  padding: 12px 18px;
+  background: #F1F5F9;
+  border-bottom: 1px solid #D7DFEA;
+  border-radius: 8px 8px 0 0;
+  color: #0F172A;
+  font-size: 0.95rem;
+}
+html[data-theme="dark"] body:not(.blue-bg) section h2 {
+  background: linear-gradient(90deg, var(--c-bg-tint), transparent);
+  border-bottom-color: var(--c-line);
+  color: var(--c-ink);
+}
+
+/* table headers: slate-50 + dark text */
+html body:not(.blue-bg) th {
+  background: #F1F5F9;
+  color: #334155;
+}
+html[data-theme="dark"] body:not(.blue-bg) th {
+  background: var(--c-bg-tint);
+  color: var(--c-ink-2);
+}
+
+/* options / chips: slate-300 border for definition */
+html body:not(.blue-bg) .opt,
+html body:not(.blue-bg) .user-chip { border-color: #CBD5E1; }

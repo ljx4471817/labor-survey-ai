@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<link rel="stylesheet" href="/static/theme.css">
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,41 +16,7 @@
      * 背景：米白 #F7F4EE（柔和、低对比，长时间阅读不刺眼）
      * 文字：#1F2937 / #4B5563 / #6B7280 / #9CA3AF 四级灰阶
      * ============================================================ */
-    :root {
-      --c-ink:        #1F2937;
-      --c-ink-2:      #4B5563;
-      --c-ink-3:      #6B7280;
-      --c-ink-4:      #9CA3AF;
-      --c-bg:         #F7F4EE;
-      --c-bg-elev:    #FFFFFF;
-      --c-bg-tint:    #F1EEE7;
-      --c-line:       #E7E2D8;
-      --c-line-soft:  #EDE9DF;
-
-      --c-brand:      #1E3A5F;
-      --c-brand-2:    #2C5282;
-      --c-brand-soft: #E8EEF5;
-
-      --c-ok:         #2F855A;
-      --c-ok-soft:    #E6F3EC;
-      --c-warn:       #B7791F;
-      --c-warn-soft:  #FBF1DD;
-      --c-danger:     #B54545;
-      --c-danger-soft:#F7E4E2;
-      --c-info:       #5B6B8C;
-      --c-info-soft:  #ECEFF4;
-
-      --shadow-1: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.04);
-      --shadow-2: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
-      --radius-bubble: 14px;
-      --radius-card:   12px;
-      --radius-btn:    8px;
-      --radius-pill:   999px;
-
-      --ease: cubic-bezier(0.4, 0, 0.2, 1);
-      --t-fast: 160ms;
-      --t-base: 220ms;
-    }
+    
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     html, body { height: 100%; overscroll-behavior: none; }
@@ -93,7 +61,7 @@
     .brand-mark {
       width: 30px; height: 30px;
       border-radius: 8px;
-      background: linear-gradient(135deg, var(--c-brand) 0%, var(--c-brand-2) 100%);
+      background: linear-gradient(135deg, var(--c-brand) 0%, #2FA8E0 100%);
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
       box-shadow: var(--shadow-1);
@@ -136,9 +104,10 @@
       box-shadow: 0 0 0 0 rgba(47, 133, 90, 0.4);
     }
     header .status.ok {
-      color: var(--c-ok);
+      color: #15803D;
       background: var(--c-ok-soft);
     }
+    html[data-theme="dark"] header .status.ok { color: var(--c-ok); }
     header .status.ok .dot {
       background: var(--c-ok);
       animation: breath 2.4s var(--ease) infinite;
@@ -182,7 +151,7 @@
       align-self: flex-end;
       margin-bottom: 2px;
       background: #fff;
-      box-shadow: var(--shadow-1);
+      box-shadow: 0 0 0 2px var(--c-bg), 0 4px 14px rgba(15, 23, 42, 0.10);
       object-fit: cover;
       animation: mascot-enter 380ms var(--ease) both;
     }
@@ -721,6 +690,20 @@
       header h1 { font-size: 16px; }
     }
 
+    /* ===== 深色模式：聊天页表面一致性 ===== */
+    html[data-theme="dark"] #input-form {
+      background: rgba(18, 27, 46, 0.86);
+      border-top-color: var(--c-line);
+    }
+    html[data-theme="dark"] .question { background: #1D4ED8; }
+    html[data-theme="dark"] .msg-avatar {
+      box-shadow: 0 0 0 2px var(--c-bg), 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+    html[data-theme="dark"] .empty-state .empty-mascot {
+      background: var(--c-bg-elev);
+      box-shadow: var(--shadow-1);
+    }
+
     /* ===== 减少动效偏好 ===== */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -783,7 +766,11 @@
         <span class="brand-sub">辅助调查员专用 · 制度即时查询</span>
       </div>
     </div>
-    <button class="logout-btn" onclick="logout()">退出</button>
+    <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+</button>
+<button class="logout-btn" onclick="logout()">退出</button>
     <span class="status" id="status"><span class="dot"></span><span id="status-text">连接中…</span></span>
   </header>
 

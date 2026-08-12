@@ -70,3 +70,29 @@ function logout() {
   setUserName('');
   location.replace('/login');
 }
+
+
+// ---- theme (dark mode: follow system + manual toggle) ----
+var THEME_KEY = "lsx_theme";
+
+function currentTheme() {
+  var saved = localStorage.getItem(THEME_KEY);
+  if (saved === "dark" || saved === "light") return saved;
+  return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function applyTheme() {
+  var t = currentTheme();
+  document.documentElement.setAttribute("data-theme", t);
+  document.querySelectorAll(".theme-toggle").forEach(function (btn) {
+    btn.setAttribute("aria-label", t === "dark" ? "Switch to light" : "Switch to dark");
+  });
+}
+
+function toggleTheme() {
+  var next = currentTheme() === "dark" ? "light" : "dark";
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme();
+}
+
+document.addEventListener("DOMContentLoaded", applyTheme);
