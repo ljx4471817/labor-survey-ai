@@ -349,7 +349,7 @@ def test_llm_route_endpoint(monkeypatch, tmp_path):
     monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
     monkeypatch.setenv("MINIMAX_API_KEY", "k")
     from app.api.llm_admin import get_llm_route
-    d = get_llm_route()
+    d = get_llm_route(phone="13900000001")
     assert d["active_provider"] == "minimax"
     assert d["active_model"] == "MiniMax-M2.7-highspeed"
     assert d["consecutive_failures"] == 0
@@ -369,3 +369,90 @@ def test_check_and_switch_no_usable_data_counts_as_failure(monkeypatch, tmp_path
     llm_switch_job.check_and_switch()
     assert llm_router.load_state()["active_provider"] == "deepseek"
     assert "no usable usage data" in llm_router.load_state()["last_error"]
+
+
+# ---------- manual override (主动切换模型) ----------
+
+def test_default_state_manual_override_none(monkeypatch, tmp_path):
+    monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
+    assert llm_router.load_state()["manual_override"] is None
+
+
+def test_set_manual_override_persists(monkeypatch, tmp_path):
+    monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
+    llm_router.set_manual_override("deepseek")
+    state = llm_router.load_state()
+    assert state["active_provider"] == "deepseek"
+    assert state["manual_override"]["provider"] == "deepseek"
+    assert "set_at" in state["manual_override"]
+
+
+def test_set_manual_override_invalid(monkeypatch, tmp_path):
+    monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
+    with pytest.raises(ValueError):
+        llm_router.set_manual_override("dashscope")
+
+
+def test_release_manual_override(monkeypatch, tmp_path):
+    monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
+    llm_router.set_manual_override("deepseek")
+    llm_router.release_manual_override()
+    state = llm_router.load_state()
+    assert state["manual_override"] is None
+    assert state["active_provider"] == "deepseek"  # 只清标记，不动 provider
+
+
+def test_check_and_switch_manual_keeps_provider(monkeypatch, tmp_path):
+    _seed_state(monkeypatch, tmp_path, "minimax")
+    llm_router.set_manual_override("minimax")
+    monkeypatch.setattr(
+        llm_switch_job, "check_quota",
+        lambda: QuotaSnapshot(95, 95, 1, {}),  # 已超阈值，但手动锁定不改
+    )
+    llm_switch_job.check_and_switch()
+    state = llm_router.load_state()
+    assert state["active_provider"] == "minimax"
+    assert state["used_5h_pct"] == 95  # 用量照常更新
+    assert state["manual_override"]["provider"] == "minimax"
+
+
+def test_check_and_switch_manual_blocks_failsafe(monkeypatch, tmp_path):
+    _seed_state(monkeypatch, tmp_path, "minimax")
+    llm_router.set_manual_override("minimax")
+
+    def _boom():
+        raise RuntimeError("quota endpoint down")
+
+    monkeypatch.setattr(llm_switch_job, "check_quota", _boom)
+    for _ in range(4):
+        llm_switch_job.check_and_switch()
+    state = llm_router.load_state()
+    assert state["active_provider"] == "minimax"  # 手动锁定连 fail-safe 也不切
+    assert state["consecutive_failures"] == 4
+
+
+def test_llm_route_post_manual_and_auto(monkeypatch, tmp_path):
+    monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
+    monkeypatch.setenv("MINIMAX_API_KEY", "k")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "kd")
+    from app.api import llm_admin
+    from app.services import llm_switch_job
+    # 手动切 deepseek
+    d = llm_admin.set_llm_route(llm_admin.LlmRouteRequest(provider="deepseek"), phone="13900000001")
+    assert d["active_provider"] == "deepseek"
+    assert d["manual_override"]["provider"] == "deepseek"
+    # 手动切回 minimax
+    d2 = llm_admin.set_llm_route(llm_admin.LlmRouteRequest(provider="minimax"), phone="13900000001")
+    assert d2["active_provider"] == "minimax"
+    # auto 恢复自动：立即触发一次自动决策（mock quota）
+    calls = {"n": 0}
+
+    def _ok():
+        calls["n"] += 1
+        return QuotaSnapshot(30, 20, 1, {})
+
+    monkeypatch.setattr(llm_switch_job, "check_quota", _ok)
+    d3 = llm_admin.set_llm_route(llm_admin.LlmRouteRequest(provider="auto"), phone="13900000001")
+    assert d3["manual_override"] is None
+    assert calls["n"] == 1  # 恢复自动触发一次自动决策
+    assert d3["active_provider"] == "minimax"

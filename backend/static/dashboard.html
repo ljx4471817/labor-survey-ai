@@ -544,6 +544,23 @@ async function loadLlmRoute(force) {
     const detail = '\u6700\u8fd1\u68c0\u67e5\uff1a' + (d.last_check_at ? new Date(d.last_check_at * 1000).toLocaleString('zh-CN') : '\u2014')
       + '  \u5207\u6362\u65f6\u95f4\uff1a' + (d.last_switch_at ? new Date(d.last_switch_at * 1000).toLocaleString('zh-CN') : '\u2014')
       + '  ' + provider;
+    const manual = d.manual_override;
+    let manualHtml = '';
+    if (manual) {
+      const ml = manual.provider === 'minimax' ? 'MiniMax 主用' : 'DeepSeek 备用';
+      manualHtml = '<div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+        + '<span style="background:#fbf1dd;color:#b7791f;border-radius:999px;padding:2px 10px;font-size:.75rem">🔒 已手动锁定：' + escapeHtml(ml) + '</span>'
+        + (manual.set_at ? '<span style="color:var(--text-dim);font-size:.75rem">' + new Date(manual.set_at * 1000).toLocaleString('zh-CN') + '</span>' : '')
+        + '<button id="llm-auto-btn" style="border:1px solid var(--line);background:#fff;color:var(--text);border-radius:6px;padding:6px 14px;font-size:.85rem;cursor:pointer">恢复自动</button>'
+        + '</div>';
+    } else if (d.can_manage) {
+      manualHtml = '<div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+        + '<select id="llm-target" style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:.85rem;background:#fff">'
+        + '<option value="minimax">MiniMax 主用</option><option value="deepseek">DeepSeek 备用</option></select>'
+        + '<button id="llm-switch-btn" style="border:none;background:var(--ink-blue);color:#fff;border-radius:6px;padding:6px 14px;font-size:.85rem;cursor:pointer">切换</button>'
+        + '<span style="color:var(--text-dim);font-size:.75rem">自动切换按 5h≥85% / 7d≥90% 触发</span>'
+        + '</div>';
+    }
     el.innerHTML = '<div class="cards" style="margin-bottom:8px">'
       + '<div class="card"><div class="label">\u5f53\u524d\u6a21\u578b</div><div class="value" style="font-size:1.05rem;word-break:break-all">' + escapeHtml(model) + '</div></div>'
       + '<div class="card"><div class="label">5h \u7528\u91cf</div><div class="value">' + p5 + '</div></div>'
@@ -552,7 +569,21 @@ async function loadLlmRoute(force) {
       + '</div>'
       + '<div class="usage-result-info">' + escapeHtml(detail)
       + (bad ? '  <span style="color:var(--bad)">' + escapeHtml(bad) + '</span>' : '')
-      + '</div>';
+      + '</div>' + manualHtml;
+    const switchBtn = document.getElementById('llm-switch-btn');
+    if (switchBtn) switchBtn.addEventListener('click', async () => {
+      const target = document.getElementById('llm-target').value;
+      const res = await fetch('/api/admin/llm/route', { method: 'POST', headers: Object.assign({'Content-Type': 'application/json'}, authHeader()), body: JSON.stringify({ provider: target }) });
+      if (await handle401(res)) return;
+      if (!res.ok) { let m = '切换失败'; try { const e = await res.json(); if (e.detail) m = e.detail; } catch (x) {} alert(m); return; }
+      loadLlmRoute(true);
+    });
+    const autoBtn = document.getElementById('llm-auto-btn');
+    if (autoBtn) autoBtn.addEventListener('click', async () => {
+      const res = await fetch('/api/admin/llm/route', { method: 'POST', headers: Object.assign({'Content-Type': 'application/json'}, authHeader()), body: JSON.stringify({ provider: 'auto' }) });
+      if (await handle401(res)) return;
+      loadLlmRoute(true);
+    });
   } catch (e) {
     el.innerHTML = '<div class="empty">\u52a0\u8f7d\u5931\u8d25\uff1a' + escapeHtml(e.message) + '</div>';
   }

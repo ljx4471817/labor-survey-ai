@@ -71,6 +71,7 @@ def _default_state() -> dict:
         "last_switch_at": None,
         "consecutive_failures": 0,
         "last_error": None,
+        "manual_override": None,
     }
 
 
@@ -96,6 +97,25 @@ def save_state(state: dict) -> None:
     tmp = STATE_FILE.with_name(STATE_FILE.name + ".tmp")
     tmp.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(STATE_FILE)
+
+
+def set_manual_override(provider: str) -> dict:
+    """手动锁定模型（写入状态；自动 job 不再改 provider）。返回更新后的 state。"""
+    if provider not in (PRIMARY, FALLBACK):
+        raise ValueError(f"不支持的模型：{provider}（仅 minimax / deepseek）")
+    state = load_state()
+    state["manual_override"] = {"provider": provider, "set_at": time.time()}
+    state["active_provider"] = provider
+    save_state(state)
+    return state
+
+
+def release_manual_override() -> dict:
+    """清除手动锁定（恢复自动决策）。返回更新后的 state。"""
+    state = load_state()
+    state["manual_override"] = None
+    save_state(state)
+    return state
 
 
 def decide_active_provider(

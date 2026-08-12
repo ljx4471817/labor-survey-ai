@@ -18,23 +18,19 @@ FAILSAFE_SWITCH_AFTER = 3  # consecutive failures before forcing DeepSeek
 
 
 def check_and_switch() -> None:
-    """Query quota once, switch provider per hysteresis, and apply fail-safe on errors."""
+    # Query quota once, switch provider per hysteresis, and apply fail-safe on errors.
+    # manual_override 存在时只更新用量展示、不改 provider（手动锁定优先，连 fail-safe
+    # 也不干预）；恢复自动由调用方触发一次决策。
     state = llm_router.load_state()
     old_provider = state["active_provider"]
+    manual = state.get("manual_override")
     try:
         quota = check_quota()
         if quota.used_5h_pct is None and quota.used_7d_pct is None:
             raise RuntimeError("MiniMax quota response has no usable usage data")
         state["consecutive_failures"] = 0
-        new_provider = llm_router.decide_active_provider(
-            old_provider,
-            quota.used_5h_pct,
-            used_7d_pct=quota.used_7d_pct,
-            last_switch_at=state["last_switch_at"],
-        )
         state.update(
             {
-                "active_provider": new_provider,
                 "last_check_at": time.time(),
                 "used_5h_pct": quota.used_5h_pct,
                 "used_7d_pct": quota.used_7d_pct,
@@ -42,22 +38,36 @@ def check_and_switch() -> None:
                 "last_error": None,
             }
         )
-        if new_provider != old_provider:
-            state["last_switch_at"] = time.time()
-            logger.warning(
-                "LLM route switch {} -> {} (5h used {}%)",
-                old_provider, new_provider, quota.used_5h_pct,
+        if manual:
+            logger.info(
+                "LLM route manual override {} active; usage updated, provider kept",
+                manual["provider"],
             )
         else:
-            logger.info(
-                "LLM route stays {} (5h used {}%, 7d {}%)",
-                new_provider, quota.used_5h_pct, quota.used_7d_pct,
+            new_provider = llm_router.decide_active_provider(
+                old_provider,
+                quota.used_5h_pct,
+                used_7d_pct=quota.used_7d_pct,
+                last_switch_at=state["last_switch_at"],
             )
+            state["active_provider"] = new_provider
+            if new_provider != old_provider:
+                state["last_switch_at"] = time.time()
+                logger.warning(
+                    "LLM route switch {} -> {} (5h used {}%)",
+                    old_provider, new_provider, quota.used_5h_pct,
+                )
+            else:
+                logger.info(
+                    "LLM route stays {} (5h used {}%, 7d {}%)",
+                    new_provider, quota.used_5h_pct, quota.used_7d_pct,
+                )
     except Exception as e:
         state["last_error"] = f"{type(e).__name__}: {e}"
         state["consecutive_failures"] = state.get("consecutive_failures", 0) + 1
         if (
-            state["consecutive_failures"] >= FAILSAFE_SWITCH_AFTER
+            not manual
+            and state["consecutive_failures"] >= FAILSAFE_SWITCH_AFTER
             and old_provider != llm_router.FALLBACK
         ):
             state["active_provider"] = llm_router.FALLBACK
@@ -67,9 +77,7 @@ def check_and_switch() -> None:
                 state["consecutive_failures"], e,
             )
         else:
-            logger.warning(
-                "MiniMax quota check failed, keep {}: {}", old_provider, e
-            )
+            logger.warning("LLM route quota check failed, keep {}: {}", old_provider, e)
     finally:
         llm_router.save_state(state)
 
