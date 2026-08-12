@@ -1,3 +1,3 @@
-﻿name: kb-optimize
-description: 单 query 检索结果优化（奥卡姆版 v2）。当 query 答得不好 / 答得不一致 / 答非所问时调用。加基线留存 / 风险偏好选择 / 置信度具体化。
-tools: []
+display_name: KB 单 Query 优化
+short_description: 单 query 检索结果优化（奥卡姆版）
+default_prompt: 使用 kb-optimize 来诊断和修复 query 答得不好的问题
