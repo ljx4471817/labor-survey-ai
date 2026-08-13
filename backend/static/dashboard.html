@@ -826,7 +826,13 @@ async function initRole() {
       switchTab('whitelist');
       loadWhitelistModule();
     });
-    if (sys) loadStats();
+    if (sys) {
+      loadStats();
+    } else {
+      // 业务管理员进入后台默认显示「白名单管理」模块
+      switchTab('whitelist');
+      loadWhitelistModule();
+    }
     searchUsage();
     if (sys) loadLlmRoute();
   } catch (e) {
