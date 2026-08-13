@@ -96,7 +96,8 @@ def main():
         return 1
 
     print(f'DB: {db}')
-    print(f'LSX_SYSTEM_ADMIN_PHONE: {whitelist_db._system_admin_phone() or "(未设置，系统管理员专属功能将 403)"}')
+    sa = whitelist_db._system_admin_phone()
+    print(f'LSX_SYSTEM_ADMIN_PHONE: {_mask(sa) if sa else "(未设置，系统管理员专属功能将 403)"}')
 
     before = _snapshot(db)
 
