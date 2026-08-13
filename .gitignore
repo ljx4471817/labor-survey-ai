@@ -101,3 +101,6 @@ scripts/_*.py
 backend/data/llm_route.json
 # 白名单迁移备份（含真实手机号，不入库）
 backend/data/backups/
+# uvicorn 本地开发日志
+backend/data/uvicorn-*.log
+backend/data/uvicorn-*.log.err

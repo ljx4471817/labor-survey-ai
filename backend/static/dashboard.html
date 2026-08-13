@@ -461,6 +461,7 @@ html body:not(.blue-bg) section h2 { margin: -16px -20px 14px; padding: 12px 20p
     <button class="tab-btn" data-tab="usage">使用监测</button>
     <button class="tab-btn" data-tab="usage-gaps">使用侧发现</button>
     <button class="tab-btn" data-tab="completion">完成率</button>
+    <button class="tab-btn" data-tab="whitelist">白名单管理</button>
 <a class="tab-btn" href="/quiz-admin" style="text-decoration:none">月度测验管理</a>
   </div>
 
@@ -566,6 +567,11 @@ html body:not(.blue-bg) section h2 { margin: -16px -20px 14px; padding: 12px 20p
       </div>
       <div id="completionResult"><div class="empty">请先选择测验</div></div>
     </section>
+  </div>
+
+  <div class="tab-panel" id="tab-whitelist">
+    <iframe id="whitelistFrame" title="白名单管理"
+      style="width:100%;height:82vh;border:1px solid var(--line);border-radius:8px;background:#fff"></iframe>
   </div>
 </main>
 <footer>劳动力调查 AI 助手 · 反馈看板 v1 · 由 <code>/api/admin/feedback/stats</code> 驱动</footer>
@@ -799,6 +805,11 @@ async function initRole() {
       if (qa) qa.style.display = 'none';
     }
     $('whlLink').style.display = '';
+    $('whlLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      switchTab('whitelist');
+      loadWhitelistModule();
+    });
     if (sys) loadStats();
     searchUsage();
     loadCompletionList();
@@ -841,6 +852,15 @@ async function loadCompletion() {
     ).join('') +
     '</tbody></table>' +
     '<p style="margin-top:10px"><a href="/quiz-stats?quiz_id=' + encodeURIComponent(qid) + '" target="_blank">查看个人明细 →</a></p>';
+}
+
+// ---- 白名单管理模块（懒加载 iframe，同源复用 token/角色） ----
+let whitelistLoaded = false;
+
+function loadWhitelistModule() {
+  if (whitelistLoaded) return;
+  whitelistLoaded = true;
+  $('whitelistFrame').src = '/whitelist-admin?embed=1';
 }
 
 async function loadLlmRoute(force) {
@@ -919,6 +939,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     if (btn.dataset.tab === 'usage-gaps' && !gapsLoaded) loadGaps();
     if (btn.dataset.tab === 'usage' && !llmLoaded) loadLlmRoute();
     if (btn.dataset.tab === 'completion') loadCompletion();
+    if (btn.dataset.tab === 'whitelist') loadWhitelistModule();
   });
 });
 
