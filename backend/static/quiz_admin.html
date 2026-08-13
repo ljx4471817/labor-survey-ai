@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <link rel="stylesheet" href="/static/theme.css">
@@ -326,7 +326,8 @@ function apiPost(path, body) {
 
 async function init() {
   const who = await api('/api/admin/quiz/whoami');
-  if (!who || !['市级', '省级'].includes(who.admin_level)) {
+  const ok = who && (who.sys_role === '系统管理员' || ['市级', '省级'].includes(who.admin_level));
+  if (!ok) {
     toast('无管理员权限');
     location.href = '/';
     return;

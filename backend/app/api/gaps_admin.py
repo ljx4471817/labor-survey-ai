@@ -1,14 +1,16 @@
-"""使用侧 KB 闭环（gaps 检测 + 人工标记 ingest 候选）。"""
+# -*- coding: utf-8 -*-
+"""使用侧 KB 闭环（gaps 检测 + 人工标记 ingest 候选），仅系统管理员。"""
 from __future__ import annotations
 
 import json
 from datetime import datetime, timezone, timedelta
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from loguru import logger
 
 from app.analytics.gaps import high_freq_out_of_scope, kb_hit_but_down
 from app.core.config import PROJECT_ROOT
+from app.infra.auth import require_system_admin
 from app.models.schemas import MarkGapsRequest
 
 router = APIRouter()
@@ -21,6 +23,7 @@ UTC8 = timezone(timedelta(hours=8))
 def usage_gaps(
     since_days: int = Query(7, ge=1, le=90),
     min_freq: int = Query(3, ge=2, le=20),
+    phone: str = Depends(require_system_admin),
 ) -> dict:
     """使用侧 KB 闭环（轻量版：不含 embedding 调用）。
 
@@ -41,7 +44,7 @@ def usage_gaps(
 
 
 @router.post("/usage/gaps/mark")
-def mark_gaps_for_ingest(req: MarkGapsRequest) -> dict:
+def mark_gaps_for_ingest(req: MarkGapsRequest, phone: str = Depends(require_system_admin)) -> dict:
     """把人工选中的 gap 候选项写到 reports/approved-from-usage-<date>.json。
 
     候选只有 question/_source/_marked_at，缺 answer/category/source/keywords，
@@ -74,7 +77,7 @@ def mark_gaps_for_ingest(req: MarkGapsRequest) -> dict:
 
     combined = existing + new_items
     out.write_text(json.dumps(combined, ensure_ascii=False, indent=2), encoding="utf-8")
-    logger.info(f"gaps mark: +{len(new_items)} -> {out.name}")
+    logger.info(f"gaps mark: +{len(new_items)} -> {out.name} by={phone[:3]}****")
     return {
         "ok": True,
         "count": len(new_items),

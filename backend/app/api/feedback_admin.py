@@ -1,13 +1,15 @@
-"""反馈看板聚合 + 标记已处理 + region 5 级下钻。"""
+# -*- coding: utf-8 -*-
+"""反馈看板聚合 + 标记已处理 + region 5 级下钻（仅系统管理员）。"""
 from __future__ import annotations
 
 import json
 from datetime import datetime, timezone, timedelta
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from loguru import logger
 
 from app.core.config import PROJECT_ROOT
+from app.infra.auth import require_system_admin
 from app.models.schemas import ResolveRequest
 from app.persistence.query_log import stats_by_region as query_stats_by_region
 from app.services.feedback_analytics import (
@@ -25,18 +27,18 @@ UTC8 = timezone(timedelta(hours=8))
 
 
 @router.get("/feedback/stats")
-def feedback_stats() -> dict:
+def feedback_stats(phone: str = Depends(require_system_admin)) -> dict:
     records = read_jsonl(FEEDBACK_PATH)
     resolved_events = read_jsonl(RESOLVED_PATH)
     resolved_ids = {e["resolved_id"] for e in resolved_events if "resolved_id" in e}
     logger.info(
-        f"feedback_stats: total={len(records)} resolved={len(resolved_ids)}"
+        f"feedback_stats: total={len(records)} resolved={len(resolved_ids)} by={phone[:3]}****"
     )
     return aggregate_feedback(records, resolved_ids)
 
 
 @router.post("/feedback/resolve")
-def resolve_feedback(req: ResolveRequest) -> dict:
+def resolve_feedback(req: ResolveRequest, phone: str = Depends(require_system_admin)) -> dict:
     RESOLVED_PATH.parent.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(UTC8).isoformat(timespec="seconds")
     try:
@@ -51,7 +53,7 @@ def resolve_feedback(req: ResolveRequest) -> dict:
     except OSError as e:
         logger.exception("resolve 写入失败")
         raise HTTPException(500, f"resolve 写入失败: {e}")
-    logger.info(f"resolve: count={len(req.record_ids)}")
+    logger.info(f"resolve: count={len(req.record_ids)} by={phone[:3]}****")
     return {"ok": True, "count": len(req.record_ids)}
 
 
@@ -64,6 +66,7 @@ def feedback_stats_by_region(
     parent_city: str | None = None,
     parent_county: str | None = None,
     parent_township: str | None = None,
+    phone: str = Depends(require_system_admin),
 ) -> dict:
     """按 region 维度下钻（5 级 cascading）。"""
     parent: dict[str, str] = {}

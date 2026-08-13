@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """管理后台端点请求/响应模型。"""
 from __future__ import annotations
 
@@ -22,7 +23,16 @@ class WhitelistEntry(BaseModel):
         default="调查员",
         description="管理员层级：省级/市级/区县/调查员",
     )
+    # 仅系统管理员可设置/修改；业务管理员的表单/API 不出现该字段（后端强制忽略）。
+    sys_role: Literal["系统管理员", "业务管理员", "普通用户"] | None = Field(
+        default=None,
+        description="系统职能：系统管理员/业务管理员/普通用户（仅系统管理员可设）",
+    )
     remark: str = Field(default="", max_length=200)
+
+
+class BatchDisableRequest(BaseModel):
+    phones: list[str] = Field(..., min_length=1, max_length=500)
 
 
 class MarkGapItem(BaseModel):

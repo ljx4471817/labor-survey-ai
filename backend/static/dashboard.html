@@ -437,18 +437,19 @@ html body:not(.blue-bg) section h2 { margin: -16px -20px 14px; padding: 12px 20p
 </head>
 <body>
 <header>
-  <h1>反馈看板</h1>
-  <span class="sub">内部使用</span>
+  <h1>数据看板</h1>
+  <span class="sub" id="roleTag">内部使用</span>
   <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
   <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
   <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
 </button>
+<a class="back" id="whlLink" href="/whitelist-admin" style="display:none">白名单管理</a>
 <a class="back" href="/">← 返回对话</a>
 </header>
 <div class="banner">⚠ 内部使用 · 含调查员提问原文 · 数据未脱敏</div>
 <main>
   <div id="error"></div>
-  <div class="cards">
+  <div class="cards" id="feedbackCards">
     <div class="card"><div class="label">总反馈数</div><div class="value" id="total">—</div></div>
     <div class="card"><div class="label">采纳</div><div class="value" id="adopted">—</div></div>
     <div class="card"><div class="label">不采纳</div><div class="value" id="rejected">—</div></div>
@@ -459,6 +460,7 @@ html body:not(.blue-bg) section h2 { margin: -16px -20px 14px; padding: 12px 20p
     <button class="tab-btn active" data-tab="kb">KB 优化</button>
     <button class="tab-btn" data-tab="usage">使用监测</button>
     <button class="tab-btn" data-tab="usage-gaps">使用侧发现</button>
+    <button class="tab-btn" data-tab="completion">完成率</button>
 <a class="tab-btn" href="/quiz-admin" style="text-decoration:none">月度测验管理</a>
   </div>
 
@@ -551,6 +553,19 @@ html body:not(.blue-bg) section h2 { margin: -16px -20px 14px; padding: 12px 20p
       </p>
         </section>
 
+  </div>
+
+  <div class="tab-panel" id="tab-completion">
+    <section>
+      <h2>测验完成率 <span class="h2-sub">（本区域只读；后端按管辖范围过滤）</span></h2>
+      <div class="usage-filters">
+        <div class="field" style="min-width:320px"><label>测验</label><select id="completionQuiz" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:.9rem;background:#fff"></select></div>
+        <div class="actions">
+          <button class="primary" onclick="loadCompletion()">查看</button>
+        </div>
+      </div>
+      <div id="completionResult"><div class="empty">请先选择测验</div></div>
+    </section>
   </div>
 </main>
 <footer>劳动力调查 AI 助手 · 反馈看板 v1 · 由 <code>/api/admin/feedback/stats</code> 驱动</footer>
@@ -745,12 +760,88 @@ document.addEventListener('click', (e) => {
   if (e.target.id === 'nextBtn') { page++; renderRecent(); }
 });
 
-loadStats();
-searchUsage();
-
-// ---- LLM route status ----
+// ---- 角色探测：系统管理员全量；业务管理员只见本区域只读统计 ----
+let me = null;
 let llmLoaded = false;
-loadLlmRoute();
+initRole();
+
+async function api(path) {
+  const res = await fetch(path, { headers: authHeader() });
+  if (await handle401(res)) return null;
+  if (!res.ok) return null;
+  return res.json();
+}
+
+async function initRole() {
+  try {
+    const r = await fetch('/api/admin/whitelist/whoami', { headers: authHeader() });
+    if (await handle401(r)) return;
+    if (r.status === 403) {
+      $('error').innerHTML = '<div class="error">无看板权限，即将返回首页</div>';
+      setTimeout(() => location.replace('/'), 1200);
+      return;
+    }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    me = await r.json();
+    $('roleTag').textContent = (me.sys_role || '') + ' · ' + (me.admin_level || '') +
+      (me.city ? ' · ' + me.city : '') + (me.county ? ' · ' + me.county : '');
+    const sys = me.sys_role === '系统管理员';
+    $('feedbackCards').style.display = sys ? '' : 'none';
+    $('tab-kb').style.display = sys ? '' : 'none';
+    $('tab-usage-gaps').style.display = sys ? '' : 'none';
+    $('llmRouteSection').style.display = sys ? '' : 'none';
+    const chartSec = document.querySelector('#tab-usage section:nth-of-type(2)');
+    if (chartSec) chartSec.style.display = sys ? '' : 'none';
+    document.querySelectorAll('.tab-btn[data-tab="kb"], .tab-btn[data-tab="usage-gaps"]').forEach(b => b.style.display = sys ? '' : 'none');
+    // 区县业务管理员：隐藏「月度测验管理」入口（后端仅市级以上可管理）
+    if (!sys && me.sys_role === '业务管理员' && me.admin_level === '区县') {
+      const qa = document.querySelector('a.tab-btn[href="/quiz-admin"]');
+      if (qa) qa.style.display = 'none';
+    }
+    $('whlLink').style.display = '';
+    if (sys) loadStats();
+    searchUsage();
+    loadCompletionList();
+    if (sys) loadLlmRoute();
+  } catch (e) {
+    $('error').innerHTML = '<div class="error">加载失败：' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+// ---- 完成率只读 tab ----
+async function loadCompletionList() {
+  const d = await api('/api/admin/quiz/list');
+  const sel = $('completionQuiz');
+  if (!d || !d.items || !d.items.length) {
+    sel.innerHTML = '<option value="">暂无测验</option>';
+    return;
+  }
+  sel.innerHTML = d.items.map(q =>
+    '<option value="' + escapeHtml(q.quiz_id) + '">' + escapeHtml((q.month || '') + ' ' + q.title + '（' + q.status + '）') + '</option>'
+  ).join('');
+}
+
+async function loadCompletion() {
+  const qid = $('completionQuiz').value;
+  const el = $('completionResult');
+  if (!qid) { el.innerHTML = '<div class="empty">请先选择测验</div>'; return; }
+  const d = await api('/api/admin/quiz/stats?quiz_id=' + encodeURIComponent(qid) + '&page=1&page_size=50');
+  if (!d) { el.innerHTML = '<div class="error">完成率加载失败（无权限或测验不存在）</div>'; return; }
+  const rate = ((d.completion_rate || 0) * 100).toFixed(1);
+  el.innerHTML =
+    '<div class="cards">' +
+      '<div class="card"><div class="label">选中人数</div><div class="value">' + d.total_users + '</div></div>' +
+      '<div class="card"><div class="label">已开始</div><div class="value">' + d.started + '</div></div>' +
+      '<div class="card"><div class="label">已完成</div><div class="value">' + d.completed + '</div></div>' +
+      '<div class="card"><div class="label">完成率</div><div class="value">' + rate + '%</div></div>' +
+    '</div>' +
+    '<table class="usage-table"><thead><tr><th>区县</th><th>人数</th><th>已完成</th><th>完成率</th></tr></thead><tbody>' +
+    (d.by_region || []).map(r =>
+      '<tr><td>' + escapeHtml(r.region) + '</td><td>' + r.total + '</td><td>' + r.completed + '</td><td>' + ((r.rate || 0) * 100).toFixed(1) + '%</td></tr>'
+    ).join('') +
+    '</tbody></table>' +
+    '<p style="margin-top:10px"><a href="/quiz-stats?quiz_id=' + encodeURIComponent(qid) + '" target="_blank">查看个人明细 →</a></p>';
+}
 
 async function loadLlmRoute(force) {
   if (llmLoaded && !force) return;
@@ -827,6 +918,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     switchTab(btn.dataset.tab);
     if (btn.dataset.tab === 'usage-gaps' && !gapsLoaded) loadGaps();
     if (btn.dataset.tab === 'usage' && !llmLoaded) loadLlmRoute();
+    if (btn.dataset.tab === 'completion') loadCompletion();
   });
 });
 

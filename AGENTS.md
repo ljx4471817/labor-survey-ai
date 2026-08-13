@@ -1,4 +1,4 @@
-﻿# 劳动力调查 AI 助手 · 项目约定
+# 劳动力调查 AI 助手 · 项目约定
 
 > 本文件是项目级 Codex 约定；项目内工作以这里的目录、验证和合规规则为准。
 
@@ -79,6 +79,7 @@
 | `0012-月度测验系统.md` | 6 表 SQLite + LLM 要点提取 + 4 选 1 选择题 + 完成率看板 | 测验系统 |
 | 013-rag-规则冲突裁决.md | system prompt 硬规则 + FAQ scope + eval 三层冲突裁决 | 检索治理 |
 | `0014-llm-主备切换.md` | MiniMax 主用 / DeepSeek 备用，5h/7d 用量超阈值切换 | LLM 路由 |
+| `0015-权限系统双维度.md` | admin_level × sys_role 双维度 + 审计表 + 分级网页维护 | 权限治理 |
 
 ## 目录约定
 
@@ -168,9 +169,10 @@ python scripts/generate_project_intro.py
 # 部署：从 cloudflared 日志抽取 trycloudflare URL（替代手抄）
 python scripts/extract_cf_url.py
 
-# 白名单：docs/权限表.xlsx → backend/data/whitelist.db（调查员+管理人员双 sheet，幂等 upsert + 软删除）
-python scripts/sync_whitelist_xlsx.py --dry-run   # 预览新增/更新/软删除数量
-python scripts/sync_whitelist_xlsx.py             # 真实同步（受保护测试号 13985000001-4 不删除）
+# 白名单：whitelist.db 实时唯一事实源（PRD 权限系统改造后）；网页 /whitelist-admin 分级维护
+python scripts/migrate_whitelist_rbac.py --dry-run  # 上线前迁移 dry-run（输出 sys_role diff）
+python scripts/migrate_whitelist_rbac.py --apply    # 真实迁移（自动备份 backend/data/backups/）
+# 注意：sync_whitelist_xlsx.py 已 DEPRECATED（仅初始导入/恢复），日常禁止再跑，否则旧 xlsx 会覆盖线上名单
 # 测验：本地测试（QUIZ_MOCK_LLM=1 跳过真实 LLM 调用）
 set QUIZ_MOCK_LLM=1 && python -m pytest backend/tests/test_quiz_api.py -q
 # 测验：手动 curl 测试（先登录拿 token，再调管理端 API）
@@ -268,9 +270,9 @@ cd backend && pip install -r requirements.txt
 - **新增测试覆盖**：chat.py 端到端（需 mock embedding + LLM）、auth.py HMAC 校验、bm25.py search 函数
 - **miniprogram/ 目录**：加 README.md 说明"ADR 0001 反转后的历史骨架" 
 
-# 数据维护：白名单 (docs/权限表.xlsx ↔ whitelist.db)
-python scripts/sync_whitelist_xlsx.py             # 双向同步，dry-run 先预览
-python scripts/sync_whitelist_xlsx.py --write     # 真实同步
+# 数据维护：白名单（whitelist.db 实时唯一事实源；xlsx 仅初始导入/恢复，sync 脚本已 DEPRECATED）
+python scripts/migrate_whitelist_rbac.py --dry-run  # 迁移 dry-run 输出 diff
+python scripts/migrate_whitelist_rbac.py --apply    # 迁移（先备份）
 # 数据维护：知识库一站式重建（推荐日常使用）
 # 从 faq.json + 4 个 markdown 源文件重建 Chroma + BM25 索引，避免漏跑
 python scripts/rebuild_all.py                    # 全量重建

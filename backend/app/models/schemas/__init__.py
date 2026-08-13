@@ -3,6 +3,7 @@
 保持向后兼容：`from app.models.schemas import X` 仍然工作。
 """
 from app.models.schemas.admin import (
+    BatchDisableRequest,
     FeedbackRecord,
     MarkGapItem,
     MarkGapsRequest,
@@ -30,6 +31,7 @@ __all__ = [
     "FeedbackRecord",
     "ResolveRequest",
     "WhitelistEntry",
+    "BatchDisableRequest",
     "MarkGapItem",
     "MarkGapsRequest",
 ]
