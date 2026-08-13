@@ -854,13 +854,41 @@ async function loadCompletion() {
     '<p style="margin-top:10px"><a href="/quiz-stats?quiz_id=' + encodeURIComponent(qid) + '" target="_blank">查看个人明细 →</a></p>';
 }
 
-// ---- 白名单管理模块（懒加载 iframe，同源复用 token/角色） ----
+// ---- 白名单管理模块（懒加载 iframe，同源复用 token/角色；高度自适应消除双滚动条） ----
 let whitelistLoaded = false;
+let whitelistRO = null;
 
 function loadWhitelistModule() {
   if (whitelistLoaded) return;
   whitelistLoaded = true;
-  $('whitelistFrame').src = '/whitelist-admin?embed=1';
+  const f = $('whitelistFrame');
+  f.onload = function () {
+    fitWhitelistFrame();
+    initWhitelistResize();
+  };
+  f.src = '/whitelist-admin?embed=1';
+}
+
+function fitWhitelistFrame() {
+  const f = $('whitelistFrame');
+  try {
+    const doc = f.contentDocument;
+    if (!doc || !doc.body) return;
+    const h = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+    if (h > 100) f.style.height = h + 'px';
+  } catch (e) { /* 跨源异常忽略 */ }
+}
+
+function initWhitelistResize() {
+  const f = $('whitelistFrame');
+  try {
+    const doc = f.contentDocument;
+    if (!doc || !doc.body || !window.ResizeObserver) return;
+    if (whitelistRO) whitelistRO.disconnect();
+    whitelistRO = new ResizeObserver(function () { fitWhitelistFrame(); });
+    whitelistRO.observe(doc.body);
+    whitelistRO.observe(doc.documentElement);
+  } catch (e) { /* 跨源异常忽略 */ }
 }
 
 async function loadLlmRoute(force) {

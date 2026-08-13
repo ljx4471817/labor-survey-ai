@@ -66,25 +66,35 @@ table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 th { background: var(--ink-blue); color: var(--paper); font-weight: 600; font-size: 0.78rem; position: sticky; top: 0; }
 tr.inactive { background: #f5f5f5; color: var(--text-dim); }
-tr:hover { background: #eef3f7; }
+tr.main-row:hover { background: #eef3f7; }
 td input[type=checkbox] { cursor: pointer; }
 
+/* 详情展开行（省/市/县/乡/社区/系统职能/更新时间/备注） */
+tr.detail-row { display: none; }
+tr.detail-row.open { display: table-row; }
+tr.detail-row td { background: #fafbfc; padding: 10px 14px; white-space: normal; }
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 6px 18px; font-size: 0.78rem; color: var(--text-dim); }
+.detail-grid .item b { color: var(--text); font-weight: 600; margin-right: 4px; }
+
+/* 弹窗：高度自适应（矮视口 body 内部滚动，底部不裁剪） */
 .modal-overlay {
   display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35);
-  z-index: 100; justify-content: center; align-items: flex-start; padding-top: 60px;
+  z-index: 100; justify-content: center; align-items: flex-start; overflow-y: auto;
+  padding: 40px 16px;
 }
 .modal-overlay.open { display: flex; }
 .modal {
   background: white; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.18);
-  max-width: 520px; width: 100%; margin: 0 16px; overflow: hidden;
+  max-width: 520px; width: 100%; margin: 0 auto; overflow: hidden;
+  display: flex; flex-direction: column; max-height: calc(100vh - 32px);
 }
 .modal .head {
-  background: var(--ink-blue); color: var(--paper);
+  flex: none; background: var(--ink-blue); color: var(--paper);
   padding: 12px 16px; font-weight: 600; font-size: 0.95rem;
   display: flex; justify-content: space-between; align-items: center;
 }
 .modal .head .close { cursor: pointer; font-size: 1.2rem; opacity: 0.8; }
-.modal .body { padding: 16px; }
+.modal .body { padding: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .modal .body label {
   display: block; font-size: 0.8rem; color: var(--text-dim); margin: 8px 0 4px;
 }
@@ -94,8 +104,25 @@ td input[type=checkbox] { cursor: pointer; }
 }
 .modal .body input:focus, .modal .body select:focus { outline: none; border-color: var(--ink-blue); }
 .modal .foot {
-  padding: 12px 16px; border-top: 1px solid var(--line);
+  flex: none; padding: 12px 16px; border-top: 1px solid var(--line);
   display: flex; gap: 8px; justify-content: flex-end;
+}
+
+/* 窄屏（<=768px）：卡片式列表，无横向滚动 */
+@media (max-width: 768px) {
+  .table-wrap { overflow: visible; border: none; background: transparent; }
+  table, thead, tbody, tr, td { display: block; }
+  thead { display: none; }
+  #tbody tr { background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    margin-bottom: 10px; padding: 10px 12px; }
+  #tbody td { border: none; padding: 3px 0; white-space: normal; }
+  #tbody td::before { content: attr(data-label); display: inline-block; min-width: 56px;
+    color: var(--text-dim); font-size: 0.72rem; margin-right: 8px; }
+  #tbody td[data-label=""]::before, #tbody td:first-child::before { content: none; }
+  #tbody tr.detail-row { display: none; padding: 0; border: none; background: transparent; }
+  #tbody tr.detail-row.open { display: block; padding: 0 4px 8px; }
+  #tbody tr.detail-row td { background: transparent; padding: 0; }
+  .detail-grid { grid-template-columns: 1fr 1fr; gap: 4px 12px; }
 }
 
 .csv-preview {
@@ -156,9 +183,7 @@ footer {
         <thead>
           <tr>
             <th style="width:32px"><input type="checkbox" id="checkAll" title="全选本页"></th>
-            <th>手机号</th><th>姓名</th><th>省</th><th>市/州</th><th>县/区</th><th>乡/镇</th><th>社区/村</th><th>层级</th>
-            <th id="thSysRole" style="display:none">系统职能</th>
-            <th>状态</th><th>更新时间</th><th>操作</th>
+            <th>手机号</th><th>姓名</th><th>区域</th><th>层级</th><th>状态</th><th>操作</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -262,6 +287,7 @@ let editPhone = null;
 let currentPage = 1;
 let pageSize = 20;
 let checkedSet = new Set();   // 批量停用勾选
+let detailOpenSet = new Set(); // 详情展开状态
 
 async function initRole() {
   try {
@@ -292,7 +318,6 @@ function configureByRole() {
   const sys = isSystemAdmin();
   $('csvBtn').style.display = sys ? '' : 'none';
   $('tabAuditBtn').style.display = sys ? '' : 'none';
-  $('thSysRole').style.display = sys ? '' : 'none';
   $('fSysRole').style.display = sys ? '' : 'none';
   $('fSysRoleLabel').style.display = sys ? '' : 'none';
   fillAdminLevelOptions();
@@ -349,41 +374,53 @@ function renderTable() {
   const start = (currentPage - 1) * pageSize;
   const pageItems = filtered.slice(start, start + pageSize);
   $('countInfo').textContent = '共 ' + filtered.length + ' 条（总计 ' + allItems.length + ' 条）';
-  const sys = isSystemAdmin();
-  const sysCol = sys ? '<th></th>' : '';
   $('tbody').innerHTML = pageItems.length === 0
-    ? '<tr><td colspan="' + (sys ? 13 : 12) + '" class="empty-row">暂无数据</td></tr>'
+    ? '<tr><td colspan="7" class="empty-row">暂无数据</td></tr>'
     : pageItems.map(r => {
-    const cls = r.active ? '' : ' inactive';
+    const cls = r.active ? 'main-row' : 'main-row inactive';
     const status = r.active ? '启用' : '已禁用';
-    const sysCell = sys ? '<td>' + escapeHtml(r.sys_role || '普通用户') + '</td>' : '';
     const enableBtn = r.active ? '' : '<button class="btn-sm" onclick="enableEntry(\'' + escapeHtml(r.phone) + '\')">启用</button> ';
     const checked = checkedSet.has(r.phone) ? ' checked' : '';
+    const detailOpen = detailOpenSet.has(r.phone) ? ' open' : '';
+    const region = (r.city || r.province || '') + (r.county ? ' · ' + r.county : '');
+    const detailItems = [
+      ['省', r.province], ['市/州', r.city], ['县/区', r.county], ['乡/镇', r.township || ''],
+      ['社区/村', r.community], ['系统职能', r.sys_role || '普通用户'],
+      ['更新时间', (r.updated_at || '').slice(0, 16)], ['备注', r.remark || '—'],
+    ].map(x => '<span class="item"><b>' + escapeHtml(x[0]) + '</b>' + escapeHtml(x[1]) + '</span>').join('');
     return '<tr class="' + cls + '">' +
-      '<td><input type="checkbox" class="row-check" data-phone="' + escapeHtml(r.phone) + '"' + checked + '></td>' +
-      '<td>' + escapeHtml(r.phone) + '</td>' +
-      '<td>' + escapeHtml(r.name) + '</td>' +
-      '<td>' + escapeHtml(r.province) + '</td>' +
-      '<td>' + escapeHtml(r.city) + '</td>' +
-      '<td>' + escapeHtml(r.county) + '</td>' +
-      '<td>' + escapeHtml(r.township || '') + '</td>' +
-      '<td>' + escapeHtml(r.community) + '</td>' +
-      '<td>' + escapeHtml(r.admin_level || '调查员') + '</td>' +
-      sysCell +
-      '<td>' + status + '</td>' +
-      '<td>' + escapeHtml((r.updated_at || '').slice(0, 16)) + '</td>' +
-      '<td>' +
+      '<td data-label=""><input type="checkbox" class="row-check" data-phone="' + escapeHtml(r.phone) + '"' + checked + '></td>' +
+      '<td data-label="手机号">' + escapeHtml(r.phone) + '</td>' +
+      '<td data-label="姓名">' + escapeHtml(r.name) + '</td>' +
+      '<td data-label="区域">' + escapeHtml(region) + '</td>' +
+      '<td data-label="层级">' + escapeHtml(r.admin_level || '调查员') + '</td>' +
+      '<td data-label="状态">' + status + '</td>' +
+      '<td data-label="操作">' +
+        '<button class="btn-sm" data-detail="' + escapeHtml(r.phone) + '" onclick="toggleDetail(\'' + escapeHtml(r.phone) + '\')">' + (detailOpen ? '收起' : '详情') + '</button> ' +
         '<button class="btn-sm" onclick="editEntry(\'' + escapeHtml(r.phone) + '\')">编辑</button> ' +
         enableBtn +
         (r.active
           ? '<button class="btn-sm danger" onclick="removeEntry(\'' + escapeHtml(r.phone) + '\')">禁用</button>'
           : '') +
       '</td>' +
+      '</tr>' +
+      '<tr class="detail-row' + detailOpen + '" data-phone="' + escapeHtml(r.phone) + '">' +
+        '<td colspan="7"><div class="detail-grid">' + detailItems + '</div></td>' +
       '</tr>';
   }).join('');
   renderPager(totalPages, filtered.length);
   bindRowChecks();
   updateBatchBtn();
+}
+
+function toggleDetail(phone) {
+  const tr = document.querySelector('tr.detail-row[data-phone="' + CSS.escape(phone) + '"]');
+  if (!tr) return;
+  const open = tr.classList.contains('open');
+  tr.classList.toggle('open');
+  const btn = document.querySelector('button[data-detail="' + CSS.escape(phone) + '"]');
+  if (btn) btn.textContent = open ? '详情' : '收起';
+  if (open) detailOpenSet.delete(phone); else detailOpenSet.add(phone);
 }
 
 function bindRowChecks() {
