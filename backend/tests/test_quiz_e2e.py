@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """HTTP 级端到端：导入 docx → 提取 → 要点审核 → 生成 → 题目审核 → 下发 → 答题 → 统计（mock LLM）。
 
 PRD v3 10.2。用 httpx ASGITransport 直接驱动 ASGI 应用（避开 TestClient/httpx 版本冲突），
@@ -13,7 +13,12 @@ import httpx
 import pytest
 from docx import Document
 
-from app.infra.auth import require_admin, require_user
+from app.infra.auth import (
+    require_quiz_admin,
+    require_quiz_stats,
+    require_user,
+    require_whitelist_admin,
+)
 from app.main import app
 from app.persistence import quiz_db
 
@@ -26,7 +31,12 @@ def e2e_env(tmp_path, monkeypatch):
     monkeypatch.setattr(quiz_db, "DB_PATH", tmp_path / "quiz_e2e.db")
     quiz_db.reset_conn()
     app.dependency_overrides[require_user] = lambda: "13800000001"
-    app.dependency_overrides[require_admin] = lambda: "13900000001"
+    app.dependency_overrides[require_quiz_admin] = lambda: "13900000001"
+    app.dependency_overrides[require_quiz_stats] = lambda: "13900000001"
+    app.dependency_overrides[require_whitelist_admin] = lambda: {
+        "phone": "13900000001", "name": "管理员", "province": "贵州省", "city": "贵阳市",
+        "county": "", "admin_level": "市级", "sys_role": "业务管理员", "active": 1,
+    }
 
     def fake_chat(messages, **kwargs):
         sys_prompt = (messages[0]["content"] or "") if messages else ""
@@ -42,13 +52,17 @@ def e2e_env(tmp_path, monkeypatch):
         lambda content: {"faq_id": "023", "question": "家务劳动者如何判定？", "score": 0.87},
     )
     fake_users = [
-        {"phone": "13800000001", "name": "张三", "city": "贵阳市", "county": "南明区", "admin_level": "调查员", "active": 1},
-        {"phone": "13800000002", "name": "李四", "city": "贵阳市", "county": "云岩区", "admin_level": "调查员", "active": 1},
-        {"phone": "13900000001", "name": "管理员", "city": "贵阳市", "county": "", "admin_level": "市级", "active": 1},
+        {"phone": "13800000001", "name": "张三", "city": "贵阳市", "county": "南明区", "admin_level": "调查员", "sys_role": "普通用户", "active": 1, "province": "贵州省"},
+        {"phone": "13800000002", "name": "李四", "city": "贵阳市", "county": "云岩区", "admin_level": "调查员", "sys_role": "普通用户", "active": 1, "province": "贵州省"},
+        {"phone": "13900000001", "name": "管理员", "city": "贵阳市", "county": "", "admin_level": "市级", "sys_role": "业务管理员", "active": 1, "province": "贵州省"},
     ]
     monkeypatch.setattr("app.api.quiz_admin.whitelist_db.list_all", lambda active_only=False: fake_users)
     monkeypatch.setattr(
         "app.api.quiz_admin.whitelist_db.get_user",
+        lambda p: next((u for u in fake_users if u["phone"] == p), None),
+    )
+    monkeypatch.setattr(
+        "app.api.quiz_admin.whitelist_db.get_user_any",
         lambda p: next((u for u in fake_users if u["phone"] == p), None),
     )
     yield

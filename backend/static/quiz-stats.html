@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <link rel="stylesheet" href="/static/theme.css">
@@ -124,8 +124,8 @@ async function api(path) {
 async function init() {
   if (!quizId) { toast('缺少 quiz_id 参数', true); return; }
   const who = await api('/api/admin/quiz/whoami');
-  if (!who || !['市级', '省级'].includes(who.admin_level)) {
-    toast('无管理员权限', true);
+  if (!who || (who.sys_role !== '系统管理员' && who.sys_role !== '业务管理员')) {
+    toast('无统计查看权限', true);
     location.href = '/';
     return;
   }

@@ -1,4 +1,4 @@
-﻿# 劳动力调查 AI 助手 · 项目约定
+# 劳动力调查 AI 助手 · 项目约定
 
 > 本文件是项目级 Codex 约定；项目内工作以这里的目录、验证和合规规则为准。
 
@@ -79,6 +79,7 @@
 | `0012-月度测验系统.md` | 6 表 SQLite + LLM 要点提取 + 4 选 1 选择题 + 完成率看板 | 测验系统 |
 | 013-rag-规则冲突裁决.md | system prompt 硬规则 + FAQ scope + eval 三层冲突裁决 | 检索治理 |
 | `0014-llm-主备切换.md` | MiniMax 主用 / DeepSeek 备用，5h/7d 用量超阈值切换 | LLM 路由 |
+| `0015-权限系统双维度.md` | admin_level × sys_role 双维度 + 审计表 + 分级网页维护 | 权限治理 |
 
 ## 目录约定
 
@@ -102,7 +103,7 @@
 | `backend/app/services/` | 业务服务（feedback_analytics / jsonl_utils / **quiz_extract / quiz_generator**） | 自由修改 |
 | `backend/app/api/_xunfei_auth.py` | DISABLED（讯飞语音鉴权，代码完整保留） | 不修改 |
 | `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json） | 自由修改 |
-| `backend/tests/` | 后端单元测试（40 tests） | 自由修改 |
+| `backend/tests/` | 后端单元测试（198 tests） | 自由修改 |
 | `scripts/watchdog*.ps1` | 本地 API 可用性监控与自动重启 | 自由修改 |
 | `backend/static/kb-images/` | ????????PPT ?????? `page_XX/` ?? | ???? |
 | `backend/static/` | H5 前端（单页应用）+ 测验 3 页面（quiz.html / quiz_admin.html / quiz-stats.html） | 自由修改 |
@@ -168,9 +169,10 @@ python scripts/generate_project_intro.py
 # 部署：从 cloudflared 日志抽取 trycloudflare URL（替代手抄）
 python scripts/extract_cf_url.py
 
-# 白名单：docs/权限表.xlsx → backend/data/whitelist.db（调查员+管理人员双 sheet，幂等 upsert + 软删除）
-python scripts/sync_whitelist_xlsx.py --dry-run   # 预览新增/更新/软删除数量
-python scripts/sync_whitelist_xlsx.py             # 真实同步（受保护测试号 13985000001-4 不删除）
+# 白名单：whitelist.db 实时唯一事实源（PRD 权限系统改造后）；网页 /whitelist-admin 分级维护
+python scripts/migrate_whitelist_rbac.py --dry-run  # 上线前迁移 dry-run（输出 sys_role diff）
+python scripts/migrate_whitelist_rbac.py --apply    # 真实迁移（自动备份 backend/data/backups/）
+# 注意：sync_whitelist_xlsx.py 已 DEPRECATED（仅初始导入/恢复），日常禁止再跑，否则旧 xlsx 会覆盖线上名单
 # 测验：本地测试（QUIZ_MOCK_LLM=1 跳过真实 LLM 调用）
 set QUIZ_MOCK_LLM=1 && python -m pytest backend/tests/test_quiz_api.py -q
 # 测验：手动 curl 测试（先登录拿 token，再调管理端 API）
@@ -204,11 +206,12 @@ cd backend && pip install -r requirements.txt
 **H5 前端（`backend/static/`）**：
 - `index.html`：调查员对话主页面
 - `login.html`：手机号白名单登录页（门禁启用后所有页面必经）
-- `dashboard.html`：内部反馈看板（KB 优化 + 使用监测双 tab）
-- `whitelist.html`：白名单管理页（CRUD + CSV 批量导入）
+- `dashboard.html`：统一后台入口——系统管理员全量（KB 优化 / 使用监测 / 使用侧发现）；业务管理员默认进入「白名单管理」模块；顶部有「测验管理」「退出登录」
+- `whitelist.html`：白名单管理页（角色化 CRUD / 批量停用 / 启用 / 导出 / 审计 / CSV 导入；支持 `?embed=1` 作为 dashboard 模块嵌入）
 - 共享工具函数放 `common.js`（`$()`、`escapeHtml()`、token 管理）
 - 工具函数 / API 调用就近写，不强求模块化
 - 浏览器原生 API 优先，不引入框架
+- 后台 UI 约定：表格用「核心列 + 详情展开 + 窄屏（≤768px）卡片化」，弹窗限高 `calc(100vh - 32px)` + body 内滚动
 
 ## 合规红线
 
@@ -268,9 +271,9 @@ cd backend && pip install -r requirements.txt
 - **新增测试覆盖**：chat.py 端到端（需 mock embedding + LLM）、auth.py HMAC 校验、bm25.py search 函数
 - **miniprogram/ 目录**：加 README.md 说明"ADR 0001 反转后的历史骨架" 
 
-# 数据维护：白名单 (docs/权限表.xlsx ↔ whitelist.db)
-python scripts/sync_whitelist_xlsx.py             # 双向同步，dry-run 先预览
-python scripts/sync_whitelist_xlsx.py --write     # 真实同步
+# 数据维护：白名单（whitelist.db 实时唯一事实源；xlsx 仅初始导入/恢复，sync 脚本已 DEPRECATED）
+python scripts/migrate_whitelist_rbac.py --dry-run  # 迁移 dry-run 输出 diff
+python scripts/migrate_whitelist_rbac.py --apply    # 迁移（先备份）
 # 数据维护：知识库一站式重建（推荐日常使用）
 # 从 faq.json + 4 个 markdown 源文件重建 Chroma + BM25 索引，避免漏跑
 python scripts/rebuild_all.py                    # 全量重建

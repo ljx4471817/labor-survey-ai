@@ -1,12 +1,14 @@
-"""使用情况多维查询（按区域/姓名/手机号）。"""
+# -*- coding: utf-8 -*-
+"""使用情况多维查询（按区域/姓名/手机号）。业务管理员只可查本辖区（scope 交集）。"""
 from __future__ import annotations
 
 from collections import defaultdict
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from loguru import logger
 
 from app.core.config import PROJECT_ROOT
+from app.infra.auth import region_scope, require_whitelist_admin
 from app.persistence.query_log import search_usage as query_log_search_usage
 from app.services.jsonl_utils import read_jsonl
 
@@ -24,9 +26,11 @@ def search_usage(
     community: str | None = None,
     name: str | None = None,
     phone: str | None = None,
+    user: dict = Depends(require_whitelist_admin),
 ) -> dict:
     """按任意筛选条件查询使用情况（GROUP BY phone）。
 
+    业务管理员：查询条件与 actor scope 取交集（区外条件被 scope 覆盖，不可查区外）。
     所有参数可选，region 字段精确匹配，name/phone 模糊匹配。
     合并 query_log 用量 + feedback.jsonl 反馈统计。
     """
@@ -36,6 +40,16 @@ def search_usage(
         "name": name, "phone": phone,
     }
     filters = {k: v for k, v in raw.items() if v}
+
+    scope = region_scope(user)
+    if scope:
+        sp, sc, sct = scope
+        if sp:
+            filters["province"] = sp
+        if sc:
+            filters["city"] = sc
+        if sct:
+            filters["county"] = sct
 
     rows = query_log_search_usage(filters)
 
@@ -55,7 +69,7 @@ def search_usage(
         fb = feedback_by_phone.get(row["phone"], {"total": 0, "adopted": 0})
         results.append({**row, "feedback_count": fb["total"], "adopted_count": fb["adopted"]})
 
-    logger.info(f"usage/search: filters={list(filters.keys())} count={len(results)}")
+    logger.info(f"usage/search: filters={list(filters.keys())} count={len(results)} by={user['phone'][:3]}****")
     return {
         "filters": filters,
         "count": len(results),

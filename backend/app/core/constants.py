@@ -73,6 +73,23 @@ class AdminLevel(str, Enum):
         return tuple(m.value for m in cls)
 
 
+
+# --- 系统职能角色 (PRD 权限系统改造：admin_level x sys_role 双维度) ----------
+
+class SysRole(str, Enum):
+    """系统职能（功能权限）：全后台 / 分区后台 / 无后台。
+
+    与 AdminLevel（业务管辖范围）正交；仅三种取值，不扩展（PRD 白名单地界）。
+    """
+    SYSTEM_ADMIN = "系统管理员"
+    BUSINESS_ADMIN = "业务管理员"
+    USER = "普通用户"
+
+    @classmethod
+    def values(cls) -> tuple[str, ...]:
+        return tuple(m.value for m in cls)
+
+
 # --- 区域 5 级（暂不抽到此处，因为 whitelist_db / query_log 各自的索引用，---
 # --- 抽到这里会引入跨 DB 模块的依赖，等真加第 6 级时再统一。详见 CONTEXT.md §9 ---
 

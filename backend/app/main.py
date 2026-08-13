@@ -30,6 +30,11 @@ if not os.environ.get("LSX_AUTH_SECRET"):
         "LSX_AUTH_SECRET 未设置：使用进程内随机密钥（重启后所有 token 失效，仅供 dev）。"
         "生产请在 .env 设置 LSX_AUTH_SECRET=<32字节随机十六进制>"
     )
+if not os.environ.get("LSX_SYSTEM_ADMIN_PHONE"):
+    logger.warning(
+        "LSX_SYSTEM_ADMIN_PHONE 未设置：系统管理员专属功能（反馈/KB/LLM/审计/CSV 导入）将 403。"
+        "生产请在 .env 设置 LSX_SYSTEM_ADMIN_PHONE=<系统管理员手机号>"
+    )
 
 app = FastAPI(
     title="劳动力调查 AI 助手",

@@ -1,9 +1,11 @@
-﻿# -*- coding: utf-8 -*-
-'''Sync docs/权限表.xlsx <-> backend/data/whitelist.db.
+# -*- coding: utf-8 -*-
+'''DEPRECATED：docs/权限表.xlsx <-> backend/data/whitelist.db 同步。
 
-Reads data sheets (调查员 + 管理人员), normalizes, upserts every user.
-Soft-deletes phones missing from XLSX, except protected test phones.
-Supports --dry-run and --xlsx <path>.
+自 PRD 权限系统改造（2026-08-13）起，whitelist.db 是实时唯一事实源，
+区县/市级业务管理员在网页自行维护名单，xlsx 降级为初始导入模板 + 导出存档物。
+
+本脚本仅保留用于：一次性初始导入 / 灾难恢复。
+日常同步禁止再跑（旧 xlsx 会覆盖线上新数据）！如需恢复：先备份 whitelist.db。
 '''
 from __future__ import annotations
 
@@ -99,7 +101,8 @@ def read_manager(ws):
 
 
 def main():
-    ap = argparse.ArgumentParser(description='同步 权限表.xlsx 与 whitelist.db')
+    print('WARNING: 本脚本已 DEPRECATED（PRD 权限系统改造），仅用于初始导入/恢复；日常名单维护请走网页。')
+    ap = argparse.ArgumentParser(description='[DEPRECATED] 同步 权限表.xlsx 与 whitelist.db（仅初始导入/恢复）')
     ap.add_argument('--xlsx', type=Path, default=DEFAULT_XLSX, help='权限表 .xlsx 路径')
     ap.add_argument('--dry-run', action='store_true', help='只打印变更，不写入')
     args = ap.parse_args()

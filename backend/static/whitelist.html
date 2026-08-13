@@ -27,10 +27,18 @@ header {
   box-shadow: 0 2px 8px rgba(30,58,95,0.18);
 }
 header h1 { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.04em; }
+header .role-tag { font-size: 0.78rem; background: rgba(255,255,255,0.16); padding: 2px 10px; border-radius: 999px; }
 header .back { font-size: 0.82rem; opacity: 0.8; text-decoration: none; color: var(--paper); margin-left: auto; }
 header .back:hover { opacity: 1; }
 
-main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+.tab-bar { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
+.tab-bar .tab-btn {
+  border: none; border-bottom: 2px solid transparent; border-radius: 0;
+  background: transparent; padding: 8px 16px; font-size: 0.9rem; color: var(--text-dim);
+}
+.tab-bar .tab-btn.active { color: var(--ink-blue); border-bottom-color: var(--ink-blue); font-weight: 600; }
 
 .toolbar {
   display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
@@ -48,45 +56,68 @@ button.primary:hover { background: var(--ink-blue-soft); }
 button.danger { color: var(--bad); border-color: var(--bad); }
 button.danger:hover { background: var(--bad); color: white; }
 
-.info-bar {
-  font-size: 0.82rem; color: var(--text-dim); margin-bottom: 12px;
-  display: flex; gap: 16px; align-items: center;
-}
-
 .table-wrap { overflow-x: auto; background: white; border: 1px solid var(--line); border-radius: 8px; }
 table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 th { background: var(--ink-blue); color: var(--paper); font-weight: 600; font-size: 0.78rem; position: sticky; top: 0; }
 tr.inactive { background: #f5f5f5; color: var(--text-dim); }
-tr:hover { background: #eef3f7; }
+tr.main-row:hover { background: #eef3f7; }
+td input[type=checkbox] { cursor: pointer; }
 
+/* 详情展开行（省/市/县/乡/社区/系统职能/更新时间/备注） */
+tr.detail-row { display: none; }
+tr.detail-row.open { display: table-row; }
+tr.detail-row td { background: #fafbfc; padding: 10px 14px; white-space: normal; }
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 6px 18px; font-size: 0.78rem; color: var(--text-dim); }
+.detail-grid .item b { color: var(--text); font-weight: 600; margin-right: 4px; }
+
+/* 弹窗：高度自适应（矮视口 body 内部滚动，底部不裁剪） */
 .modal-overlay {
   display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35);
-  z-index: 100; justify-content: center; align-items: flex-start; padding-top: 60px;
+  z-index: 100; justify-content: center; align-items: flex-start; overflow-y: auto;
+  padding: 40px 16px;
 }
 .modal-overlay.open { display: flex; }
 .modal {
   background: white; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.18);
-  max-width: 520px; width: 100%; margin: 0 16px; overflow: hidden;
+  max-width: 520px; width: 100%; margin: 0 auto; overflow: hidden;
+  display: flex; flex-direction: column; max-height: calc(100vh - 32px);
 }
 .modal .head {
-  background: var(--ink-blue); color: var(--paper);
+  flex: none; background: var(--ink-blue); color: var(--paper);
   padding: 12px 16px; font-weight: 600; font-size: 0.95rem;
   display: flex; justify-content: space-between; align-items: center;
 }
 .modal .head .close { cursor: pointer; font-size: 1.2rem; opacity: 0.8; }
-.modal .body { padding: 16px; }
+.modal .body { padding: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .modal .body label {
   display: block; font-size: 0.8rem; color: var(--text-dim); margin: 8px 0 4px;
 }
-.modal .body input {
+.modal .body input, .modal .body select {
   width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px;
-  font-size: 0.88rem; font-family: inherit;
+  font-size: 0.88rem; font-family: inherit; background: white;
 }
-.modal .body input:focus { outline: none; border-color: var(--ink-blue); }
+.modal .body input:focus, .modal .body select:focus { outline: none; border-color: var(--ink-blue); }
 .modal .foot {
-  padding: 12px 16px; border-top: 1px solid var(--line);
+  flex: none; padding: 12px 16px; border-top: 1px solid var(--line);
   display: flex; gap: 8px; justify-content: flex-end;
+}
+
+/* 窄屏（<=768px）：卡片式列表，无横向滚动 */
+@media (max-width: 768px) {
+  #panel-list .table-wrap { overflow: visible; border: none; background: transparent; }
+  #panel-list table, #panel-list thead, #panel-list tbody, #panel-list tr, #panel-list td { display: block; }
+  #panel-list thead { display: none; }
+  #tbody tr { background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    margin-bottom: 10px; padding: 10px 12px; }
+  #tbody td { border: none; padding: 3px 0; white-space: normal; }
+  #tbody td::before { content: attr(data-label); display: inline-block; min-width: 56px;
+    color: var(--text-dim); font-size: 0.72rem; margin-right: 8px; }
+  #tbody td[data-label=""]::before, #tbody td:first-child::before { content: none; }
+  #tbody tr.detail-row { display: none; padding: 0; border: none; background: transparent; }
+  #tbody tr.detail-row.open { display: block; padding: 0 4px 8px; }
+  #tbody tr.detail-row td { background: transparent; padding: 0; }
+  .detail-grid { grid-template-columns: 1fr 1fr; gap: 4px 12px; }
 }
 
 .csv-preview {
@@ -108,42 +139,68 @@ tr:hover { background: #eef3f7; }
 .pager .ellipsis { padding: 0 4px; color: var(--text-dim); }
 .empty-row { text-align: center; padding: 24px; color: var(--text-dim); font-size: 0.88rem; }
 
+.audit-filter { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.audit-filter input { padding: 7px 10px; border: 1px solid var(--line); border-radius: 4px; font-size: 0.85rem; width: 220px; max-width: 100%; }
+
 footer {
-  text-align: center; font-size: 0.78rem; color: var(--text-dim); padding: 20px;
+  text-align: center; font-size: 0.75rem; color: var(--text-dim);
+  padding: 20px 0 0;
 }
 </style>
 </head>
 <body>
 <header>
   <h1>白名单管理</h1>
-  <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
-  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-</button>
-<a class="back" href="/dashboard">← 看板</a>
+  <span class="role-tag" id="roleTag">—</span>
   <a class="back" href="/">← 对话</a>
 </header>
 <main>
   <div id="msg"></div>
-  <div class="toolbar">
-    <button class="primary" id="addBtn">+ 新增条目</button>
-    <button id="csvBtn">CSV 批量导入</button>
-    <label style="font-size:0.82rem;display:flex;align-items:center;gap:4px;cursor:pointer">
-      <input type="checkbox" id="showInactive" onchange="currentPage=1;renderTable()"> 显示已禁用
-    </label>
-    <span style="margin-left:auto;font-size:0.82rem;color:var(--text-dim)" id="countInfo">—</span>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabListBtn" onclick="switchTab('list')">名单管理</button>
+    <button class="tab-btn" id="tabAuditBtn" style="display:none" onclick="switchTab('audit')">审计记录</button>
   </div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>手机号</th><th>姓名</th><th>省</th><th>市/州</th><th>县/区</th><th>乡/镇</th><th>社区/村</th><th>层级</th><th>状态</th><th>更新时间</th><th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
+
+  <div id="panel-list">
+    <div class="toolbar">
+      <button class="primary" id="addBtn">+ 新增条目</button>
+      <button id="csvBtn" style="display:none">CSV 批量导入</button>
+      <button id="batchDisableBtn" class="danger" disabled>批量停用</button>
+      <button id="exportBtn">导出</button>
+      <label style="font-size:0.82rem;display:flex;align-items:center;gap:4px;cursor:pointer">
+        <input type="checkbox" id="showInactive" onchange="currentPage=1;renderTable()"> 显示已禁用
+      </label>
+      <span style="margin-left:auto;font-size:0.82rem;color:var(--text-dim)" id="countInfo">—</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:32px"><input type="checkbox" id="checkAll" title="全选本页"></th>
+            <th>手机号</th><th>姓名</th><th>区域</th><th>层级</th><th>状态</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
     <div class="pager" id="pager"></div>
+  </div>
+
+  <div id="panel-audit" style="display:none">
+    <div class="audit-filter">
+      <input type="text" id="auditTarget" maxlength="11" placeholder="按目标手机号过滤（可空）">
+      <button id="auditBtn" class="primary">查询</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>时间</th><th>操作</th><th>目标手机号</th><th>操作人</th><th>变更内容</th></tr>
+        </thead>
+        <tbody id="auditTbody"></tbody>
+      </table>
+    </div>
+  </div>
 </main>
 
 <!-- 新增/编辑 Modal -->
@@ -166,11 +223,12 @@ footer {
       <label>社区/村 <span style="color:var(--bad)">*</span></label>
       <input type="text" id="fCommunity" maxlength="50">
       <label>管理员层级</label>
-      <select id="fAdminLevel" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:0.88rem;font-family:inherit">
-        <option value="调查员">调查员</option>
-        <option value="区县">区县</option>
-        <option value="市级">市级</option>
-        <option value="省级">省级</option>
+      <select id="fAdminLevel" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:0.88rem;font-family:inherit"></select>
+      <label id="fSysRoleLabel" style="display:none">系统职能（仅系统管理员可设）</label>
+      <select id="fSysRole" style="display:none;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:0.88rem;font-family:inherit">
+        <option value="普通用户">普通用户</option>
+        <option value="业务管理员">业务管理员</option>
+        <option value="系统管理员">系统管理员</option>
       </select>
       <label>备注</label>
       <input type="text" id="fRemark" maxlength="200" placeholder="可选">
@@ -208,10 +266,72 @@ footer {
 <script>
 requireLoginOrRedirect();
 
+// 嵌入 dashboard「白名单管理」模块时隐藏独立页头/页脚（?embed=1）
+const embedMode = new URLSearchParams(location.search).get('embed') === '1';
+if (embedMode) {
+  const h = document.querySelector('header');
+  const f = document.querySelector('footer');
+  if (h) h.style.display = 'none';
+  if (f) f.style.display = 'none';
+  document.body.style.padding = '0';
+}
+
+let me = null;          // whoami 结果
 let allItems = [];
 let editPhone = null;
 let currentPage = 1;
 let pageSize = 20;
+let checkedSet = new Set();   // 批量停用勾选
+let detailOpenSet = new Set(); // 详情展开状态
+
+async function initRole() {
+  try {
+    const r = await fetch('/api/admin/whitelist/whoami', { headers: authHeader() });
+    if (await handle401(r)) return;
+    if (r.status === 403) {
+      showMsg('无白名单管理权限，即将返回首页', 'err');
+      setTimeout(() => location.replace('/'), 1200);
+      return;
+    }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    me = await r.json();
+    $('roleTag').textContent = (me.sys_role || '') + ' · ' + (me.admin_level || '') +
+      (me.city ? ' · ' + me.city : '') + (me.county ? ' · ' + me.county : '');
+    configureByRole();
+    loadItems();
+    if (isSystemAdmin()) loadAudit();
+  } catch (e) {
+    showMsg('身份探测失败：' + e.message, 'err');
+  }
+}
+
+function isSystemAdmin() {
+  return me && me.sys_role === '系统管理员';
+}
+
+function configureByRole() {
+  const sys = isSystemAdmin();
+  $('csvBtn').style.display = sys ? '' : 'none';
+  $('tabAuditBtn').style.display = sys ? '' : 'none';
+  $('fSysRole').style.display = sys ? '' : 'none';
+  $('fSysRoleLabel').style.display = sys ? '' : 'none';
+  fillAdminLevelOptions();
+}
+
+function fillAdminLevelOptions() {
+  let levels;
+  if (isSystemAdmin()) levels = ['省级', '市级', '区县', '调查员'];
+  else if (me.admin_level === '省级') levels = ['市级', '区县', '调查员'];
+  else if (me.admin_level === '市级') levels = ['区县', '调查员'];
+  else if (me.admin_level === '区县') levels = ['调查员'];
+  else levels = [];
+  const sel = $('fAdminLevel');
+  sel.innerHTML = levels.map(function (l) {
+    return '<option value="' + l + '">' + l + '</option>';
+  }).join('');
+  // 区县业务管理员：层级锁定「调查员」
+  sel.disabled = (me.admin_level === '区县' && !isSystemAdmin());
+}
 
 async function loadItems() {
   try {
@@ -219,6 +339,9 @@ async function loadItems() {
     if (await handle401(r)) return;
     if (!r.ok) throw new Error('HTTP ' + r.status);
     allItems = (await r.json()).items || [];
+    // 勾选集合只保留仍在列表中的号码
+    const phones = new Set(allItems.map(x => x.phone));
+    checkedSet = new Set(Array.from(checkedSet).filter(p => phones.has(p)));
     renderTable();
   } catch (e) {
     showMsg('加载失败：' + e.message, 'err');
@@ -228,7 +351,14 @@ async function loadItems() {
 function showMsg(msg, type) {
   const el = $('msg');
   el.innerHTML = '<div class="msg ' + type + '">' + escapeHtml(msg) + '</div>';
-  setTimeout(() => el.innerHTML = '', 4000);
+  setTimeout(() => el.innerHTML = '', 5000);
+}
+
+function switchTab(name) {
+  $('tabListBtn').classList.toggle('active', name === 'list');
+  $('tabAuditBtn').classList.toggle('active', name === 'audit');
+  $('panel-list').style.display = name === 'list' ? '' : 'none';
+  $('panel-audit').style.display = name === 'audit' ? '' : 'none';
 }
 
 function renderTable() {
@@ -240,30 +370,121 @@ function renderTable() {
   const pageItems = filtered.slice(start, start + pageSize);
   $('countInfo').textContent = '共 ' + filtered.length + ' 条（总计 ' + allItems.length + ' 条）';
   $('tbody').innerHTML = pageItems.length === 0
-    ? '<tr><td colspan="11" class="empty-row">暂无数据</td></tr>'
+    ? '<tr><td colspan="7" class="empty-row">暂无数据</td></tr>'
     : pageItems.map(r => {
-    const cls = r.active ? '' : ' inactive';
+    const cls = r.active ? 'main-row' : 'main-row inactive';
     const status = r.active ? '启用' : '已禁用';
+    const enableBtn = r.active ? '' : '<button class="btn-sm" onclick="enableEntry(\'' + escapeHtml(r.phone) + '\')">启用</button> ';
+    const checked = checkedSet.has(r.phone) ? ' checked' : '';
+    const detailOpen = detailOpenSet.has(r.phone) ? ' open' : '';
+    const region = (r.city || r.province || '') + (r.county ? ' · ' + r.county : '');
+    const detailItems = [
+      ['省', r.province], ['市/州', r.city], ['县/区', r.county], ['乡/镇', r.township || ''],
+      ['社区/村', r.community], ['系统职能', r.sys_role || '普通用户'],
+      ['更新时间', (r.updated_at || '').slice(0, 16)], ['备注', r.remark || '—'],
+    ].map(x => '<span class="item"><b>' + escapeHtml(x[0]) + '</b>' + escapeHtml(x[1]) + '</span>').join('');
     return '<tr class="' + cls + '">' +
-      '<td>' + escapeHtml(r.phone) + '</td>' +
-      '<td>' + escapeHtml(r.name) + '</td>' +
-      '<td>' + escapeHtml(r.province) + '</td>' +
-      '<td>' + escapeHtml(r.city) + '</td>' +
-      '<td>' + escapeHtml(r.county) + '</td>' +
-      '<td>' + escapeHtml(r.township || '') + '</td>' +
-      '<td>' + escapeHtml(r.community) + '</td>' +
-      '<td>' + escapeHtml(r.admin_level || '调查员') + '</td>' +
-      '<td>' + status + '</td>' +
-      '<td>' + escapeHtml((r.updated_at || '').slice(0, 16)) + '</td>' +
-      '<td>' +
+      '<td data-label=""><input type="checkbox" class="row-check" data-phone="' + escapeHtml(r.phone) + '"' + checked + '></td>' +
+      '<td data-label="手机号">' + escapeHtml(r.phone) + '</td>' +
+      '<td data-label="姓名">' + escapeHtml(r.name) + '</td>' +
+      '<td data-label="区域">' + escapeHtml(region) + '</td>' +
+      '<td data-label="层级">' + escapeHtml(r.admin_level || '调查员') + '</td>' +
+      '<td data-label="状态">' + status + '</td>' +
+      '<td data-label="操作">' +
+        '<button class="btn-sm" data-detail="' + escapeHtml(r.phone) + '" onclick="toggleDetail(\'' + escapeHtml(r.phone) + '\')">' + (detailOpen ? '收起' : '详情') + '</button> ' +
         '<button class="btn-sm" onclick="editEntry(\'' + escapeHtml(r.phone) + '\')">编辑</button> ' +
+        enableBtn +
         (r.active
           ? '<button class="btn-sm danger" onclick="removeEntry(\'' + escapeHtml(r.phone) + '\')">禁用</button>'
           : '') +
       '</td>' +
+      '</tr>' +
+      '<tr class="detail-row' + detailOpen + '" data-phone="' + escapeHtml(r.phone) + '">' +
+        '<td colspan="7"><div class="detail-grid">' + detailItems + '</div></td>' +
       '</tr>';
   }).join('');
   renderPager(totalPages, filtered.length);
+  bindRowChecks();
+  updateBatchBtn();
+}
+
+function toggleDetail(phone) {
+  const tr = document.querySelector('tr.detail-row[data-phone="' + CSS.escape(phone) + '"]');
+  if (!tr) return;
+  const open = tr.classList.contains('open');
+  tr.classList.toggle('open');
+  const btn = document.querySelector('button[data-detail="' + CSS.escape(phone) + '"]');
+  if (btn) btn.textContent = open ? '详情' : '收起';
+  if (open) detailOpenSet.delete(phone); else detailOpenSet.add(phone);
+}
+
+function bindRowChecks() {
+  document.querySelectorAll('.row-check').forEach(cb => {
+    cb.addEventListener('change', () => {
+      if (cb.checked) checkedSet.add(cb.dataset.phone);
+      else checkedSet.delete(cb.dataset.phone);
+      updateBatchBtn();
+      const all = document.querySelectorAll('.row-check');
+      $('checkAll').checked = all.length > 0 && Array.from(all).every(x => x.checked);
+    });
+  });
+  const checkAll = $('checkAll');
+  checkAll.onchange = () => {
+    const all = document.querySelectorAll('.row-check');
+    all.forEach(cb => {
+      cb.checked = checkAll.checked;
+      if (checkAll.checked) checkedSet.add(cb.dataset.phone);
+      else checkedSet.delete(cb.dataset.phone);
+    });
+    updateBatchBtn();
+  };
+}
+
+function updateBatchBtn() {
+  const n = checkedSet.size;
+  $('batchDisableBtn').disabled = n === 0;
+  $('batchDisableBtn').textContent = '批量停用' + (n ? '（' + n + '）' : '');
+}
+
+async function batchDisable() {
+  if (!checkedSet.size) return;
+  if (!confirm('确认停用选中的 ' + checkedSet.size + ' 个账号？\n停用后立即无法登录。')) return;
+  const phones = Array.from(checkedSet);
+  try {
+    const r = await fetch('/api/admin/whitelist/batch-disable', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() },
+      body: JSON.stringify({ phones }),
+    });
+    if (await handle401(r)) return;
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: 'HTTP ' + r.status }));
+      throw new Error(err.detail || 'HTTP ' + r.status);
+    }
+    const j = await r.json();
+    let msg = '已停用 ' + j.disabled + ' 个';
+    if (j.skipped && j.skipped.length) {
+      msg += '；跳过 ' + j.skipped.map(s => s.phone + '（' + s.reason + '）').join('、');
+    }
+    showMsg(msg, j.skipped && j.skipped.length ? 'err' : 'ok');
+    checkedSet.clear();
+    loadItems();
+  } catch (e) {
+    showMsg('批量停用失败：' + e.message, 'err');
+  }
+}
+
+async function enableEntry(phone) {
+  try {
+    const r = await fetch('/api/admin/whitelist/' + encodeURIComponent(phone) + '/enable', {
+      method: 'PATCH', headers: authHeader(),
+    });
+    if (await handle401(r)) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    showMsg('已启用 ' + phone.slice(0, 3) + '****', 'ok');
+    loadItems();
+  } catch (e) {
+    showMsg('启用失败：' + e.message, 'err');
+  }
 }
 
 function renderPager(totalPages, totalItems) {
@@ -280,7 +501,7 @@ function renderPager(totalPages, totalItems) {
       ? '<span class="ellipsis">…</span>'
       : '<button class="' + (x===currentPage?'active':'') + '" onclick="goPage(' + x + ')">' + x + '</button>';
   }).join('');
-p.style.display = 'flex';
+  p.style.display = 'flex';
   p.innerHTML =
     '<span>每页 <select onchange="pageSize=parseInt(this.value,10);currentPage=1;renderTable()">' + pageOpts + '</select> 条</span>' +
     '<span>第 ' + from + '-' + to + ' 条 / 共 ' + totalItems + ' 条</span>' +
@@ -328,7 +549,10 @@ function openModal(title, entry) {
   $('fCounty').value = entry ? entry.county : '';
   $('fTownship').value = entry ? (entry.township || '') : '';
   $('fCommunity').value = entry ? entry.community : '';
-  $('fAdminLevel').value = entry ? (entry.admin_level || '调查员') : '调查员';
+  const allowed = Array.from($('fAdminLevel').options).map(o => o.value);
+  const level = entry ? (entry.admin_level || '调查员') : (allowed.includes('调查员') ? '调查员' : (allowed[0] || '调查员'));
+  if (allowed.includes(level)) $('fAdminLevel').value = level;
+  $('fSysRole').value = entry ? (entry.sys_role || '普通用户') : '普通用户';
   $('fRemark').value = entry ? (entry.remark || '') : '';
   $('editModal').classList.add('open');
 }
@@ -349,6 +573,7 @@ async function saveEntry() {
     admin_level: $('fAdminLevel').value,
     remark: $('fRemark').value.trim(),
   };
+  if (isSystemAdmin()) body.sys_role = $('fSysRole').value;
   const method = editPhone ? 'PUT' : 'POST';
   const url = editPhone ? '/api/admin/whitelist/' + encodeURIComponent(editPhone) : '/api/admin/whitelist';
   try {
@@ -388,6 +613,31 @@ async function removeEntry(phone) {
     showMsg('禁用失败：' + e.message, 'err');
   }
 }
+
+// --- 导出 --------------------------------------------------------------------
+
+async function exportList() {
+  try {
+    const r = await fetch('/api/admin/whitelist/export', { headers: authHeader() });
+    if (await handle401(r)) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const blob = await r.blob();
+    const ext = (me.admin_level === '区县' && !isSystemAdmin()) ? 'csv' : 'xlsx';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '白名单导出_' + new Date().toISOString().slice(0, 10) + '.' + ext;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showMsg('已导出 ' + ext.toUpperCase(), 'ok');
+  } catch (e) {
+    showMsg('导出失败：' + e.message, 'err');
+  }
+}
+
+// --- CSV 导入 -----------------------------------------------------------------
 
 function openCsvModal() {
   $('csvModal').classList.add('open');
@@ -438,11 +688,51 @@ async function doImportCsv() {
   }
 }
 
+// --- 审计（仅系统管理员） --------------------------------------------------------
+
+async function loadAudit() {
+  const target = $('auditTarget').value.trim();
+  const url = '/api/admin/whitelist/audit?limit=100' + (target ? '&target_phone=' + encodeURIComponent(target) : '');
+  try {
+    const r = await fetch(url, { headers: authHeader() });
+    if (await handle401(r)) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    const ACTIONS = {
+      create: '新增', update: '编辑', disable: '停用', enable: '启用',
+      batch_disable: '批量停用', sys_role_change: '角色变更', import: 'CSV 导入',
+    };
+    $('auditTbody').innerHTML = (j.items || []).length === 0
+      ? '<tr><td colspan="5" class="empty-row">暂无审计记录</td></tr>'
+      : j.items.map(a => {
+        const diff = [];
+        if (a.before_json) {
+          try { diff.push('前:' + JSON.stringify(JSON.parse(a.before_json)).slice(0, 120)); } catch (e) { diff.push('前:?'); }
+        }
+        if (a.after_json) {
+          try { diff.push('后:' + JSON.stringify(JSON.parse(a.after_json)).slice(0, 120)); } catch (e) { diff.push('后:?'); }
+        }
+        return '<tr>' +
+          '<td>' + escapeHtml((a.created_at || '').slice(0, 19)) + '</td>' +
+          '<td>' + escapeHtml(ACTIONS[a.action] || a.action) + '</td>' +
+          '<td>' + escapeHtml(a.target_phone) + '</td>' +
+          '<td>' + escapeHtml(a.actor_phone || '') + (a.actor_name ? ' ' + escapeHtml(a.actor_name) : '') + '</td>' +
+          '<td style="white-space:normal;word-break:break-all;max-width:360px">' + escapeHtml(diff.join(' ')) + '</td>' +
+          '</tr>';
+      }).join('');
+  } catch (e) {
+    showMsg('审计加载失败：' + e.message, 'err');
+  }
+}
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { closeModal(); closeCsvModal(); }
 });
 $('addBtn').onclick = () => openModal('新增条目');
 $('csvBtn').onclick = openCsvModal;
+$('exportBtn').onclick = exportList;
+$('batchDisableBtn').onclick = batchDisable;
+$('auditBtn').onclick = loadAudit;
 $('editModal').addEventListener('click', (e) => {
   if (e.target === $('editModal')) closeModal();
 });
@@ -450,7 +740,7 @@ $('csvModal').addEventListener('click', (e) => {
   if (e.target === $('csvModal')) closeCsvModal();
 });
 
-loadItems();
+initRole();
 </script>
 </body>
 </html>

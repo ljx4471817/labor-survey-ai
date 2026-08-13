@@ -206,7 +206,7 @@ formEl.addEventListener('submit', async (e) => {
       body: JSON.stringify({ phone }),
     });
     if (r.ok) {
-      const { token, expires_at, name, admin_level } = await r.json();
+      const { token, expires_at, name, admin_level, sys_role } = await r.json();
         setUserName(name);
       localStorage.setItem(TOKEN_KEY, token);
       localStorage.setItem(EXP_KEY, String(expires_at));
@@ -215,8 +215,10 @@ formEl.addEventListener('submit', async (e) => {
       let target = '/';
       if (next && next.startsWith('/') && !next.startsWith('//')) {
         target = next;  // 记住来源地址，登录后跳回
-      } else if (admin_level === '市级' || admin_level === '省级') {
-        target = '/quiz-admin';  // 管理员默认直达管理页
+      } else if (sys_role === '系统管理员' || (sys_role === '业务管理员' && (admin_level === '省级' || admin_level === '市级'))) {
+        target = '/quiz-admin';  // 系统管理员/市级以上业务管理员 -> 测验管理
+      } else if (sys_role === '业务管理员' && admin_level === '区县') {
+        target = '/dashboard';  // 区县业务管理员 -> 统一后台（白名单是其中模块）
       }
       location.replace(target);
     } else {

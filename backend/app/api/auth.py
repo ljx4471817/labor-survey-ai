@@ -32,7 +32,14 @@ def login(req: LoginRequest) -> dict:
     u = whitelist_db.get_user(req.phone)
     name = (u.get("name") or "").strip() if u else ""
     logger.info(f"login: phone={req.phone[:3]}**** exp={exp} name={name}")
-    return {"token": token, "expires_at": exp, "phone": req.phone, "name": name, "admin_level": u.get("admin_level", "") if u else ""}
+    return {
+        "token": token,
+        "expires_at": exp,
+        "phone": req.phone,
+        "name": name,
+        "admin_level": u.get("admin_level", "") if u else "",
+        "sys_role": u.get("sys_role", "") if u else "",
+    }
 
 
 @router.get("/check")

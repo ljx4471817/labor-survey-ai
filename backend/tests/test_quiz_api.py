@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """quiz API 层测试：可见性 / 判分锁定 / 过期 / 下发 / 统计 / 权限（PRD v3 10.1）。"""
 from __future__ import annotations
 
@@ -192,7 +192,30 @@ def test_question_review(db):
     assert db.get_question(q["id"])["status"] == "draft"
 
 
-def test_publish_requires_approved_questions(db):
+def _patch_quiz_admin_actor(monkeypatch, users=None):
+    """把 quiz_admin 的 whitelist 访问指向内存用户（13900000001 = 市级业务管理员）。"""
+    admin = {
+        "phone": "13900000001", "name": "管理员", "province": "贵州省", "city": "贵阳市",
+        "county": "", "admin_level": "市级", "sys_role": "业务管理员", "active": 1,
+    }
+    targets = users if users is not None else [
+        {"phone": "13800000001", "name": "张三", "province": "贵州省", "city": "贵阳市", "county": "南明区", "admin_level": "调查员", "sys_role": "普通用户", "active": 1},
+        {"phone": "13800000002", "name": "李四", "province": "贵州省", "city": "贵阳市", "county": "云岩区", "admin_level": "调查员", "sys_role": "普通用户", "active": 1},
+        {"phone": "13800000003", "name": "王五", "province": "贵州省", "city": "贵阳市", "county": "观山湖区", "admin_level": "调查员", "sys_role": "普通用户", "active": 1},
+    ]
+    monkeypatch.setattr(
+        "app.api.quiz_admin.whitelist_db.get_user",
+        lambda p: admin if p == "13900000001" else next((u for u in targets if u["phone"] == p), None),
+    )
+    monkeypatch.setattr(
+        "app.api.quiz_admin.whitelist_db.get_user_any",
+        lambda p: admin if p == "13900000001" else next((u for u in targets if u["phone"] == p), None),
+    )
+    return admin
+
+
+def test_publish_requires_approved_questions(db, monkeypatch):
+    _patch_quiz_admin_actor(monkeypatch)
     qid = _seed_published(db, approved=False)
     quiz_db.update_quiz(qid, status="draft")  # 重置为草稿
     with pytest.raises(HTTPException) as e:
@@ -200,7 +223,8 @@ def test_publish_requires_approved_questions(db):
     assert e.value.status_code == 422
 
 
-def test_publish_success_and_append_remove(db):
+def test_publish_success_and_append_remove(db, monkeypatch):
+    _patch_quiz_admin_actor(monkeypatch)
     qid = _seed_published(db, approved=True)
     quiz_db.update_quiz(qid, status="draft")
     res = quiz_admin_api.quiz_publish(
@@ -221,8 +245,8 @@ def test_publish_success_and_append_remove(db):
 def test_stats_with_fake_whitelist(db, monkeypatch):
     qid = _seed_published(db)
     users = [
-        {"phone": "13800000001", "name": "张三", "city": "贵阳市", "county": "南明区", "admin_level": "调查员", "active": 1},
-        {"phone": "13800000002", "name": "李四", "city": "贵阳市", "county": "云岩区", "admin_level": "调查员", "active": 1},
+        {"phone": "13800000001", "name": "张三", "province": "贵州省", "city": "贵阳市", "county": "南明区", "admin_level": "调查员", "active": 1},
+        {"phone": "13800000002", "name": "李四", "province": "贵州省", "city": "贵阳市", "county": "云岩区", "admin_level": "调查员", "active": 1},
     ]
     monkeypatch.setattr(quiz_db, "list_target_phones", lambda q: ["13800000001", "13800000002"])
     monkeypatch.setattr(quiz_db, "answered_phones", lambda q: {"13800000001"})
@@ -232,8 +256,15 @@ def test_stats_with_fake_whitelist(db, monkeypatch):
     monkeypatch.setattr(quiz_db, "count_questions", lambda q: 1)
     monkeypatch.setattr(quiz_db, "sync_expired", lambda *a, **k: 0)
     monkeypatch.setattr(quiz_db, "cleanup_expired", lambda *a, **k: {"archived": 0})
+    admin = {
+        "phone": "13900000001", "name": "管理员", "province": "贵州省", "city": "贵阳市",
+        "county": "", "admin_level": "市级", "sys_role": "业务管理员", "active": 1,
+    }
     monkeypatch.setattr("app.api.quiz_admin.whitelist_db.list_all", lambda active_only=False: users)
-    monkeypatch.setattr("app.api.quiz_admin.whitelist_db.get_user", lambda p: next(u for u in users if u["phone"] == p))
+    monkeypatch.setattr(
+        "app.api.quiz_admin.whitelist_db.get_user",
+        lambda p: admin if p == "13900000001" else next((u for u in users if u["phone"] == p), None),
+    )
 
     st = quiz_admin_api.quiz_stats(quiz_id=qid, region=None, q=None, page=1, page_size=50, phone="13900000001")
     assert st["total_users"] == 2
@@ -272,16 +303,69 @@ def test_targets_groups_by_city_and_role(monkeypatch):
     assert res2["total"] == 1
 
 
-def test_require_admin_matrix(monkeypatch):
+def _user(role, level):
+    return {
+        "admin_level": level, "sys_role": role, "province": "贵州省", "city": "贵阳市",
+        "county": "南明区", "phone": "13800000001",
+    }
+
+
+def test_require_quiz_admin_matrix(monkeypatch):
+    """require_quiz_admin：系统管理员任意层级放行；业务管理员仅省级/市级。"""
     monkeypatch.setattr(auth_mod, "require_user", lambda authorization: "13800000001")
-    for level, expected_ok in [("市级", True), ("省级", True), ("区县", False), ("调查员", False)]:
-        monkeypatch.setattr(auth_mod, "get_current_user", lambda phone, _lvl=level: {"admin_level": _lvl})
+    cases = [
+        ("系统管理员", "调查员", True),
+        ("业务管理员", "省级", True),
+        ("业务管理员", "市级", True),
+        ("业务管理员", "区县", False),
+        ("业务管理员", "调查员", False),
+        ("普通用户", "市级", False),
+    ]
+    for role, level, expected_ok in cases:
+        monkeypatch.setattr(auth_mod, "get_current_user", lambda phone, _r=role, _l=level: _user(_r, _l))
         if expected_ok:
-            assert auth_mod.require_admin("Bearer x") == "13800000001"
+            assert auth_mod.require_quiz_admin("Bearer x") == "13800000001"
         else:
             with pytest.raises(HTTPException) as e:
-                auth_mod.require_admin("Bearer x")
+                auth_mod.require_quiz_admin("Bearer x")
             assert e.value.status_code == 403
+
+
+def test_require_quiz_stats_matrix(monkeypatch):
+    """require_quiz_stats：业务管理员任意层级（含区县）可看只读统计。"""
+    monkeypatch.setattr(auth_mod, "require_user", lambda authorization: "13800000001")
+    for role, level, expected_ok in [
+        ("系统管理员", "调查员", True),
+        ("业务管理员", "区县", True),
+        ("业务管理员", "市级", True),
+        ("普通用户", "区县", False),
+    ]:
+        monkeypatch.setattr(auth_mod, "get_current_user", lambda phone, _r=role, _l=level: _user(_r, _l))
+        if expected_ok:
+            assert auth_mod.require_quiz_stats("Bearer x") == "13800000001"
+        else:
+            with pytest.raises(HTTPException) as e:
+                auth_mod.require_quiz_stats("Bearer x")
+            assert e.value.status_code == 403
+
+
+def test_require_system_admin_matrix(monkeypatch):
+    monkeypatch.setattr(auth_mod, "require_user", lambda authorization: "13800000001")
+    for role, expected_ok in [("系统管理员", True), ("业务管理员", False), ("普通用户", False)]:
+        monkeypatch.setattr(auth_mod, "get_current_user", lambda phone, _r=role: _user(_r, "市级"))
+        if expected_ok:
+            assert auth_mod.require_system_admin("Bearer x") == "13800000001"
+        else:
+            with pytest.raises(HTTPException) as e:
+                auth_mod.require_system_admin("Bearer x")
+            assert e.value.status_code == 403
+
+
+def test_require_whitelist_admin_returns_user(monkeypatch):
+    monkeypatch.setattr(auth_mod, "require_user", lambda authorization: "13800000001")
+    monkeypatch.setattr(auth_mod, "get_current_user", lambda phone: _user("业务管理员", "区县"))
+    u = auth_mod.require_whitelist_admin("Bearer x")
+    assert u["sys_role"] == "业务管理员" and u["admin_level"] == "区县"
 
 
 def test_import_accepts_supported_exts(db):
