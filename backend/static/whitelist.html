@@ -56,11 +56,6 @@ button.primary:hover { background: var(--ink-blue-soft); }
 button.danger { color: var(--bad); border-color: var(--bad); }
 button.danger:hover { background: var(--bad); color: white; }
 
-.info-bar {
-  font-size: 0.82rem; color: var(--text-dim); margin-bottom: 12px;
-  display: flex; gap: 16px; align-items: center;
-}
-
 .table-wrap { overflow-x: auto; background: white; border: 1px solid var(--line); border-radius: 8px; }
 table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -110,9 +105,9 @@ tr.detail-row td { background: #fafbfc; padding: 10px 14px; white-space: normal;
 
 /* 窄屏（<=768px）：卡片式列表，无横向滚动 */
 @media (max-width: 768px) {
-  .table-wrap { overflow: visible; border: none; background: transparent; }
-  table, thead, tbody, tr, td { display: block; }
-  thead { display: none; }
+  #panel-list .table-wrap { overflow: visible; border: none; background: transparent; }
+  #panel-list table, #panel-list thead, #panel-list tbody, #panel-list tr, #panel-list td { display: block; }
+  #panel-list thead { display: none; }
   #tbody tr { background: #fff; border: 1px solid var(--line); border-radius: 10px;
     margin-bottom: 10px; padding: 10px 12px; }
   #tbody td { border: none; padding: 3px 0; white-space: normal; }

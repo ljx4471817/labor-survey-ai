@@ -787,13 +787,6 @@ let me = null;
 let llmLoaded = false;
 initRole();
 
-async function api(path) {
-  const res = await fetch(path, { headers: authHeader() });
-  if (await handle401(res)) return null;
-  if (!res.ok) return null;
-  return res.json();
-}
-
 async function initRole() {
   try {
     const r = await fetch('/api/admin/whitelist/whoami', { headers: authHeader() });
