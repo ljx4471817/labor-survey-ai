@@ -3,17 +3,26 @@ name: whitelist-sync
 description: 把 docs/权限表.xlsx 同步到 backend/data/whitelist.db。当用户说「同步权限表到数据库」「上传白名单」「whitelist sync」「把 xlsx 入库」时触发。流程：先 dry-run 预览新增/更新/软删除数量，用户确认后再真实写入。脚本已处理：调查员+管理人员双 sheet 解析、姓名内部空格合并、手机号去重、不在 xlsx 的号码软删除（保护 13985000001-4 测试号）。
 ---
 
-# 白名单同步（权限表 xlsx → whitelist.db）
+> **DEPRECATED（PRD 权限系统改造 2026-08-13）**：`whitelist.db` 已是实时唯一事实源，
+> 日常名单维护走网页 `/whitelist-admin`（区县/市级业务管理员分级自助维护，系统管理员全量 + 审计）。
+> `sync_whitelist_xlsx.py` 与 `docs/权限表.xlsx` 降级为**初始导入模板 + 导出存档物**；
+> 日常禁止再跑同步脚本（旧 xlsx 会覆盖线上新数据）。
+
+# 白名单同步（权限表 xlsx → whitelist.db）【仅初始导入/灾难恢复】
 
 把 `docs/权限表.xlsx` 的「调查员」和「管理人员」两个 sheet 解析后 upsert 到 `backend/data/whitelist.db`，并软删除 xlsx 中已不存在的号码。
+仅用于一次性初始导入或恢复；日常维护请引导用户走 `/whitelist-admin` 网页。
 
 ## 触发词
 
 - "同步权限表到数据库" / "上传白名单" / "whitelist sync" / "把 xlsx 入库"
 - 用户提到 `权限表.xlsx` 与 `whitelist.db` 之间的数据同步
+- 触发后**先判断意图**：日常增删改 → 说明已改走网页维护（`/whitelist-admin`），不要直接跑脚本；
+  只有明确是「初始导入 / 恢复 / 历史存档回灌」才继续本流程。
 
 ## 执行步骤
 
+0. 如系统管理员手机号已在 `.env` 配置（`LSX_SYSTEM_ADMIN_PHONE`），导入会将该号码强制为系统管理员且 active=1。
 1. 在项目根目录跑 dry-run，**只读不写**，把新增/更新/软删除数量告诉用户：
    ```bash
    python scripts/sync_whitelist_xlsx.py --dry-run
