@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -99,3 +99,5 @@ scripts/_*.py
 
 # LLM routing runtime state
 backend/data/llm_route.json
+# 白名单迁移备份（含真实手机号，不入库）
+backend/data/backups/
