@@ -103,7 +103,7 @@
 | `backend/app/services/` | 业务服务（feedback_analytics / jsonl_utils / **quiz_extract / quiz_generator**） | 自由修改 |
 | `backend/app/api/_xunfei_auth.py` | DISABLED（讯飞语音鉴权，代码完整保留） | 不修改 |
 | `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json） | 自由修改 |
-| `backend/tests/` | 后端单元测试（40 tests） | 自由修改 |
+| `backend/tests/` | 后端单元测试（198 tests） | 自由修改 |
 | `scripts/watchdog*.ps1` | 本地 API 可用性监控与自动重启 | 自由修改 |
 | `backend/static/kb-images/` | ????????PPT ?????? `page_XX/` ?? | ???? |
 | `backend/static/` | H5 前端（单页应用）+ 测验 3 页面（quiz.html / quiz_admin.html / quiz-stats.html） | 自由修改 |
@@ -206,11 +206,12 @@ cd backend && pip install -r requirements.txt
 **H5 前端（`backend/static/`）**：
 - `index.html`：调查员对话主页面
 - `login.html`：手机号白名单登录页（门禁启用后所有页面必经）
-- `dashboard.html`：内部反馈看板（KB 优化 + 使用监测双 tab）
-- `whitelist.html`：白名单管理页（CRUD + CSV 批量导入）
+- `dashboard.html`：统一后台入口——系统管理员全量（KB 优化 / 使用监测 / 使用侧发现）；业务管理员默认进入「白名单管理」模块；顶部有「测验管理」「退出登录」
+- `whitelist.html`：白名单管理页（角色化 CRUD / 批量停用 / 启用 / 导出 / 审计 / CSV 导入；支持 `?embed=1` 作为 dashboard 模块嵌入）
 - 共享工具函数放 `common.js`（`$()`、`escapeHtml()`、token 管理）
 - 工具函数 / API 调用就近写，不强求模块化
 - 浏览器原生 API 优先，不引入框架
+- 后台 UI 约定：表格用「核心列 + 详情展开 + 窄屏（≤768px）卡片化」，弹窗限高 `calc(100vh - 32px)` + body 内滚动
 
 ## 合规红线
 
