@@ -268,6 +268,41 @@ def test_quiz_publish_out_of_scope_422(monkeypatch):
     assert e.value.detail == ["138****0002"]
 
 
+def test_quiz_stats_district_scope(monkeypatch):
+    """区县业务管理员：完成率只读统计只返回本县行（PRD 矩阵：区县→本县）。"""
+    district = _user(SysRole.BUSINESS_ADMIN.value, AdminLevel.DISTRICT.value, county="南明区")
+    users = [
+        {"phone": "13800000001", "name": "本县甲", "province": "贵州省", "city": "贵阳市", "county": "南明区",
+         "admin_level": "调查员", "sys_role": "普通用户", "active": 1},
+        {"phone": "13800000002", "name": "外县乙", "province": "贵州省", "city": "贵阳市", "county": "云岩区",
+         "admin_level": "调查员", "sys_role": "普通用户", "active": 1},
+    ]
+
+    def fake_get_user(p):
+        if p == district["phone"]:
+            return district
+        return next((u for u in users if u["phone"] == p), None)
+
+    monkeypatch.setattr("app.api.quiz_admin.whitelist_db.get_user", fake_get_user)
+    monkeypatch.setattr("app.api.quiz_admin.whitelist_db.list_all", lambda active_only=False: users)
+    monkeypatch.setattr(quiz_db, "get_quiz", lambda q: {"id": q, "month": "2026-08", "title": "测试", "status": "published"})
+    monkeypatch.setattr(quiz_db, "list_target_phones", lambda q: ["13800000001", "13800000002"])
+    monkeypatch.setattr(quiz_db, "answered_phones", lambda q: set())
+    monkeypatch.setattr(quiz_db, "count_answers", lambda q, p: 0)
+    monkeypatch.setattr(quiz_db, "count_correct", lambda q, p: 0)
+    monkeypatch.setattr(quiz_db, "count_questions", lambda q: 1)
+    monkeypatch.setattr(quiz_db, "latest_answer_ts", lambda q, p: None)
+    monkeypatch.setattr(quiz_db, "sync_expired", lambda *a, **k: 0)
+    monkeypatch.setattr(quiz_db, "cleanup_expired", lambda *a, **k: {"archived": 0})
+
+    st = quiz_admin_api.quiz_stats(
+        quiz_id="Q1", region=None, q=None, page=1, page_size=50, phone=district["phone"],
+    )
+    assert st["total_users"] == 1  # 只统计本县
+    assert st["user_details"][0]["county"] == "南明区"
+    assert st["by_region"] == [{"region": "南明区", "total": 1, "completed": 0, "rate": 0.0}]
+
+
 def test_quiz_publish_system_admin_unlimited(monkeypatch):
     sa = _user(SysRole.SYSTEM_ADMIN.value, AdminLevel.ENUMERATOR.value)
 
