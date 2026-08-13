@@ -34,6 +34,12 @@ header h1 { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.04em; }
 header .sub { font-size: 0.78rem; opacity: 0.7; }
 header .back { font-size: 0.82rem; opacity: 0.8; text-decoration: none; color: var(--paper); margin-left: auto; }
 header .back:hover { opacity: 1; }
+header .logout-btn {
+  font-family: inherit; font-size: 0.8rem; padding: 5px 12px;
+  border: 1px solid rgba(255,255,255,.5); background: transparent;
+  color: var(--paper); border-radius: 999px; cursor: pointer;
+}
+header .logout-btn:hover { background: rgba(255,255,255,.15); }
 
 .banner {
   background: #fff3e0;
@@ -445,6 +451,7 @@ html body:not(.blue-bg) section h2 { margin: -16px -20px 14px; padding: 12px 20p
 </button>
 <a class="back" id="whlLink" href="/whitelist-admin" style="display:none">白名单管理</a>
 <a class="back" href="/">← 返回对话</a>
+<button class="logout-btn" type="button" onclick="logout()">退出登录</button>
 </header>
 <div class="banner">⚠ 内部使用 · 含调查员提问原文 · 数据未脱敏</div>
 <main>
