@@ -78,7 +78,7 @@
 | `0011-不引入ponytail.md` | 2026-07-30 评估后决定不引入（与项目分层规则冲突，无实际痛点驱动） | 开发规范 |
 | `0012-月度测验系统.md` | 6 表 SQLite + LLM 要点提取 + 4 选 1 选择题 + 完成率看板 | 测验系统 |
 | 013-rag-规则冲突裁决.md | system prompt 硬规则 + FAQ scope + eval 三层冲突裁决 | 检索治理 |
-| `0014-llm-主备切换.md` | MiniMax 主用 / DeepSeek 备用，5h/7d 用量超阈值切换 | LLM 路由 |
+| `0014-llm-主备切换.md` | 三级路由：MiniMax 主用 -> qwen-flash 备用 -> DeepSeek 兜底，5h/7d 用量超阈值切换 | LLM 路由 |
 | `0015-权限系统双维度.md` | admin_level × sys_role 双维度 + 审计表 + 分级网页维护 | 权限治理 |
 
 ## 目录约定
@@ -100,10 +100,10 @@
 | `backend/app/infra/` | 基础设施（auth.py = HMAC 签名 + 白名单校验） | 自由修改 |
 | `backend/app/persistence/` | SQLite 持久化（whitelist_db / query_log / **quiz_db**） | 自由修改 |
 | `backend/app/analytics/` | 使用侧分析（gaps.py = KB 闭环检测） | 自由修改 |
-| `backend/app/services/` | 业务服务（feedback_analytics / jsonl_utils / **quiz_extract / quiz_generator**） | 自由修改 |
+| `backend/app/services/` | 业务服务（feedback_analytics / jsonl_utils / **quiz_extract / quiz_generator / quiz_llm / aliyun_balance**） | 自由修改 |
 | `backend/app/api/_xunfei_auth.py` | DISABLED（讯飞语音鉴权，代码完整保留） | 不修改 |
-| `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json） | 自由修改 |
-| `backend/tests/` | 后端单元测试（198 tests） | 自由修改 |
+| `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json / **llm_route.json / quiz_llm_config.json**） | 自由修改 |
+| `backend/tests/` | 后端单元测试（221 tests） | 自由修改 |
 | `scripts/watchdog*.ps1` | 本地 API 可用性监控与自动重启 | 自由修改 |
 | `backend/static/kb-images/` | ????????PPT ?????? `page_XX/` ?? | ???? |
 | `backend/static/` | H5 前端（单页应用）+ 测验 3 页面（quiz.html / quiz_admin.html / quiz-stats.html） | 自由修改 |
@@ -173,6 +173,10 @@ python scripts/extract_cf_url.py
 python scripts/migrate_whitelist_rbac.py --dry-run  # 上线前迁移 dry-run（输出 sys_role diff）
 python scripts/migrate_whitelist_rbac.py --apply    # 真实迁移（自动备份 backend/data/backups/）
 # 注意：sync_whitelist_xlsx.py 已 DEPRECATED（仅初始导入/恢复），日常禁止再跑，否则旧 xlsx 会覆盖线上名单
+# LLM：模型 A/B 评测 + 阿里云余额监控
+python scripts/compare_models.py --models minimax,qwen-flash --limit 25  # 模型 A/B（同检索同 prompt 同评分；全量 104 题加 --out 落盘）
+python scripts/check_qwen_balance.py             # 阿里云账户余额（qwen-flash 按量扣此）
+python scripts/check_qwen_balance.py --bill     # 本月百炼消费明细
 # 测验：本地测试（QUIZ_MOCK_LLM=1 跳过真实 LLM 调用）
 set QUIZ_MOCK_LLM=1 && python -m pytest backend/tests/test_quiz_api.py -q
 # 测验：手动 curl 测试（先登录拿 token，再调管理端 API）
@@ -255,12 +259,16 @@ cd backend && pip install -r requirements.txt
 - 管理端 quiz_admin.html 为「侧边栏测验列表 + 工作台」两栏，顶部步骤条（导入→提取→要点→生成勾选→下发）按数据状态自动打勾；完成率内嵌在「完成率」 tab（/api/admin/quiz/stats），独立 /quiz-stats 页保留。
 - 用户端 quiz.html「已完成·过期」项显示得分（/api/quiz/my done 项 score = 答对数）。
 
-## LLM 主备切换约定
+- 测验模块 LLM **独立配置**（`backend/data/quiz_llm_config.json`，默认 qwen-flash），与对话三级路由完全隔离：切换测验模型不影响文档程序模型。切换仅系统管理员（`POST /api/admin/quiz/llm-config`，切换前探测可用性）；业务管理员零感知（看不到切换入口与当前模型）。配置带 updated_at/updated_by 留痕。
 
-- 主用 MiniMax M2.7-highspeed，备用 DeepSeek flash（deepseek-v4-flash）。
-- 切换阈值：5h >=85% 或 7d >=90% -> 切 DeepSeek；5h <70% 且 7d <85% 且冷却 >=30 分钟 -> 切回。
+## LLM 三级路由约定（2026-08-14 起）
+
+- 优先级链：MiniMax M2.7-highspeed（主）-> qwen-flash（DashScope，额度用尽后优先）-> DeepSeek flash（deepseek-v4-flash，最后兜底）。
+- 切换阈值：MiniMax 5h >=85% 或 7d >=90% -> 切 qwen-flash；5h <70% 且 7d <85% 且冷却 >=30 分钟 -> 切回 MiniMax（qwen-flash / DeepSeek 同样按此回主）。
+- qwen-flash 按量付费无配额上限（.env: LLM_PROVIDER=minimax 保持主模型，DASHSCOPE_LLM_MODEL=qwen-flash）。
 - 状态文件 backend/data/llm_route.json；用量查询用 MINIMAX_API_KEY（Bearer），不需要 _token。
-- 用量检查连续失败 3 次自动切 DeepSeek 兜底。
+- 用量检查连续失败 3 次沿链切下一级（MiniMax -> qwen-flash -> DeepSeek）。
+- 手动切换：POST /api/admin/llm/route {provider: minimax|dashscope|deepseek|auto}。
 - 查看当前模型/用量：GET /api/admin/llm/route（dashboard 使用监测 tab）。
 
 ## 待办

@@ -47,6 +47,8 @@ def e2e_env(tmp_path, monkeypatch):
                 '"answer": "C", "explanation": "根据审核要点应判为非劳动力。"}')
 
     monkeypatch.setattr("app.rag.llm.chat", fake_chat)
+    # 测验 LLM 已独立为 quiz_llm.chat（不经过对话路由），mock 需指向新实现
+    monkeypatch.setattr("app.services.quiz_llm.chat", fake_chat)
     monkeypatch.setattr(
         "app.api.quiz_admin.match_kb",
         lambda content: {"faq_id": "023", "question": "家务劳动者如何判定？", "score": 0.87},

@@ -6,13 +6,15 @@
 """
 from __future__ import annotations
 
+import time
+
 from typing import Literal
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from app.infra.auth import require_system_admin
-from app.services import llm_router
+from app.services import aliyun_balance, llm_router
 from app.services.llm_switch_job import check_and_switch
 
 router = APIRouter()
@@ -21,7 +23,7 @@ router = APIRouter()
 class LlmRouteRequest(BaseModel):
     """手动切换请求：provider = minimax/deepseek 锁定；auto 恢复自动。"""
 
-    provider: Literal["minimax", "deepseek", "auto"]
+    provider: Literal["minimax", "dashscope", "deepseek", "auto"]
 
 
 def _route_payload(state: dict) -> dict:
@@ -45,6 +47,28 @@ def _route_payload(state: dict) -> dict:
 def get_llm_route(phone: str = Depends(require_system_admin)) -> dict:
     """返回当前 LLM 路由状态（含手动锁定）。"""
     return _route_payload(llm_router.load_state())
+
+
+@router.get("/llm/balance")
+def get_llm_balance(phone: str = Depends(require_system_admin)) -> dict:
+    """查询阿里云账户余额与本月百炼消费（RAM 只读账单权限）；失败返回 error 供前端展示。"""
+    try:
+        bal = aliyun_balance.query_balance()
+        month = time.strftime('%Y-%m')
+        usage = aliyun_balance.query_bailian_usage(month)
+        return {
+            "available_amount": bal["available_amount"],
+            "cash_amount": bal["cash_amount"],
+            "currency": bal["currency"],
+            "month": month,
+            "month_bailian_usage": usage,
+            "checked_at": time.time(),
+            "error": None,
+        }
+    except Exception as e:  # 账单接口不可用时不阻断路由页
+        return {"available_amount": None, "cash_amount": None, "currency": "CNY",
+                "month": None, "month_bailian_usage": None, "checked_at": None,
+                "error": f"{type(e).__name__}: {e}"}
 
 
 @router.post("/llm/route")

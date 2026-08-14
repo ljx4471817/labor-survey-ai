@@ -26,6 +26,10 @@ from datetime import datetime, timedelta, timezone
 
 
 
+from typing import Literal
+
+from pydantic import BaseModel
+
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 
 from urllib.parse import quote
@@ -42,7 +46,7 @@ from app.core.config import PROJECT_ROOT
 
 from app.core.constants import QUIZ_DEFAULT_VALID_DAYS, QUIZ_MAX_FILE_MB
 
-from app.infra.auth import in_scope, require_quiz_admin, require_quiz_stats
+from app.infra.auth import get_current_user, in_scope, require_quiz_admin, require_quiz_stats, require_system_admin
 
 from app.models.schemas.quiz_admin import (
     ExtractRequest,
@@ -57,6 +61,8 @@ from app.models.schemas.quiz_admin import (
 )
 
 from app.persistence import quiz_db, whitelist_db
+
+from app.services import quiz_llm
 
 from app.services.quiz_extract import ALLOWED_DOC_EXTENSIONS, extract_file_text, run_extraction
 
@@ -271,18 +277,11 @@ def _mock_llm_chat(messages: list[dict], **kwargs) -> str:
 
 
 def _get_llm_chat():
-
-    """QUIZ_MOCK_LLM=1 时返回 mock，否则返回真实 LLM chat。"""
-
+    """QUIZ_MOCK_LLM=1 时返回 mock，否则返回测验独立 LLM chat（不影响对话模型）。"""
     if os.environ.get("QUIZ_MOCK_LLM") == "1":
-
         return _mock_llm_chat
+    return quiz_llm.chat
 
-    from app.rag.llm import chat
-
-
-
-    return chat
 
 
 
@@ -798,6 +797,48 @@ def quiz_whoami(phone: str = Depends(require_quiz_stats)) -> dict:
     user = whitelist_db.get_user(phone) or {}
 
     return {"admin_level": user.get("admin_level", ""), "sys_role": user.get("sys_role", "")}
+
+
+class QuizLlmConfigRequest(BaseModel):
+    """测验模型切换请求：provider = minimax / dashscope / deepseek（仅系统管理员）。"""
+
+    provider: Literal["minimax", "dashscope", "deepseek"]
+
+
+def _quiz_llm_payload(cfg: dict) -> dict:
+    return {
+        "provider": cfg["provider"],
+        "model": cfg["model"],
+        "display_name": quiz_llm.DISPLAY.get(cfg["provider"], cfg["provider"]),
+        "updated_at": cfg.get("updated_at"),
+        "updated_by": cfg.get("updated_by"),
+        "updated_by_name": cfg.get("updated_by_name"),
+    }
+
+
+@router.get("/quiz/llm-config")
+def quiz_llm_config_get(phone: str = Depends(require_system_admin)) -> dict:
+    """获取测验模块当前 LLM 配置（仅系统管理员；业务管理员零感知）。"""
+    return _quiz_llm_payload(quiz_llm.load_config())
+
+
+@router.post("/quiz/llm-config")
+def quiz_llm_config_set(
+    req: QuizLlmConfigRequest, phone: str = Depends(require_system_admin)
+) -> dict:
+    """切换测验模型：先探测可用性（约 1~3s），失败拒绝并返回原因（仅系统管理员）。"""
+    try:
+        probe_model = quiz_llm.probe(req.provider)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"模型探测失败：{type(e).__name__}: {e}",
+        )
+    user = get_current_user(phone) or {}
+    cfg = quiz_llm.save_config(req.provider, phone, user.get("name") or "")
+    payload = _quiz_llm_payload(cfg)
+    payload["probe_model"] = probe_model
+    return payload
 
 
 

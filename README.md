@@ -82,7 +82,7 @@ labor-survey-ai/
 | 后端 | Python FastAPI |
 | 向量库 | Chroma |
 | 全文检索 | BM25（rank_bm25） |
-| LLM | MiniMax M2.7-highspeed 主用 / DeepSeek flash 备用（自动切换） |
+| LLM | 三级路由：MiniMax M2.7-highspeed（主）→ qwen-flash（额度用尽优先）→ DeepSeek flash（兜底）；测验模块独立配置（默认 qwen-flash） |
 | Embedding | DashScope text-embedding-v4 |
 | ASR | 讯飞实时语音转写大模型（**2026-06-21 起停用**） |
 | 公网暴露 | Cloudflare Tunnel（quick 模式） |
@@ -108,7 +108,8 @@ labor-survey-ai/
 - `docs/adr/0010-embedding-v4.md` — text-embedding-v4 + QA/chunk 共享 collection 重建边界
 - `docs/adr/0011-不引入ponytail.md` — 评估后不引入（与分层规则冲突）
 - `docs/adr/0013-rag-规则冲突裁决.md` — system prompt 硬规则 + eval 三层冲突裁决
-- `docs/adr/0014-llm-主备切换.md` — MiniMax 主用 / DeepSeek 备用
+- `docs/adr/0014-llm-主备切换.md` — LLM 三级路由（MiniMax 主用 → qwen-flash 备用 → DeepSeek 兜底）
+- `docs/adr/0016-llm-三级路由.md` — 三级优先链 + fail-safe 沿链切换
 - `docs/adr/0015-权限系统双维度.md` — admin_level × sys_role + 审计表 + 分级网页维护
 
 ## 项目级 Codex Skills（`.codex/skills/`，已 git 入仓）

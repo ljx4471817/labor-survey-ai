@@ -130,6 +130,11 @@ a.btn { text-decoration:none; display:inline-block; text-align:center; }
   .sidebar { width:100%; position:static; max-height:none; }
 }
 
+.llm-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--paper-dim);
+  border:1px solid var(--line); border-radius:10px; padding:8px 12px; margin:10px 0; font-size:.85rem; }
+.llm-bar .llm-label { color:var(--text-dim); }
+.llm-badge { background:var(--ink-blue); color:#fff; border-radius:999px; padding:2px 10px; font-size:.78rem; font-weight:600; }
+.llm-meta { color:var(--text-dim); font-size:.75rem; }
 </style>
 </head>
 <body>
@@ -156,6 +161,17 @@ a.btn { text-decoration:none; display:inline-block; text-align:center; }
     <div class="tab-bar">
       <button class="tab-btn active" id="tab-workbench">工作台</button>
       <button class="tab-btn" id="tab-stats">完成率</button>
+    </div>
+    <div id="quiz-llm-bar" class="llm-bar" hidden>
+      <span class="llm-label">测验模型</span>
+      <span id="quiz-llm-badge" class="llm-badge">—</span>
+      <select id="quiz-llm-select" style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:.85rem;background:#fff">
+        <option value="dashscope">qwen-flash</option>
+        <option value="minimax">MiniMax M2.7</option>
+        <option value="deepseek">DeepSeek</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" id="quiz-llm-switch" onclick="switchQuizLlm()">切换</button>
+      <span id="quiz-llm-meta" class="llm-meta"></span>
     </div>
     <div class="pane active" id="pane-workbench">
       <div class="stepper" id="stepper">
@@ -324,6 +340,37 @@ function apiPost(path, body) {
   return api(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 }
 
+function llmMetaText(d, fallback) {
+  return d.updated_at
+    ? ('上次切换：' + (d.updated_by_name || d.updated_by || '') + ' · ' + String(d.updated_at).slice(0, 16))
+    : fallback;
+}
+
+async function loadQuizLlmConfig() {
+  const d = await api('/api/admin/quiz/llm-config');
+  if (!d) return;
+  $('quiz-llm-badge').textContent = d.display_name || d.model || d.provider;
+  $('quiz-llm-select').value = d.provider;
+  $('quiz-llm-meta').textContent = llmMetaText(d, '默认配置（切换后生效于新任务）');
+}
+
+async function switchQuizLlm() {
+  const btn = $('quiz-llm-switch');
+  btn.disabled = true;
+  btn.textContent = '切换中…';
+  try {
+    const target = $('quiz-llm-select').value;
+    const d = await apiPost('/api/admin/quiz/llm-config', { provider: target });
+    if (!d) return;  // 失败原因已由 api() toast
+    $('quiz-llm-badge').textContent = d.display_name || d.model;
+    $('quiz-llm-meta').textContent = llmMetaText(d, '');
+    toast('已切换到 ' + (d.display_name || target) + '，对新任务生效');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '切换';
+  }
+}
+
 async function init() {
   const who = await api('/api/admin/quiz/whoami');
   const ok = who && (who.sys_role === '系统管理员' || ['市级', '省级'].includes(who.admin_level));
@@ -331,6 +378,10 @@ async function init() {
     toast('无管理员权限');
     location.href = '/';
     return;
+  }
+  if (who.sys_role === '系统管理员') {
+    $('quiz-llm-bar').hidden = false;
+    await loadQuizLlmConfig();
   }
   // 默认有效期 = 今天 + 7 天
   const d = new Date(); d.setDate(d.getDate() + 7);
