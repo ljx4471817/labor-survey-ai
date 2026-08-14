@@ -18,9 +18,9 @@ def test_minimax_below_threshold_stays():
     assert llm_router.decide_active_provider("minimax", 84) == "minimax"
 
 
-def test_minimax_at_threshold_switches_to_deepseek():
-    assert llm_router.decide_active_provider("minimax", 85) == "deepseek"
-    assert llm_router.decide_active_provider("minimax", 100) == "deepseek"
+def test_minimax_at_threshold_switches_to_dashscope():
+    assert llm_router.decide_active_provider("minimax", 85) == "dashscope"
+    assert llm_router.decide_active_provider("minimax", 100) == "dashscope"
 
 
 def test_deepseek_above_back_threshold_stays():
@@ -51,6 +51,35 @@ def test_switch_back_without_history():
 
 def test_unknown_provider_untouched():
     assert llm_router.decide_active_provider("dashscope", 95) == "dashscope"
+
+
+def test_dashscope_stays_on_high_usage():
+    # dashscope 按量无配额：用量高时保持，不因用量切换
+    assert llm_router.decide_active_provider("dashscope", 95) == "dashscope"
+
+
+def test_dashscope_back_to_minimax_when_low():
+    assert llm_router.decide_active_provider("dashscope", 50, last_switch_at=None) == "minimax"
+    assert llm_router.decide_active_provider("dashscope", 69, used_7d_pct=84, last_switch_at=None) == "minimax"
+
+
+def test_dashscope_switch_back_respects_cooldown():
+    now = time.time()
+    assert (
+        llm_router.decide_active_provider("dashscope", 50, now=now, last_switch_at=now - 100)
+        == "dashscope"
+    )
+    assert (
+        llm_router.decide_active_provider("dashscope", 50, now=now, last_switch_at=now - 1900)
+        == "minimax"
+    )
+
+
+def test_next_provider_chain():
+    assert llm_router.next_provider("minimax") == "dashscope"
+    assert llm_router.next_provider("dashscope") == "deepseek"
+    assert llm_router.next_provider("deepseek") == "deepseek"
+    assert llm_router.next_provider("unknown") == "unknown"
 
 
 def test_strip_single_think():
@@ -121,10 +150,22 @@ def test_resolve_minimax(monkeypatch, tmp_path):
 
 def test_resolve_fallback_when_minimax_missing(monkeypatch, tmp_path):
     monkeypatch.delenv("MINIMAX_API_KEY", raising=False)
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
     monkeypatch.setenv("DEEPSEEK_API_KEY", "kd")
     monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
     cfg = llm_router.resolve_llm_config()
     assert cfg["provider"] == "deepseek"
+
+
+def test_resolve_prefers_dashscope_over_deepseek(monkeypatch, tmp_path):
+    monkeypatch.delenv("MINIMAX_API_KEY", raising=False)
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "kq")
+    monkeypatch.setenv("DASHSCOPE_LLM_MODEL", "qwen-flash")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "kd")
+    monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
+    cfg = llm_router.resolve_llm_config()
+    assert cfg["provider"] == "dashscope"
+    assert cfg["model"] == "qwen-flash"
 
 
 def test_resolve_raises_when_none(monkeypatch, tmp_path):
@@ -207,7 +248,7 @@ def test_check_and_switch_high_usage(monkeypatch, tmp_path):
     )
     llm_switch_job.check_and_switch()
     state = llm_router.load_state()
-    assert state["active_provider"] == "deepseek"
+    assert state["active_provider"] == "dashscope"
     assert state["used_5h_pct"] == 90
     assert state["last_switch_at"] is not None
 
@@ -279,7 +320,7 @@ def test_check_and_switch_failsafe_after_three(monkeypatch, tmp_path):
     assert llm_router.load_state()["active_provider"] == "minimax"
     llm_switch_job.check_and_switch()
     state = llm_router.load_state()
-    assert state["active_provider"] == "deepseek"
+    assert state["active_provider"] == "dashscope"
     assert state["consecutive_failures"] == 3
 
 
@@ -294,11 +335,11 @@ def test_check_and_switch_recovers_after_failsafe(monkeypatch, tmp_path):
     monkeypatch.setattr(llm_switch_job, "check_quota", _flaky)
     for _ in range(3):
         llm_switch_job.check_and_switch()
-    assert llm_router.load_state()["active_provider"] == "deepseek"
+    assert llm_router.load_state()["active_provider"] == "dashscope"
     # recovery: success resets counter, but cooldown still applies
     llm_switch_job.check_and_switch()
     state = llm_router.load_state()
-    assert state["active_provider"] == "deepseek"
+    assert state["active_provider"] == "dashscope"
     assert state["consecutive_failures"] == 0
 
 
@@ -314,6 +355,7 @@ def test_check_and_switch_back_after_failsafe_cooldown(monkeypatch, tmp_path):
     for _ in range(3):
         llm_switch_job.check_and_switch()
     state = llm_router.load_state()
+    assert state["active_provider"] == "dashscope"
     state["last_switch_at"] = 0
     llm_router.save_state(state)
     llm_switch_job.check_and_switch()
@@ -325,12 +367,12 @@ def test_check_and_switch_back_after_failsafe_cooldown(monkeypatch, tmp_path):
 # ---------- weekly (7d) guard ----------
 
 def test_minimax_weekly_guard_switches():
-    assert llm_router.decide_active_provider("minimax", 10, used_7d_pct=90) == "deepseek"
+    assert llm_router.decide_active_provider("minimax", 10, used_7d_pct=90) == "dashscope"
     assert llm_router.decide_active_provider("minimax", 10, used_7d_pct=89) == "minimax"
 
 
 def test_minimax_5h_guard_precedes_weekly():
-    assert llm_router.decide_active_provider("minimax", 85, used_7d_pct=0) == "deepseek"
+    assert llm_router.decide_active_provider("minimax", 85, used_7d_pct=0) == "dashscope"
 
 
 def test_deepseek_weekly_guard_holds():
@@ -367,7 +409,7 @@ def test_check_and_switch_no_usable_data_counts_as_failure(monkeypatch, tmp_path
     assert llm_router.load_state()["consecutive_failures"] == 1
     llm_switch_job.check_and_switch()
     llm_switch_job.check_and_switch()
-    assert llm_router.load_state()["active_provider"] == "deepseek"
+    assert llm_router.load_state()["active_provider"] == "dashscope"
     assert "no usable usage data" in llm_router.load_state()["last_error"]
 
 
@@ -385,12 +427,14 @@ def test_set_manual_override_persists(monkeypatch, tmp_path):
     assert state["active_provider"] == "deepseek"
     assert state["manual_override"]["provider"] == "deepseek"
     assert "set_at" in state["manual_override"]
+    llm_router.set_manual_override("dashscope")
+    assert llm_router.load_state()["active_provider"] == "dashscope"
 
 
 def test_set_manual_override_invalid(monkeypatch, tmp_path):
     monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
     with pytest.raises(ValueError):
-        llm_router.set_manual_override("dashscope")
+        llm_router.set_manual_override("gpt5")
 
 
 def test_release_manual_override(monkeypatch, tmp_path):

@@ -21,7 +21,7 @@ router = APIRouter()
 class LlmRouteRequest(BaseModel):
     """手动切换请求：provider = minimax/deepseek 锁定；auto 恢复自动。"""
 
-    provider: Literal["minimax", "deepseek", "auto"]
+    provider: Literal["minimax", "dashscope", "deepseek", "auto"]
 
 
 def _route_payload(state: dict) -> dict:

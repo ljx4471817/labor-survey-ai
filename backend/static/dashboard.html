@@ -523,7 +523,7 @@ html body:not(.blue-bg) section h2 { margin: -16px -20px 14px; padding: 12px 20p
 
   <div class="tab-panel" id="tab-usage">
     <section id="llmRouteSection">
-      <h2>&#x5F53;&#x524D;&#x6A21;&#x578B; <span class="h2-sub">&#xFF08;MiniMax &#x4E3B;&#x7528; / DeepSeek &#x5907;&#x7528;&#xFF09;</span>
+      <h2>&#x5F53;&#x524D;&#x6A21;&#x578B; <span class="h2-sub">&#xFF08;MiniMax &#x4E3B;&#x7528; / qwen-flash &#x5907;&#x7528; / DeepSeek &#x515C;&#x5E95;&#xFF09;</span>
         <button onclick="loadLlmRoute(true)" style="float:right;font-size:0.78rem">&#x5237;&#x65B0;</button></h2>
       <div id="llmRoute"></div>
     </section>
@@ -883,14 +883,14 @@ async function loadLlmRoute(force) {
     const p7 = d.used_7d_pct == null ? '\u2014' : d.used_7d_pct + '%';
     const bad = d.last_error || (d.consecutive_failures > 0 ? '\u8fde\u7eed\u5931\u8d25' + d.consecutive_failures + '\u6b21' : '');
     const status = bad ? '\u5f02\u5e38' : '\u6b63\u5e38';
-    const provider = d.active_provider === 'minimax' ? 'MiniMax \u4e3b\u7528' : (d.active_provider === 'deepseek' ? 'DeepSeek \u5907\u7528' : d.active_provider);
+    const provider = d.active_provider === 'minimax' ? 'MiniMax \u4e3b\u7528' : (d.active_provider === 'dashscope' ? 'qwen-flash \u5907\u7528' : (d.active_provider === 'deepseek' ? 'DeepSeek \u6700\u540e\u515c\u5e95' : d.active_provider));
     const detail = '\u6700\u8fd1\u68c0\u67e5\uff1a' + (d.last_check_at ? new Date(d.last_check_at * 1000).toLocaleString('zh-CN') : '\u2014')
       + '  \u5207\u6362\u65f6\u95f4\uff1a' + (d.last_switch_at ? new Date(d.last_switch_at * 1000).toLocaleString('zh-CN') : '\u2014')
       + '  ' + provider;
     const manual = d.manual_override;
     let manualHtml = '';
     if (manual) {
-      const ml = manual.provider === 'minimax' ? 'MiniMax 主用' : 'DeepSeek 备用';
+      const ml = manual.provider === 'minimax' ? 'MiniMax 主用' : (manual.provider === 'dashscope' ? 'qwen-flash 备用' : 'DeepSeek 兜底');
       manualHtml = '<div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
         + '<span style="background:#fbf1dd;color:#b7791f;border-radius:999px;padding:2px 10px;font-size:.75rem">🔒 已手动锁定：' + escapeHtml(ml) + '</span>'
         + (manual.set_at ? '<span style="color:var(--text-dim);font-size:.75rem">' + new Date(manual.set_at * 1000).toLocaleString('zh-CN') + '</span>' : '')
@@ -899,9 +899,9 @@ async function loadLlmRoute(force) {
     } else if (d.can_manage) {
       manualHtml = '<div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
         + '<select id="llm-target" style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:.85rem;background:#fff">'
-        + '<option value="minimax">MiniMax 主用</option><option value="deepseek">DeepSeek 备用</option></select>'
+        + '<option value="minimax">MiniMax 主用</option><option value="dashscope">qwen-flash 备用</option><option value="deepseek">DeepSeek 兜底</option></select>'
         + '<button id="llm-switch-btn" style="border:none;background:var(--ink-blue);color:#fff;border-radius:6px;padding:6px 14px;font-size:.85rem;cursor:pointer">切换</button>'
-        + '<span style="color:var(--text-dim);font-size:.75rem">自动切换按 5h≥85% / 7d≥90% 触发</span>'
+        + '<span style="color:var(--text-dim);font-size:.75rem">MiniMax 额度用尽自动切 qwen-flash；qwen-flash 异常再切 DeepSeek</span>'
         + '</div>';
     }
     el.innerHTML = '<div class="cards" style="margin-bottom:8px">'

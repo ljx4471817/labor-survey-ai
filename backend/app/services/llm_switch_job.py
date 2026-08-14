@@ -1,7 +1,8 @@
-"""Background LLM routing job: poll MiniMax 5h quota and switch primary/fallback.
+"""Background LLM routing job: poll MiniMax 5h quota and switch along the priority chain.
 
+Priority chain: minimax (主) -> dashscope/qwen-flash (额度用尽后优先) -> deepseek (最后兜底).
 Fail-safe: if quota checks fail repeatedly (e.g. endpoint/network issue), switch to the
-DeepSeek fallback so MiniMax quota is never burned blind; recover via normal hysteresis.
+next provider in the chain so MiniMax quota is never burned blind; recover via hysteresis.
 """
 from __future__ import annotations
 
@@ -70,11 +71,12 @@ def check_and_switch() -> None:
             and state["consecutive_failures"] >= FAILSAFE_SWITCH_AFTER
             and old_provider != llm_router.FALLBACK
         ):
-            state["active_provider"] = llm_router.FALLBACK
+            target = llm_router.next_provider(old_provider)
+            state["active_provider"] = target
             state["last_switch_at"] = time.time()
             logger.warning(
-                "MiniMax quota check failing ({}x); fail-safe switch to deepseek: {}",
-                state["consecutive_failures"], e,
+                "MiniMax quota check failing ({}x); fail-safe switch to {}: {}",
+                state["consecutive_failures"], target, e,
             )
         else:
             logger.warning("LLM route quota check failed, keep {}: {}", old_provider, e)

@@ -78,7 +78,7 @@
 | `0011-不引入ponytail.md` | 2026-07-30 评估后决定不引入（与项目分层规则冲突，无实际痛点驱动） | 开发规范 |
 | `0012-月度测验系统.md` | 6 表 SQLite + LLM 要点提取 + 4 选 1 选择题 + 完成率看板 | 测验系统 |
 | 013-rag-规则冲突裁决.md | system prompt 硬规则 + FAQ scope + eval 三层冲突裁决 | 检索治理 |
-| `0014-llm-主备切换.md` | MiniMax 主用 / DeepSeek 备用，5h/7d 用量超阈值切换 | LLM 路由 |
+| `0014-llm-主备切换.md` | 三级路由：MiniMax 主用 -> qwen-flash 备用 -> DeepSeek 兜底，5h/7d 用量超阈值切换 | LLM 路由 |
 | `0015-权限系统双维度.md` | admin_level × sys_role 双维度 + 审计表 + 分级网页维护 | 权限治理 |
 
 ## 目录约定
@@ -255,12 +255,14 @@ cd backend && pip install -r requirements.txt
 - 管理端 quiz_admin.html 为「侧边栏测验列表 + 工作台」两栏，顶部步骤条（导入→提取→要点→生成勾选→下发）按数据状态自动打勾；完成率内嵌在「完成率」 tab（/api/admin/quiz/stats），独立 /quiz-stats 页保留。
 - 用户端 quiz.html「已完成·过期」项显示得分（/api/quiz/my done 项 score = 答对数）。
 
-## LLM 主备切换约定
+## LLM 三级路由约定（2026-08-14 起）
 
-- 主用 MiniMax M2.7-highspeed，备用 DeepSeek flash（deepseek-v4-flash）。
-- 切换阈值：5h >=85% 或 7d >=90% -> 切 DeepSeek；5h <70% 且 7d <85% 且冷却 >=30 分钟 -> 切回。
+- 优先级链：MiniMax M2.7-highspeed（主）-> qwen-flash（DashScope，额度用尽后优先）-> DeepSeek flash（deepseek-v4-flash，最后兜底）。
+- 切换阈值：MiniMax 5h >=85% 或 7d >=90% -> 切 qwen-flash；5h <70% 且 7d <85% 且冷却 >=30 分钟 -> 切回 MiniMax（qwen-flash / DeepSeek 同样按此回主）。
+- qwen-flash 按量付费无配额上限（.env: LLM_PROVIDER=minimax 保持主模型，DASHSCOPE_LLM_MODEL=qwen-flash）。
 - 状态文件 backend/data/llm_route.json；用量查询用 MINIMAX_API_KEY（Bearer），不需要 _token。
-- 用量检查连续失败 3 次自动切 DeepSeek 兜底。
+- 用量检查连续失败 3 次沿链切下一级（MiniMax -> qwen-flash -> DeepSeek）。
+- 手动切换：POST /api/admin/llm/route {provider: minimax|dashscope|deepseek|auto}。
 - 查看当前模型/用量：GET /api/admin/llm/route（dashboard 使用监测 tab）。
 
 ## 待办

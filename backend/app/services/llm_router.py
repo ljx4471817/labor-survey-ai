@@ -1,8 +1,10 @@
-"""Runtime LLM router: MiniMax M2.7-highspeed primary, DeepSeek flash fallback.
+"""Runtime LLM router: MiniMax primary -> qwen-flash (DashScope) -> DeepSeek fallback.
 
 - State file: backend/data/llm_route.json (runtime data, not committed).
-- Hysteresis: switch minimax -> deepseek when 5h used >= 85% or 7d used >= 90%;
-  switch back when 5h used < 70% and 7d used < 85% and cooldown elapsed.
+- Priority chain: minimax (主) -> dashscope/qwen-flash (额度用尽后优先) -> deepseek (最后兜底).
+- Hysteresis: switch minimax -> dashscope when 5h used >= 85% or 7d used >= 90%;
+  switch back from deepseek when 5h used < 70% and 7d used < 85% and cooldown elapsed.
+- dashscope 按量付费无配额上限，不因用量切换；异常时由 fail-safe 沿链后移。
 - The 5h/7d windows are rolling (no fixed reset); switch-back is usage-driven.
 """
 from __future__ import annotations
@@ -23,7 +25,9 @@ SWITCH_BACK_WEEKLY_PCT = 85
 MIN_SWITCH_INTERVAL_S = 1800
 
 PRIMARY = "minimax"
+SECONDARY = "dashscope"  # qwen-flash：MiniMax 额度用尽后优先切换
 FALLBACK = "deepseek"
+PRIORITY_ORDER = (PRIMARY, SECONDARY, FALLBACK)  # 回退链：minimax -> dashscope -> deepseek
 
 STATE_FILE = PROJECT_ROOT / "backend" / "data" / "llm_route.json"
 
@@ -101,8 +105,8 @@ def save_state(state: dict) -> None:
 
 def set_manual_override(provider: str) -> dict:
     """手动锁定模型（写入状态；自动 job 不再改 provider）。返回更新后的 state。"""
-    if provider not in (PRIMARY, FALLBACK):
-        raise ValueError(f"不支持的模型：{provider}（仅 minimax / deepseek）")
+    if provider not in PRIORITY_ORDER:
+        raise ValueError(f"不支持的模式：{provider}（仅 minimax / dashscope / deepseek）")
     state = load_state()
     state["manual_override"] = {"provider": provider, "set_at": time.time()}
     state["active_provider"] = provider
@@ -116,6 +120,15 @@ def release_manual_override() -> dict:
     state["manual_override"] = None
     save_state(state)
     return state
+
+
+def next_provider(provider: str) -> str:
+    """返回回退链中 provider 的下一个；已在最后一位则保持自身。"""
+    try:
+        i = PRIORITY_ORDER.index(provider)
+    except ValueError:
+        return provider
+    return PRIORITY_ORDER[i + 1] if i + 1 < len(PRIORITY_ORDER) else provider
 
 
 def decide_active_provider(
@@ -134,18 +147,28 @@ def decide_active_provider(
     """Hysteresis switch decision (pure; 5h + 7d weekly windows).
 
     - Unknown usage / unsupported current provider: keep current.
-    - minimax and (5h used >= 85 OR 7d used >= 90) -> deepseek.
+    - minimax and (5h used >= 85 OR 7d used >= 90) -> dashscope (qwen-flash).
+    - dashscope: pay-as-you-go (no quota ceiling); back to minimax when usage recovers.
     - deepseek and (5h used < 70 AND 7d used < 85) and cooldown elapsed -> minimax.
     """
-    if (used_5h_pct is None and used_7d_pct is None) or current not in (PRIMARY, FALLBACK):
+    if (used_5h_pct is None and used_7d_pct is None) or current not in PRIORITY_ORDER:
         return current
     now = time.time() if now is None else now
     if current == PRIMARY:
         if used_5h_pct is not None and used_5h_pct >= switch_to_fallback_pct:
-            return FALLBACK
+            return SECONDARY
         if used_7d_pct is not None and used_7d_pct >= switch_to_fallback_weekly_pct:
-            return FALLBACK
+            return SECONDARY
         return PRIMARY
+    if current == SECONDARY:
+        # dashscope 按量无配额上限；仅当 MiniMax 用量回落且冷却后切回主模型
+        five_ok = used_5h_pct is None or used_5h_pct < switch_back_pct
+        seven_ok = used_7d_pct is None or used_7d_pct < switch_back_weekly_pct
+        if five_ok and seven_ok and (
+            last_switch_at is None or (now - last_switch_at) >= min_switch_interval_s
+        ):
+            return PRIMARY
+        return SECONDARY
     # current == FALLBACK
     five_ok = used_5h_pct is None or used_5h_pct < switch_back_pct
     seven_ok = used_7d_pct is None or used_7d_pct < switch_back_weekly_pct
@@ -163,11 +186,16 @@ def resolve_llm_config() -> dict:
     cfg = provider_config(active)
     if cfg is not None:
         return cfg
-    alt = FALLBACK if active == PRIMARY else PRIMARY
-    cfg = provider_config(alt)
-    if cfg is not None:
-        logger.warning(
-            "LLM provider '{}' not configured; falling back to '{}'", active, alt
-        )
-        return cfg
-    raise RuntimeError("No LLM API key configured (MINIMAX_API_KEY / DEEPSEEK_API_KEY)")
+    # 当前 provider 未配置时，沿回退链找第一个可用的（minimax -> dashscope -> deepseek）
+    for alt in PRIORITY_ORDER:
+        if alt == active:
+            continue
+        cfg = provider_config(alt)
+        if cfg is not None:
+            logger.warning(
+                "LLM provider '{}' not configured; falling back to '{}'", active, alt
+            )
+            return cfg
+    raise RuntimeError(
+        "No LLM API key configured (MINIMAX_API_KEY / DASHSCOPE_API_KEY / DEEPSEEK_API_KEY)"
+    )

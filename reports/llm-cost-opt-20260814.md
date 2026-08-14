@@ -46,18 +46,15 @@
 
 > MiniMax 套餐内的边际成本为 0，但受额度限制；qwen-flash 的真正价值是**近乎零成本 + 无天花板 + 快 2 倍**。
 
-## 切换方案（无需改代码）
+## 切换方案（已落地为三级路由，2026-08-14）
 
-生产 `backend/app/services/llm_router.py` 已支持 `dashscope` 供应商（`DASHSCOPE_LLM_MODEL`，默认 qwen-plus）。切换只需在 `.env`：
+按用户要求实现**三级优先链**：MiniMax M2.7-highspeed（主）-> qwen-flash（额度用尽后优先）-> DeepSeek flash（最后兜底），改动已提交：
 
-```ini
-LLM_PROVIDER=dashscope
-DASHSCOPE_LLM_MODEL=qwen-flash
-```
-
-- 现有 `DASHSCOPE_API_KEY`（embedding 同 key）即可复用，无需新增 Key。
-- MiniMax 已购套餐额度仍可作为兜底：router 在 dashscope 未配置时会回退 minimax；如要双活可后续增强「失败自动回退」。
-- 建议切换后先小范围灰度：`python scripts/run_eval.py --phone 13985000001` 回归 104/104，再上线。
+- `llm_router.py`：新增 `SECONDARY="dashscope"` / `PRIORITY_ORDER=(minimax, dashscope, deepseek)`；MiniMax 5h>=85% 或 7d>=90% 时切 **dashscope（qwen-flash）** 而非 deepseek；qwen-flash 无配额上限，用量回落 + 冷却后切回 MiniMax；`resolve_llm_config` 沿链回退；手动 override 支持 dashscope。
+- `llm_switch_job.py`：fail-safe 连续 3 次配额查询失败时沿链切下一级（minimax->dashscope->deepseek），不再直接跳 deepseek。
+- `llm_admin.py` + `dashboard.html`：手动切换/展示支持 dashscope（qwen-flash 备用）。
+- `.env`：`LLM_PROVIDER=minimax` 保持主模型，新增 `DASHSCOPE_LLM_MODEL=qwen-flash`（复用现有 `DASHSCOPE_API_KEY`）。
+- 验证：`pytest tests/ -q` 203 passed；生产 `llm.chat` 路径真实调用 qwen-flash 返回 OK；路由决策（minimax 90% -> dashscope；dashscope 50% -> minimax）符合预期。
 
 ## 风险与注意
 
