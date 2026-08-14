@@ -81,3 +81,10 @@ python scripts/compare_models.py --models qwen-flash --out reports/ab-full.json 
 ```
 
 > 成本：全量 104 题 × 3 模型 ≈ 300 次调用，合计 < ¥0.15。
+## 余额监控（2026-08-14 追加）
+
+- 阿里云 RAM 只读账单 AccessKey（`ALIYUN_AK_ID` / `ALIYUN_AK_SECRET`，.env）已配置，权限建议 `AliyunBSSReadOnlyAccess`。
+- 命令行：`python scripts/check_qwen_balance.py`（余额）/ `--bill 2026-08`（百炼消费明细）。
+- 后台：`GET /api/admin/llm/balance`（系统管理员），dashboard 使用监测 tab「当前模型」卡片新增「阿里云余额 / 本月百炼消费」。
+- 实测：账户余额 ¥50.66；2026-08 百炼消费 ¥0.26（A/B 测试产生）。
+- 注意：DashScope API Key 无余额接口（实测 404），余额来自费用中心 OpenAPI（QueryAccountBalance / QueryBill）。

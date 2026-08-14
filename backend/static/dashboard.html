@@ -879,6 +879,22 @@ async function loadLlmRoute(force) {
     const d = await r.json();
     llmLoaded = true;
     const model = d.active_model || d.active_provider || '\u2014';
+    let balText = '\u2014';
+    let balSub = '\u4f59\u989d\u67e5\u8be2\u4e0d\u53ef\u7528';
+    try {
+      const br = await fetch('/api/admin/llm/balance', { headers: authHeader() });
+      if (br.ok) {
+        const b = await br.json();
+        if (b.error) {
+          balSub = '\u4f59\u989d\u67e5\u8be2\u5931\u8d25';
+        } else {
+          balText = '\u00a5' + (b.available_amount != null ? b.available_amount : '\u2014');
+          balSub = (b.month || '') + ' \u767e\u70bc\u6d88\u8d39 \u00a5' + (b.month_bailian_usage != null ? b.month_bailian_usage : '\u2014');
+        }
+      }
+    } catch (e) {
+      balSub = '\u4f59\u989d\u67e5\u8be2\u5931\u8d25';
+    }
     const p5 = d.used_5h_pct == null ? '\u2014' : d.used_5h_pct + '%';
     const p7 = d.used_7d_pct == null ? '\u2014' : d.used_7d_pct + '%';
     const bad = d.last_error || (d.consecutive_failures > 0 ? '\u8fde\u7eed\u5931\u8d25' + d.consecutive_failures + '\u6b21' : '');
@@ -908,6 +924,7 @@ async function loadLlmRoute(force) {
       + '<div class="card"><div class="label">\u5f53\u524d\u6a21\u578b</div><div class="value" style="font-size:1.05rem;word-break:break-all">' + escapeHtml(model) + '</div></div>'
       + '<div class="card"><div class="label">5h \u7528\u91cf</div><div class="value">' + p5 + '</div></div>'
       + '<div class="card"><div class="label">7d \u7528\u91cf</div><div class="value">' + p7 + '</div></div>'
+      + '<div class="card"><div class="label">\u963f\u91cc\u4e91\u4f59\u989d\uff08qwen-flash\uff09</div><div class="value" style="font-size:1.05rem">' + balText + '</div><div style="font-size:.75rem;color:var(--text-dim)">' + balSub + '</div></div>'
       + '<div class="card ' + (bad ? 'rate low' : 'rate') + '"><div class="label">\u72b6\u6001</div><div class="value">' + status + '</div></div>'
       + '</div>'
       + '<div class="usage-result-info">' + escapeHtml(detail)
