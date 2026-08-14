@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """scripts/compare_models.py — 用 eval_set 对多个 LLM 做 A/B（同检索、同 prompt、同评分）。
 
 用法：

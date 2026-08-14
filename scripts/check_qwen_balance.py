@@ -1,4 +1,4 @@
-﻿"""scripts/check_qwen_balance.py — 查询阿里云账户余额与百炼消费（RAM AccessKey 只读账单权限）。
+"""scripts/check_qwen_balance.py — 查询阿里云账户余额与百炼消费（RAM AccessKey 只读账单权限）。
 
 用法：
     python scripts/check_qwen_balance.py                 # 查账户可用余额

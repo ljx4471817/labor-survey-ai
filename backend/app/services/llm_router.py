@@ -33,9 +33,6 @@ STATE_FILE = PROJECT_ROOT / "backend" / "data" / "llm_route.json"
 
 _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
 
-_KNOWN_PROVIDERS = (PRIMARY, FALLBACK, "dashscope")
-
-
 def strip_thinking(text: str) -> str:
     """Strip MiniMax M2.x <think>...</think> blocks from assistant content."""
     return _THINK_RE.sub("", text).strip()
@@ -64,7 +61,7 @@ def provider_config(provider: str) -> dict | None:
 
 def _default_state() -> dict:
     primary = os.environ.get("LLM_PROVIDER", PRIMARY).lower()
-    if primary not in _KNOWN_PROVIDERS:
+    if primary not in PRIORITY_ORDER:
         primary = PRIMARY
     return {
         "active_provider": primary,
@@ -85,7 +82,7 @@ def load_state() -> dict:
         data = json.loads(STATE_FILE.read_text(encoding="utf-8"))
         state = _default_state()
         state.update({k: v for k, v in data.items() if k in state})
-        if state["active_provider"] not in _KNOWN_PROVIDERS:
+        if state["active_provider"] not in PRIORITY_ORDER:
             state["active_provider"] = _default_state()["active_provider"]
         return state
     except FileNotFoundError:
@@ -160,27 +157,19 @@ def decide_active_provider(
         if used_7d_pct is not None and used_7d_pct >= switch_to_fallback_weekly_pct:
             return SECONDARY
         return PRIMARY
-    if current == SECONDARY:
-        # dashscope 按量无配额上限；仅当 MiniMax 用量回落且冷却后切回主模型
+    if current in (SECONDARY, FALLBACK):
+        # dashscope/DeepSeek 均按量/兜底；MiniMax 用量回落且冷却后切回主模型
         five_ok = used_5h_pct is None or used_5h_pct < switch_back_pct
         seven_ok = used_7d_pct is None or used_7d_pct < switch_back_weekly_pct
         if five_ok and seven_ok and (
             last_switch_at is None or (now - last_switch_at) >= min_switch_interval_s
         ):
             return PRIMARY
-        return SECONDARY
-    # current == FALLBACK
-    five_ok = used_5h_pct is None or used_5h_pct < switch_back_pct
-    seven_ok = used_7d_pct is None or used_7d_pct < switch_back_weekly_pct
-    if five_ok and seven_ok and (
-        last_switch_at is None or (now - last_switch_at) >= min_switch_interval_s
-    ):
-        return PRIMARY
-    return FALLBACK
+        return current
 
 
 def resolve_llm_config() -> dict:
-    """Resolve active provider config; fall back to the other provider if unconfigured."""
+    """Resolve active provider config; walk the priority chain if unconfigured."""
     state = load_state()
     active = state["active_provider"]
     cfg = provider_config(active)

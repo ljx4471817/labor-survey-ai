@@ -6,6 +6,8 @@
 """
 from __future__ import annotations
 
+import time
+
 from typing import Literal
 
 from fastapi import APIRouter, Depends
@@ -50,10 +52,9 @@ def get_llm_route(phone: str = Depends(require_system_admin)) -> dict:
 @router.get("/llm/balance")
 def get_llm_balance(phone: str = Depends(require_system_admin)) -> dict:
     """查询阿里云账户余额与本月百炼消费（RAM 只读账单权限）；失败返回 error 供前端展示。"""
-    import time as _time
     try:
         bal = aliyun_balance.query_balance()
-        month = _time.strftime('%Y-%m')
+        month = time.strftime('%Y-%m')
         usage = aliyun_balance.query_bailian_usage(month)
         return {
             "available_amount": bal["available_amount"],
@@ -61,7 +62,7 @@ def get_llm_balance(phone: str = Depends(require_system_admin)) -> dict:
             "currency": bal["currency"],
             "month": month,
             "month_bailian_usage": usage,
-            "checked_at": _time.time(),
+            "checked_at": time.time(),
             "error": None,
         }
     except Exception as e:  # 账单接口不可用时不阻断路由页

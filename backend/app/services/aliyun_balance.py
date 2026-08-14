@@ -14,7 +14,6 @@ import uuid
 from urllib.parse import quote
 
 import requests
-from loguru import logger
 
 ENDPOINT = 'https://business.aliyuncs.com/'
 BAILIAN_KEYWORDS = ('百炼', 'bailian', 'model studio', '大模型')
