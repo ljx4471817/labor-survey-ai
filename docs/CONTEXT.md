@@ -101,7 +101,7 @@
 | Quick Tunnel | Cloudflare Tunnel 无域名模式，每次启动 URL 变 | `scripts/start_tunnel.bat` |
 | Named Tunnel | Cloudflare Tunnel 绑定自有域名（生产模式，未启用） | 待 ADR 备案决策后启用 |
 | DeepSeek 提额 | 单账号 ~45 并发连接瓶颈 | `reports/llm-bottleneck-analysis-20260629.md` |
-| LLM primary/fallback routing | MiniMax M2.7-highspeed primary; switch to DeepSeek flash (deepseek-v4-flash) when 5h used >= 85% or 7d used >= 90%, back when < 70% and 7d < 85% (hysteresis + 30min cooldown); state in backend/data/llm_route.json | `llm_router.py` / `minimax_quota.py` / `llm_switch_job.py` |
+| LLM 三级路由 | MiniMax M2.7-highspeed（主）→ qwen-flash（DashScope，额度用尽优先）→ DeepSeek flash（最后兜底）；5h>=85% 或 7d>=90% 切下一级，用量回落 <70% 且 7d<85% 且冷却 30min 回主；状态 backend/data/llm_route.json | `llm_router.py` / `minimax_quota.py` / `llm_switch_job.py` |
 
 ## 10. 月度测验系统（quiz）
 
@@ -115,3 +115,4 @@
 | `_WRITE_LOCK` | 写串行化锁（SQLite 单写者，避免并发写 busy） | `quiz_db.py` 全局锁 |
 | `require_quiz_admin` | 测验管理（系统管理员或省级/市级业务管理员）；`require_quiz_stats` 完成率只读（区县可看本县） | `infra/auth.py` |
 | `QUIZ_MOCK_LLM` | 环境变量：=1 时跳过真实 LLM 调用（用于自动化测试） | `quiz_admin.py` → `_get_llm_chat()` |
+| 测验 LLM 独立配置 | 测验模块独立于对话路由（默认 qwen-flash）；切换仅系统管理员、切换前探测、留痕 updated_by；业务管理员零感知 | `backend/data/quiz_llm_config.json` / `services/quiz_llm.py` / `POST /api/admin/quiz/llm-config` |
