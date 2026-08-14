@@ -255,6 +255,8 @@ cd backend && pip install -r requirements.txt
 - 管理端 quiz_admin.html 为「侧边栏测验列表 + 工作台」两栏，顶部步骤条（导入→提取→要点→生成勾选→下发）按数据状态自动打勾；完成率内嵌在「完成率」 tab（/api/admin/quiz/stats），独立 /quiz-stats 页保留。
 - 用户端 quiz.html「已完成·过期」项显示得分（/api/quiz/my done 项 score = 答对数）。
 
+- 测验模块 LLM **独立配置**（`backend/data/quiz_llm_config.json`，默认 qwen-flash），与对话三级路由完全隔离：切换测验模型不影响文档程序模型。切换仅系统管理员（`POST /api/admin/quiz/llm-config`，切换前探测可用性）；业务管理员零感知（看不到切换入口与当前模型）。配置带 updated_at/updated_by 留痕。
+
 ## LLM 三级路由约定（2026-08-14 起）
 
 - 优先级链：MiniMax M2.7-highspeed（主）-> qwen-flash（DashScope，额度用尽后优先）-> DeepSeek flash（deepseek-v4-flash，最后兜底）。
