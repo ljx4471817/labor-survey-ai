@@ -306,9 +306,35 @@ def log_audit(
             (actor_phone, actor_name, action, target_phone, before_json, after_json, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?)
         ''',
-        (actor_phone, actor_name, action, target_phone, _json(before), _json(after), _now()),
+        (
+            _mask_phone(actor_phone),
+            actor_name,
+            action,
+            _mask_phone(target_phone),
+            _json(_mask_pii(before)),
+            _json(_mask_pii(after)),
+            _now(),
+        ),
     )
     conn.commit()
+
+
+def _mask_phone(phone: str) -> str:
+    """手机号脱敏：13985000001 -> 139****0001。"""
+    if not phone or len(phone) < 7:
+        return phone[:3] + "****" if phone else ""
+    return phone[:3] + "****" + phone[-4:]
+
+
+def _mask_pii(record: dict | None) -> dict | None:
+    """对记录中的 PII 字段脱敏。"""
+    if record is None:
+        return None
+    masked = dict(record)
+    for key in ("phone", "target_phone", "actor_phone"):
+        if key in masked and masked[key]:
+            masked[key] = _mask_phone(str(masked[key]))
+    return masked
 
 
 def list_audit(limit: int = 100, target_phone: str | None = None) -> list[dict]:

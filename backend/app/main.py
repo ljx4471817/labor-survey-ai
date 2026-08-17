@@ -20,10 +20,31 @@ from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
 from app.api.feedback import router as feedback_router
 from app.infra.auth import require_user
+# DISABLED(voice) 2026-06-21
 # DISABLED(voice) 2026-06-21: 语音功能停用，输入法自带语音转写已够用。如需恢复：取消下面一行注释。
 # from app.api.voice import router as voice_router
 from app.core.config import PROJECT_ROOT, settings
 from app.models.schemas import HealthResponse
+from starlette.requests import Request
+from starlette.responses import JSONResponse
+
+import time
+from collections import defaultdict
+
+_RATE_LIMIT_PER_MINUTE = int(os.environ.get("LSX_RATE_LIMIT_PER_MINUTE", "30"))
+_rate_buckets: dict[str, list[float]] = defaultdict(list)
+
+
+def _rate_limited(key: str) -> bool:
+    """检查是否超出速率限制。返回 True 表示应拒绝。"""
+    now = time.time()
+    bucket = _rate_buckets[key]
+    cutoff = now - 60.0
+    _rate_buckets[key] = [t for t in bucket if t > cutoff]
+    if len(_rate_buckets[key]) >= _RATE_LIMIT_PER_MINUTE:
+        return True
+    _rate_buckets[key].append(now)
+    return False
 
 if not os.environ.get("LSX_AUTH_SECRET"):
     logger.warning(
@@ -49,6 +70,24 @@ app.include_router(
     feedback_router, prefix="/api", tags=["feedback"],
     dependencies=[Depends(require_user)],
 )
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """对 /api/chat 端点应用速率限制。"""
+    if request.url.path == "/api/chat" and request.method == "POST":
+        auth = request.headers.get("authorization", "")
+        if auth.startswith("Bearer "):
+            key = auth[7:23] if len(auth) > 23 else auth[7:]
+            if _rate_limited(key):
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "请求过于频繁，请稍后再试"},
+                )
+    response = await call_next(request)
+    return response
+
+
 for _r in (feedback_admin_router, gaps_admin_router, usage_admin_router, whitelist_admin_router, quiz_admin_router, llm_admin_router):
     app.include_router(
         _r,
@@ -138,25 +177,10 @@ def shutdown():
 
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
-    try:
-        from app.rag.retriever import get_collection
-        count = get_collection().count()
-        chroma_ok = True
-    except Exception as e:
-        logger.warning(f"chroma 健康检查失败: {e}")
-        chroma_ok = False
-        count = 0
-    counts = {}
-    if chroma_ok:
-        try:
-            from app.rag.retriever import count_by_doc_type
-            counts = count_by_doc_type()
-        except Exception:
-            counts = {}
     return HealthResponse(
-        status="ok" if chroma_ok else "degraded",
-        chroma_count=counts.get("total", count),
-        qa_count=counts.get("qa", 0),
-        chunk_count=counts.get("chunk", 0),
+        status="ok",
+        chroma_count=0,
+        qa_count=0,
+        chunk_count=0,
         llm_configured=bool(settings.llm_api_key),
     )

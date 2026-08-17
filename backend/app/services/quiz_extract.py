@@ -139,7 +139,13 @@ def extract_pptx_text(path: str) -> str:
 
 def extract_file_text(path: str) -> str:
     """按扩展名提取文件文本：docx→python-docx；doc/wps→COM；pdf→pdfplumber；pptx→python-pptx。"""
-    ext = Path(path).suffix.lower()
+    return _extract_with_ext(path)
+
+
+def _extract_with_ext(path: str, ext: str | None = None) -> str:
+    """根据指定扩展名提取文件文本。"""
+    if ext is None:
+        ext = Path(path).suffix.lower()
     if ext == ".docx":
         return extract_docx_text(path)
     if ext == ".pdf":

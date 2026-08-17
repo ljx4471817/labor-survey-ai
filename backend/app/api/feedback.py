@@ -20,6 +20,8 @@ router = APIRouter()
 
 FEEDBACK_PATH = PROJECT_ROOT / "backend" / "data" / "feedback.jsonl"
 
+_MAX_FEEDBACK_BYTES = 100 * 1024 * 1024  # 100MB 上限
+
 
 @router.post("/feedback", response_model=FeedbackResponse)
 def submit_feedback(
@@ -56,4 +58,8 @@ def submit_feedback(
         f"feedback: rating={req.rating} mode={req.mode} phone={phone[:3]}**** "
         f"q='{req.question[:30]}' record_id={record['id']}"
     )
+    # 检查文件大小，超过上限则拒绝写入
+    if FEEDBACK_PATH.exists() and FEEDBACK_PATH.stat().st_size > _MAX_FEEDBACK_BYTES:
+        logger.warning(f"feedback.jsonl 超过 {_MAX_FEEDBACK_BYTES} 字节上限，拒绝写入")
+        raise HTTPException(503, "反馈存储已满，请联系管理员清理")
     return FeedbackResponse(ok=True, record_id=record["id"])

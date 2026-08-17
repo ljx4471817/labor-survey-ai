@@ -30,6 +30,7 @@ BASE = "http://test"
 def e2e_env(tmp_path, monkeypatch):
     monkeypatch.setattr(quiz_db, "DB_PATH", tmp_path / "quiz_e2e.db")
     quiz_db.reset_conn()
+    monkeypatch.setattr("app.api.quiz_admin.TMP_DIR", tmp_path / "quiz_tmp")
     app.dependency_overrides[require_user] = lambda: "13800000001"
     app.dependency_overrides[require_quiz_admin] = lambda: "13900000001"
     app.dependency_overrides[require_quiz_stats] = lambda: "13900000001"

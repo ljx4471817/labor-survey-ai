@@ -64,10 +64,26 @@ from app.persistence import quiz_db, whitelist_db
 
 from app.services import quiz_llm
 
-from app.services.quiz_extract import ALLOWED_DOC_EXTENSIONS, extract_file_text, run_extraction
+from app.services.quiz_extract import ALLOWED_DOC_EXTENSIONS, _extract_with_ext, extract_file_text, run_extraction
 
 from app.services.quiz_generator import generate_questions, is_expired, match_kb, options_to_json
 
+
+
+_MAGIC_BYTES = {
+    ".doc": [b"\xd0\xcf\x11\xe0"],
+    ".docx": [b"PK\x03\x04"],
+    ".wps": [b"\xd0\xcf\x11\xe0"],
+    ".pdf": [b"%PDF"],
+    ".pptx": [b"PK\x03\x04"],
+}
+
+
+def _verify_magic_bytes(raw: bytes, ext: str) -> None:
+    """校验文件魔数是否与扩展名匹配。"""
+    expected = _MAGIC_BYTES.get(ext, [])
+    if expected and not any(raw.startswith(m) for m in expected):
+        raise HTTPException(400, f"文件内容不符合 {ext} 格式，已拒绝")
 
 
 router = APIRouter()
@@ -222,6 +238,8 @@ def quiz_import(
     raw = file.file.read()
     if len(raw) > MAX_FILE_BYTES:
         raise HTTPException(400, f"文件超过 {QUIZ_MAX_FILE_MB}MB 上限")
+    # 魔数校验：确保文件内容真实类型与扩展名一致
+    _verify_magic_bytes(raw, ext)
     # 每次导入创建独立测验（多场景不再按月份防重）
     month_val = (month or "").strip() or None
     quiz_id = quiz_db.create_quiz(title=title.strip(), scene=scene.strip(), created_by=phone, month=month_val)
@@ -229,7 +247,7 @@ def quiz_import(
         quiz_db.add_scene(scene.strip())  # 场景不存在时自动登记（幂等）
     import_id = quiz_db.create_import(quiz_id, month_val, filename, len(raw), phone)
     TMP_DIR.mkdir(parents=True, exist_ok=True)
-    tmp_path = TMP_DIR / f"{import_id}{ext}"
+    tmp_path = TMP_DIR / import_id  # 使用纯 UUID，不含原始扩展名，防止路径遍历
     tmp_path.write_bytes(raw)
     logger.info(f"quiz import: {import_id} quiz={quiz_id} scene={scene} size={len(raw)} by={phone[:3]}****")
     return {"import_id": import_id, "quiz_id": quiz_id, "filename": filename, "title": title, "scene": scene}
@@ -298,10 +316,8 @@ def _do_extract(import_id: str, quiz_id: str, keypoint_count: int | None = None)
     imp = quiz_db.get_import(import_id)
 
     ext = Path((imp or {}).get("filename", ".docx")).suffix
-
-    tmp_path = TMP_DIR / f"{import_id}{ext}"
-
-    text = extract_file_text(str(tmp_path))
+    tmp_path = TMP_DIR / import_id  # 文件以纯 UUID 存储，不含扩展名
+    text = _extract_with_ext(str(tmp_path), ext=ext)
 
     # 提取输出可能 >2000 tokens，提高上限避免截断导致 JSON 非法
 
@@ -1167,4 +1183,3 @@ def quiz_delete(req: QuizDeleteRequest, phone: str = Depends(require_quiz_admin)
     quiz_db.delete_quiz(req.quiz_id)
     logger.info(f"quiz delete: {req.quiz_id} by={phone[:3]}****")
     return {"ok": True}
-

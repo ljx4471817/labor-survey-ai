@@ -17,6 +17,7 @@ from app.rag.pure import is_ambiguous, is_in_scope, merge_query_with_history
 from app.rag.retriever import retrieve
 
 router = APIRouter()
+_VALID_ROLES = {"user", "assistant"}
 
 OUT_OF_SCOPE_REPLY = (
     "该问题不在调查员 AI 助手服务范围内。本助手仅提供劳动力调查填报指导。"
@@ -88,10 +89,15 @@ def _log_query(
 
 
 def _build_history_context(history: list[ChatMessage]) -> str:
-    """把历史消息拼成 [role] content 文本块。"""
+    """把历史消息拼成 [role] content 文本块（带注入防护）。"""
     if not history:
         return "（无）"
-    return "\n".join(f"[{m.role}] {m.content}" for m in history)
+    parts = []
+    for m in history:
+        role = m.role if m.role in _VALID_ROLES else "user"
+        content = '"""\n' + m.content + '\n"""'
+        parts.append(f"[{role}] {content}")
+    return "\n".join(parts)
 
 
 def _detect_refusal(answer: str) -> bool:

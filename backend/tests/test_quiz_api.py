@@ -154,16 +154,16 @@ def test_faq_detail(db):
 
 def test_import_allows_multiple_quizzes_same_month(db):
     """多场景改造：同月可重复导入（每次导入 = 独立测验），不再 409。"""
-    f1 = UploadFile(filename="a.docx", file=BytesIO(b"x"))
+    f1 = UploadFile(filename="a.docx", file=BytesIO(b"PK\x03\x04" + b"\x00" * 100))
     r1 = quiz_admin_api.quiz_import(title="第一套", scene="月度通知", month="2026-08", file=f1, phone="13900000001")
-    f2 = UploadFile(filename="b.docx", file=BytesIO(b"y"))
+    f2 = UploadFile(filename="b.docx", file=BytesIO(b"PK\x03\x04" + b"\x00" * 100))
     r2 = quiz_admin_api.quiz_import(title="第二套", scene="新员工培训", month="2026-08", file=f2, phone="13900000001")
     assert r1["quiz_id"] != r2["quiz_id"]
     assert quiz_db.get_quiz(r2["quiz_id"])["scene"] == "新员工培训"
 
 
 def test_import_accepts_docx(db, tmp_path):
-    f = UploadFile(filename="通知.docx", file=BytesIO(b"docx-bytes"))
+    f = UploadFile(filename="通知.docx", file=BytesIO(b"PK\x03\x04" + b"\x00" * 100))
     res = quiz_admin_api.quiz_import(title="9月工作提示测试", scene="月度通知", month="2026-09", file=f, phone="13900000001")
     assert res["import_id"].startswith("IMP")
     assert res["quiz_id"].startswith("Q")
@@ -282,6 +282,13 @@ def test_stats_with_fake_whitelist(db, monkeypatch):
 
 
 def test_targets_groups_by_city_and_role(monkeypatch):
+    import tempfile
+    from pathlib import Path
+    _tmp_db = Path(tempfile.gettempdir()) / "test_targets_whitelist.db"
+    if _tmp_db.exists():
+        _tmp_db.unlink()
+    monkeypatch.setattr("app.api.quiz_admin.whitelist_db.DB_PATH", _tmp_db)
+    monkeypatch.setattr("app.api.quiz_admin.whitelist_db._conn", None)
     users = [
         {"phone": "13800000001", "name": "张三", "city": "贵阳市", "county": "南明区", "admin_level": "调查员", "active": 1},
         {"phone": "13800000002", "name": "李四", "city": "贵阳市", "county": "云岩区", "admin_level": "调查员", "active": 1},
@@ -369,8 +376,16 @@ def test_require_whitelist_admin_returns_user(monkeypatch):
 
 
 def test_import_accepts_supported_exts(db):
+    _MAGIC = {
+        ".doc": b"\xd0\xcf\x11\xe0" + b"\x00" * 100,
+        ".wps": b"\xd0\xcf\x11\xe0" + b"\x00" * 100,
+        ".docx": b"PK\x03\x04" + b"\x00" * 100,
+        ".pdf": b"%PDF" + b"\x00" * 100,
+        ".pptx": b"PK\x03\x04" + b"\x00" * 100,
+    }
     for fn in ("通知.doc", "通知.wps", "通知.docx", "培训.pdf", "培训.pptx"):
-        f = UploadFile(filename=fn, file=BytesIO(b"doc-bytes"))
+        ext = "." + fn.rsplit(".", 1)[-1]
+        f = UploadFile(filename=fn, file=BytesIO(_MAGIC[ext]))
         res = quiz_admin_api.quiz_import(title="t", scene="月度通知", month="", file=f, phone="13900000001")
         assert res["quiz_id"].startswith("Q"), fn
     # 非法类型拒绝

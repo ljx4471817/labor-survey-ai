@@ -132,7 +132,14 @@ def test_extract_request_count_validation(db):
         ExtractRequest(quiz_id="Q0001", keypoint_count=31)
 
 
-def test_question_select_and_publish_only_selected(db):
+def test_question_select_and_publish_only_selected(db, monkeypatch):
+    import tempfile
+    from pathlib import Path as _Path
+    _tmp_db = _Path(tempfile.gettempdir()) / "test_qselect_whitelist.db"
+    if _tmp_db.exists():
+        _tmp_db.unlink()
+    monkeypatch.setattr("app.api.quiz_admin.whitelist_db.DB_PATH", _tmp_db)
+    monkeypatch.setattr("app.api.quiz_admin.whitelist_db._conn", None)
     """勾选题目 → 下发只发勾选题；未勾选下发 422；未勾选题不可答。"""
     qid = quiz_db.create_quiz("培训测验", scene="新员工培训", created_by="admin")
     db.replace_questions(qid, [
@@ -174,7 +181,7 @@ def test_list_scene_filter(db):
 
 
 def test_import_auto_register_scene(db):
-    f = UploadFile(filename="半年培训材料.docx", file=BytesIO(b"x"))
+    f = UploadFile(filename="半年培训材料.docx", file=BytesIO(b"PK\x03\x04" + b"\x00" * 100))
     res = quiz_admin_api.quiz_import(title="半年培训测验", scene="半年培训", month="", file=f, phone="13900000001")
     assert res["quiz_id"]
     names = [s["name"] for s in quiz_db.list_scenes(include_inactive=True)]
