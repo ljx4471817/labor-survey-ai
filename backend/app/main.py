@@ -27,6 +27,7 @@ from app.core.config import PROJECT_ROOT, settings
 from app.models.schemas import HealthResponse
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+from app.rag.retriever import count_by_doc_type
 
 import time
 from collections import defaultdict
@@ -177,10 +178,18 @@ def shutdown():
 
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
+    qa_count = 0
+    chunk_count = 0
+    try:
+        counts = count_by_doc_type()
+        qa_count = counts.get("qa", 0)
+        chunk_count = counts.get("chunk", 0)
+    except Exception:
+        logger.exception("health endpoint count failed")
     return HealthResponse(
         status="ok",
-        chroma_count=0,
-        qa_count=0,
-        chunk_count=0,
+        chroma_count=qa_count + chunk_count,
+        qa_count=qa_count,
+        chunk_count=chunk_count,
         llm_configured=bool(settings.llm_api_key),
     )
