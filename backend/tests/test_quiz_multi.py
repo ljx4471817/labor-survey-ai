@@ -158,7 +158,9 @@ def test_question_select_and_publish_only_selected(db, monkeypatch):
     quiz_admin_api.quiz_question_select(QuestionSelectRequest(question_id=qs[1]["id"], selected=True), phone="13900000001")
     assert db.list_questions(qid)[0]["selected"] == 1
     # 发布后用户端只显示勾选 2 题
-    quiz_db.update_quiz(qid, status="published", valid_from="2026-08-01T00:00:00+08:00", valid_until="2026-08-20T00:00:00+08:00")
+    quiz_db.update_quiz(qid, status="published",
+                    valid_from=(datetime.now(UTC8) - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S+08:00"),
+                    valid_until=(datetime.now(UTC8) + timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%S+08:00"))
     quiz_db.set_targets(qid, ["13800000001"])
     cur = quiz_api.current(phone="13800000001")
     assert len(cur["items"][0]["questions"]) == 2
