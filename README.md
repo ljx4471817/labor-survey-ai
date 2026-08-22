@@ -63,7 +63,7 @@ labor-survey-ai/
 │   │   └── rag/                # bm25 / llm / prompts / retriever
 │   ├── data/                   # chroma 持久化 + bm25 索引（不入仓）
 │   ├── static/                 # H5 前端（单页应用）
-│   └── tests/                  # 单元测试（198 tests）
+│   └── tests/                  # 单元测试（223 tests）
 ├── scripts/
 │   ├── build_kb.py             # 向量库构建
 │   ├── build_bm25.py           # BM25 索引构建
