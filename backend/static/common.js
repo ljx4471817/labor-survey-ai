@@ -96,3 +96,44 @@ function toggleTheme() {
 }
 
 document.addEventListener("DOMContentLoaded", applyTheme);
+
+
+// ---- admin unified top nav (dashboard / quiz-admin / whitelist / quiz-stats) ----
+var ADMIN_NAV = [
+  { key: 'dashboard', href: '/dashboard', label: '数据看板', quizOnly: false },
+  { key: 'quiz-admin', href: '/quiz-admin', label: '测验管理', quizOnly: true },
+  { key: 'whitelist-admin', href: '/whitelist-admin', label: '白名单管理', quizOnly: false },
+];
+
+// current: 'dashboard' | 'quiz-admin' | 'whitelist-admin' | 'quiz-stats'
+// me: optional whoami object (whitelist version includes city/county); auto-fetch when omitted
+async function initAdminNav(current, me) {
+  var nav = document.getElementById('adminNav');
+  if (!nav) return null;
+  if (!me) {
+    try {
+      var r = await fetch('/api/admin/whitelist/whoami', { headers: authHeader() });
+      if (await handle401(r)) return null;
+      if (!r.ok) return null;
+      me = await r.json();
+    } catch (e) {
+      return null;
+    }
+  }
+  var roleTag = document.getElementById('roleTag');
+  if (roleTag && me) {
+    roleTag.textContent = (me.sys_role || '') + ' · ' + (me.admin_level || '') +
+      (me.city ? ' · ' + me.city : '') + (me.county ? ' · ' + me.county : '');
+  }
+  var canQuiz = me.sys_role === '系统管理员' || ['市级', '省级'].indexOf(me.admin_level) !== -1;
+  var activeKey = current === 'quiz-stats' ? 'quiz-admin' : current;
+  nav.innerHTML = ADMIN_NAV.filter(function (item) {
+    return !item.quizOnly || canQuiz;
+  }).map(function (item) {
+    if (item.key === activeKey) {
+      return '<span class="active">' + escapeHtml(item.label) + '</span>';
+    }
+    return '<a href="' + item.href + '">' + escapeHtml(item.label) + '</a>';
+  }).join('');
+  return me;
+}

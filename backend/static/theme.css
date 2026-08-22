@@ -292,3 +292,52 @@ html[data-theme="dark"] body:not(.blue-bg) th {
 /* options / chips: slate-300 border for definition */
 html body:not(.blue-bg) .opt,
 html body:not(.blue-bg) .user-chip { border-color: #CBD5E1; }
+
+/* ============================================================
+ * Admin unified top nav (dashboard / quiz-admin / whitelist / quiz-stats)
+ * ============================================================ */
+header.admin-header {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+.admin-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.admin-nav a,
+.admin-nav span.active {
+  color: #fff;
+  text-decoration: none;
+  font-size: .82rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  opacity: .85;
+  white-space: nowrap;
+  transition: background .15s ease, opacity .15s ease;
+}
+.admin-nav a:hover { background: rgba(255,255,255,.14); opacity: 1; }
+.admin-nav span.active { background: rgba(255,255,255,.18); opacity: 1; font-weight: 600; }
+header .role-tag {
+  font-size: .75rem;
+  background: rgba(255,255,255,.16);
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+header.admin-header .logout-btn {
+  font-family: inherit;
+  font-size: .8rem;
+  padding: 5px 12px;
+  border: 1px solid rgba(255,255,255,.5);
+  background: transparent;
+  color: #fff;
+  border-radius: 999px;
+  cursor: pointer;
+}
+header.admin-header .logout-btn:hover { background: rgba(255,255,255,.15); }
+html[data-theme="dark"] .admin-nav span.active { color: #B6C2D4; }
+html[data-theme="dark"] header .role-tag { color: #B6C2D4; }
+html[data-theme="dark"] header.admin-header .logout-btn { color: #B6C2D4; }
