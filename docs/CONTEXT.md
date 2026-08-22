@@ -64,7 +64,7 @@
 | 反馈评级 | `up` = 采纳 / `down` = 不采纳 | `backend/app/core/constants.py::FeedbackRating` |
 | 已处理标记 | 已人工跟进过的反馈 ID | `backend/data/feedback_resolved.jsonl`（append-only event log） |
 | Query 日志 | 每次 chat 请求的元数据（不含答案内容） | `backend/data/query_log.db`（SQLite） |
-| Dashboard | 统一后台入口：系统管理员全量（KB 优化 / 使用监测 / 使用侧发现），业务管理员默认「白名单管理」模块；完成率在测验管理中查看 | `backend/static/dashboard.html` |
+| Dashboard | 数据看板：系统管理员全量（KB 优化 / 使用监测 / 使用侧发现）；区县业务管理员登录直落「白名单管理」独立页，进入数据看板默认「使用监测」；顶部统一导航（数据看板 / 测验管理 / 白名单管理） | `backend/static/dashboard.html` |
 | 候选 KB 改进 | 自动从 down 反馈 + 高频 query 中识别 KB 缺口 | `aggregate_feedback()` 的 `candidate_improvements` 字段 |
 | `MIN_FREQ` | 进入"候选改进"列表的最低频次阈值（默认 3） | `backend/app/services/feedback_analytics.py` |
 

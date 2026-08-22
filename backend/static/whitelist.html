@@ -272,16 +272,6 @@ footer {
 <script>
 requireLoginOrRedirect();
 
-// 嵌入 dashboard「白名单管理」模块时隐藏独立页头/页脚（?embed=1）
-const embedMode = new URLSearchParams(location.search).get('embed') === '1';
-if (embedMode) {
-  const h = document.querySelector('header');
-  const f = document.querySelector('footer');
-  if (h) h.style.display = 'none';
-  if (f) f.style.display = 'none';
-  document.body.style.padding = '0';
-}
-
 let me = null;          // whoami 结果
 let allItems = [];
 let editPhone = null;
@@ -302,7 +292,7 @@ async function initRole() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     me = await r.json();
     configureByRole();
-    if (!embedMode) await initAdminNav('whitelist-admin', me);
+    await initAdminNav('whitelist-admin', me);
     loadItems();
     if (isSystemAdmin()) loadAudit();
   } catch (e) {

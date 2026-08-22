@@ -483,8 +483,6 @@ html body:not(.blue-bg) section h2 { margin: -16px -20px 14px; padding: 12px 20p
     <button class="tab-btn active" data-tab="kb">KB 优化</button>
     <button class="tab-btn" data-tab="usage">使用监测</button>
     <button class="tab-btn" data-tab="usage-gaps">使用侧发现</button>
-    <button class="tab-btn" data-tab="whitelist">白名单管理</button>
-<a class="tab-btn" href="/quiz-admin" style="text-decoration:none">测验管理</a>
   </div>
 
   <div class="tab-panel active" id="tab-kb">
@@ -578,10 +576,6 @@ html body:not(.blue-bg) section h2 { margin: -16px -20px 14px; padding: 12px 20p
 
   </div>
 
-  <div class="tab-panel" id="tab-whitelist">
-    <iframe id="whitelistFrame" title="白名单管理"
-      style="width:100%;height:82vh;border:1px solid var(--line);border-radius:8px;background:#fff"></iframe>
-  </div>
 </main>
 <footer>劳动力调查 AI 助手 · 反馈看板 v1 · 由 <code>/api/admin/feedback/stats</code> 驱动</footer>
 
@@ -799,61 +793,18 @@ async function initRole() {
     const chartSec = document.querySelector('#tab-usage section:nth-of-type(2)');
     if (chartSec) chartSec.style.display = sys ? '' : 'none';
     document.querySelectorAll('.tab-btn[data-tab="kb"], .tab-btn[data-tab="usage-gaps"]').forEach(b => b.style.display = sys ? '' : 'none');
-    // 区县业务管理员：隐藏「测验管理」入口（后端仅市级以上可管理）
-    if (!sys && me.sys_role === '业务管理员' && me.admin_level === '区县') {
-      const qa = document.querySelector('a.tab-btn[href="/quiz-admin"]');
-      if (qa) qa.style.display = 'none';
-    }
     await initAdminNav('dashboard', me);
     if (sys) {
       loadStats();
     } else {
-      // 业务管理员进入后台默认显示「白名单管理」模块
-      switchTab('whitelist');
-      loadWhitelistModule();
+      // 业务管理员（区县）进入数据看板默认显示「使用监测」
+      switchTab('usage');
     }
     searchUsage();
     if (sys) loadLlmRoute();
   } catch (e) {
     $('error').innerHTML = '<div class="error">加载失败：' + escapeHtml(e.message) + '</div>';
   }
-}
-
-// ---- 白名单管理模块（懒加载 iframe，同源复用 token/角色；高度自适应消除双滚动条） ----
-let whitelistLoaded = false;
-let whitelistRO = null;
-
-function loadWhitelistModule() {
-  if (whitelistLoaded) return;
-  whitelistLoaded = true;
-  const f = $('whitelistFrame');
-  f.onload = function () {
-    fitWhitelistFrame();
-    initWhitelistResize();
-  };
-  f.src = '/whitelist-admin?embed=1';
-}
-
-function fitWhitelistFrame() {
-  const f = $('whitelistFrame');
-  try {
-    const doc = f.contentDocument;
-    if (!doc || !doc.body) return;
-    const h = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
-    if (h > 100) f.style.height = h + 'px';
-  } catch (e) { /* 跨源异常忽略 */ }
-}
-
-function initWhitelistResize() {
-  const f = $('whitelistFrame');
-  try {
-    const doc = f.contentDocument;
-    if (!doc || !doc.body || !window.ResizeObserver) return;
-    if (whitelistRO) whitelistRO.disconnect();
-    whitelistRO = new ResizeObserver(function () { fitWhitelistFrame(); });
-    whitelistRO.observe(doc.body);
-    whitelistRO.observe(doc.documentElement);
-  } catch (e) { /* 跨源异常忽略 */ }
 }
 
 async function loadLlmRoute(force) {
@@ -948,7 +899,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     switchTab(btn.dataset.tab);
     if (btn.dataset.tab === 'usage-gaps' && !gapsLoaded) loadGaps();
     if (btn.dataset.tab === 'usage' && !llmLoaded) loadLlmRoute();
-    if (btn.dataset.tab === 'whitelist') loadWhitelistModule();
   });
 });
 

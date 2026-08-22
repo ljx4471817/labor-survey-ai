@@ -218,7 +218,7 @@ formEl.addEventListener('submit', async (e) => {
       } else if (sys_role === '系统管理员' || (sys_role === '业务管理员' && (admin_level === '省级' || admin_level === '市级'))) {
         target = '/quiz-admin';  // 系统管理员/市级以上业务管理员 -> 测验管理
       } else if (sys_role === '业务管理员' && admin_level === '区县') {
-        target = '/dashboard';  // 区县业务管理员 -> 统一后台（白名单是其中模块）
+        target = '/whitelist-admin';  // 区县业务管理员 -> 白名单管理独立页（顶部统一导航可切数据看板）
       }
       location.replace(target);
     } else {

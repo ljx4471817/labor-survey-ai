@@ -80,6 +80,8 @@
 | 013-rag-规则冲突裁决.md | system prompt 硬规则 + FAQ scope + eval 三层冲突裁决 | 检索治理 |
 | `0014-llm-主备切换.md` | 三级路由：MiniMax 主用 -> qwen-flash 备用 -> DeepSeek 兜底，5h/7d 用量超阈值切换 | LLM 路由 |
 | `0015-权限系统双维度.md` | admin_level × sys_role 双维度 + 审计表 + 分级网页维护 | 权限治理 |
+| `0016-llm-三级路由.md` | 三级路由：MiniMax 主用 -> qwen-flash 备用 -> DeepSeek 兜底，5h/7d 用量超阈值切换 | LLM 路由 |
+| `0017-统一管理后台导航与数据看板收敛.md` | 统一顶部导航 + 数据看板只留数据 tab + 区县直落白名单页 | 管理后台导航 |
 
 ## 目录约定
 
@@ -210,8 +212,8 @@ cd backend && pip install -r requirements.txt
 **H5 前端（`backend/static/`）**：
 - `index.html`：调查员对话主页面
 - `login.html`：手机号白名单登录页（门禁启用后所有页面必经）
-- `dashboard.html`：统一后台入口——系统管理员全量（KB 优化 / 使用监测 / 使用侧发现）；业务管理员默认进入「白名单管理」模块；顶部有「测验管理」「退出登录」
-- `whitelist.html`：白名单管理页（角色化 CRUD / 批量停用 / 启用 / 导出 / 审计 / CSV 导入；支持 `?embed=1` 作为 dashboard 模块嵌入）
+- `dashboard.html`：数据看板——系统管理员全量（KB 优化 / 使用监测 / 使用侧发现）；区县业务管理员登录直落「白名单管理」独立页，进入数据看板默认「使用监测」；顶部统一导航（数据看板 / 测验管理 / 白名单管理）+ 退出登录
+- `whitelist.html`：白名单管理独立页（角色化 CRUD / 批量停用 / 启用 / 导出 / 审计 / CSV 导入）
 - `quiz-admin.html`：测验管理页（侧边栏测验列表 + 工作台两栏，步骤条按数据状态自动打勾，完成率内嵌 tab）
 - `quiz-stats.html`：完成率看板独立页（带 `quiz_id` 参数，从测验管理打开）
 - 共享工具函数放 `common.js`（`$()`、`escapeHtml()`、token 管理）
