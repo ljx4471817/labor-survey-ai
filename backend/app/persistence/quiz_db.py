@@ -119,7 +119,81 @@ CREATE INDEX IF NOT EXISTS idx_answers_phone ON answers(phone);
 
 _MIGRATIONS: tuple[str, ...] = (
     "ALTER TABLE questions ADD COLUMN selected INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE quizzes ADD COLUMN scene TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE imports ADD COLUMN quiz_id TEXT NOT NULL DEFAULT ''",
 )
+
+# 老库（2026-08-11 4128364 之前的 25c9b4f schema）重建 DDL：
+# 新代码 month 为可选标签，而老表 month 是 NOT NULL；SQLite 不支持 ALTER
+# 修改列约束，只能整表重建。重建后列定义与 _SCHEMA 完全一致。
+_QUIZZES_NEW_DDL = """
+CREATE TABLE quizzes__new (
+    id          TEXT PRIMARY KEY,
+    month       TEXT,
+    scene       TEXT NOT NULL DEFAULT '',
+    title       TEXT NOT NULL,
+    status      TEXT NOT NULL DEFAULT 'draft',
+    valid_from  TEXT,
+    valid_until TEXT,
+    created_by  TEXT NOT NULL,
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+);
+"""
+
+_QUIZZES_NEW_COPY = """
+INSERT INTO quizzes__new (id, month, scene, title, status, valid_from, valid_until, created_by, created_at, updated_at)
+SELECT id, month, '', title, status, valid_from, valid_until, created_by, created_at, updated_at FROM quizzes__old;
+"""
+
+_IMPORTS_NEW_DDL = """
+CREATE TABLE imports__new (
+    id              TEXT PRIMARY KEY,
+    quiz_id         TEXT NOT NULL DEFAULT '',
+    month           TEXT,
+    filename        TEXT NOT NULL,
+    file_size       INTEGER NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'imported',
+    raw_text_length INTEGER,
+    extracted_by    TEXT NOT NULL,
+    extracted_at    TEXT NOT NULL
+);
+"""
+
+_IMPORTS_NEW_COPY = """
+INSERT INTO imports__new (id, quiz_id, month, filename, file_size, status, raw_text_length, extracted_by, extracted_at)
+SELECT id, '', month, filename, file_size, status, raw_text_length, extracted_by, extracted_at FROM imports__old;
+"""
+
+
+def _migrate_month_nullable(conn: sqlite3.Connection) -> None:
+    """老库月列迁移：month 从 NOT NULL 改为可空（幂等，仅当检测到仍 NOT NULL 时重建）。
+
+    2026-08-11 测验泛化改造后 month 变为可选标签；25c9b4f 时代创建的库
+    quizzes/imports.month 是 NOT NULL，直接跑新代码不填月份会 IntegrityError。
+    SQLite 不能改列约束，故整表重建；重建同时带出 scene/quiz_id 列，
+    兼容任何处于中间状态的库。已重建的库 month 为可空，自动跳过。
+    """
+    for table, ddl, copy in (
+        ("quizzes", _QUIZZES_NEW_DDL, _QUIZZES_NEW_COPY),
+        ("imports", _IMPORTS_NEW_DDL, _IMPORTS_NEW_COPY),
+    ):
+        cols = {r["name"]: r["notnull"] for r in conn.execute(f"PRAGMA table_info({table})")}
+        if not cols or cols.get("month") != 1:
+            continue
+        conn.execute(f"ALTER TABLE {table} RENAME TO {table}__old")
+        try:
+            conn.execute(ddl)
+            conn.execute(copy)
+            conn.execute(f"DROP TABLE {table}__old")
+            conn.execute(f"ALTER TABLE {table}__new RENAME TO {table}")
+        except Exception:
+            # 重建失败：丢弃半成品、恢复原名，把异常抛给启动流程
+            conn.execute(f"DROP TABLE IF EXISTS {table}__new")
+            conn.execute(f"ALTER TABLE {table}__old RENAME TO {table}")
+            raise
+        if table == "quizzes":
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_quizzes_month ON quizzes(month)")
 
 
 def _now() -> str:
@@ -153,6 +227,7 @@ def _get_conn() -> sqlite3.Connection:
                             conn.execute(sql)
                         except sqlite3.OperationalError:
                             pass
+                    _migrate_month_nullable(conn)
                     conn.commit()
                     _schema_ready_for = DB_PATH
         _local.conn = conn

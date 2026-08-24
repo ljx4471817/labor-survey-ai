@@ -169,3 +169,101 @@ def test_next_seq_max_after_delete(db):
     conn.commit()
     q3 = db.create_quiz("C", scene="x", created_by="admin")
     assert q3 == "Q0003"  # 修复前 COUNT=1 -> Q0002 主键冲突
+
+# --- 老库 schema 迁移回归（25c9b4f → 4128364+） --------------------------------
+
+_OLD_QUIZ_DDL = """
+CREATE TABLE quizzes (
+    id          TEXT PRIMARY KEY,
+    month       TEXT NOT NULL,
+    title       TEXT NOT NULL,
+    status      TEXT NOT NULL DEFAULT 'draft',
+    valid_from  TEXT,
+    valid_until TEXT,
+    created_by  TEXT NOT NULL,
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+);
+CREATE TABLE imports (
+    id              TEXT PRIMARY KEY,
+    month           TEXT NOT NULL,
+    filename        TEXT NOT NULL,
+    file_size       INTEGER NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'imported',
+    raw_text_length INTEGER,
+    extracted_by    TEXT NOT NULL,
+    extracted_at    TEXT NOT NULL
+);
+CREATE TABLE questions (
+    id           TEXT PRIMARY KEY,
+    quiz_id      TEXT NOT NULL,
+    seq          INTEGER NOT NULL,
+    question     TEXT NOT NULL,
+    options      TEXT NOT NULL,
+    answer       TEXT NOT NULL,
+    explanation  TEXT NOT NULL,
+    source_quote TEXT DEFAULT '',
+    kb_faq_id    TEXT,
+    kb_question  TEXT DEFAULT '',
+    status       TEXT NOT NULL DEFAULT 'draft',
+    created_by   TEXT NOT NULL,
+    created_at   TEXT NOT NULL,
+    updated_at   TEXT NOT NULL
+);
+"""
+
+
+def test_migrate_legacy_schema_25c9b4f(tmp_path, monkeypatch):
+    """老库（无 scene/quiz_id/scenes，month NOT NULL）首次初始化自动补齐并保数据。"""
+    import sqlite3
+
+    db_path = tmp_path / "quiz_legacy.db"
+    con = sqlite3.connect(str(db_path))
+    con.executescript(_OLD_QUIZ_DDL)
+    con.execute(
+        "INSERT INTO quizzes (id, month, title, status, created_by, created_at, updated_at) "
+        "VALUES ('Q20260801', '2026-08', '8月提示', 'draft', 'admin', "
+        "'2026-08-01T00:00:00+08:00', '2026-08-01T00:00:00+08:00')"
+    )
+    con.execute(
+        "INSERT INTO imports (id, month, filename, file_size, status, extracted_by, extracted_at) "
+        "VALUES ('IMP20260801', '2026-08', 'a.wps', 123, 'extracted', 'admin', "
+        "'2026-08-01T00:00:00+08:00')"
+    )
+    con.commit()
+    con.close()
+
+    monkeypatch.setattr(quiz_db, "DB_PATH", db_path)
+    quiz_db.reset_conn()
+
+    # 迁移后旧数据保留且 scene 落空串；不填月份也能建测验/导入
+    old = quiz_db.get_quiz("Q20260801")
+    assert old is not None and old["scene"] == "" and old["month"] == "2026-08"
+    qid = quiz_db.create_quiz("无月份测验", scene="月度通知", created_by="admin", month=None)
+    assert qid.startswith("Q")
+    imp_id = quiz_db.create_import(qid, None, "b.docx", 100, "admin")
+    assert imp_id.startswith("IMP")
+    old_imp = quiz_db.get_import("IMP20260801")
+    assert old_imp is not None and old_imp["quiz_id"] == "" and old_imp["month"] == "2026-08"
+
+    # schema 断言：quizzes.scene / imports.quiz_id / scenes 表 / month 可空
+    con = sqlite3.connect(str(db_path))
+    qcols = {r[1]: r[3] for r in con.execute("PRAGMA table_info(quizzes)")}
+    icols = {r[1]: r[3] for r in con.execute("PRAGMA table_info(imports)")}
+    assert qcols.get("scene") is not None and qcols["month"] == 0
+    assert icols.get("quiz_id") is not None and icols["month"] == 0
+    tables = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    assert "scenes" in tables
+    qqcols = {r[1] for r in con.execute("PRAGMA table_info(questions)")}
+    assert "selected" in qqcols
+    con.close()
+
+    # 幂等：模拟服务重启再次初始化，迁移全部跳过、schema 不变
+    monkeypatch.setattr(quiz_db, "_schema_ready_for", None)
+    quiz_db.reset_conn()
+    assert len(quiz_db.list_quizzes()) == 2
+    quiz_db.create_quiz("再建一个", scene="其他", created_by="admin")
+    con = sqlite3.connect(str(db_path))
+    qcols2 = {r[1]: r[3] for r in con.execute("PRAGMA table_info(quizzes)")}
+    assert qcols2["month"] == 0 and "scene" in qcols2
+    con.close()
