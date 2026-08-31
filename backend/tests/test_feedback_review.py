@@ -70,6 +70,7 @@ def test_candidates_group_by_top1_qa_id_and_count_users():
     assert len(candidates) == 1
     candidate = candidates[0]
     assert candidate["qa_id"] == "27"
+    assert candidate["user_question"] == "q3"
     assert candidate["question"] == "F27 劳动报酬"
     assert candidate["feedback_count"] == 3
     assert candidate["user_count"] == 2

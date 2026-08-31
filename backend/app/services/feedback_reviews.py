@@ -74,11 +74,13 @@ def build_improvement_candidates(
             for status in REVIEW_STATUSES
         }
         first_item = items[0]
+        latest_item = max(items, key=lambda item: str(item.get("timestamp") or ""))
         sources = first_item.get("sources") or []
         qa_id = extract_qa_id(sources[0]) if sources else None
         candidates.append({
             "group_key": group_key,
             "qa_id": qa_id,
+            "user_question": str(latest_item.get("question") or "").strip(),
             "question": (
                 str(sources[0].get("question") or "").strip()
                 if qa_id and sources

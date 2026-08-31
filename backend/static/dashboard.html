@@ -657,9 +657,10 @@ function renderImprovementCandidates() {
   }
   el.innerHTML = candidates.map(item => {
     const records = item.records.filter(record => record.review_status === reviewStatus);
-    const display = item.qa_id
-      ? `qa_id=${escapeHtml(item.qa_id)} · ${escapeHtml(item.question || '')}`
-      : escapeHtml(item.question || '（无问题文本）');
+    const display = escapeHtml(item.user_question || item.question || '（无问题文本）');
+    const kbCandidate = item.qa_id
+      ? `命中候选：qa_id=${escapeHtml(item.qa_id)} · ${escapeHtml(item.question || '')}`
+      : '命中候选：无 QA';
     const details = records.map(renderSuggestion).join('');
     return `
       <div class="candidate">
@@ -668,7 +669,7 @@ function renderImprovementCandidates() {
           <span class="freq">${item.feedback_count} 条反馈 · ${item.user_count} 位用户</span>
         </div>
         <div class="key">${display}</div>
-        <div class="comments">待处理 ${item.status_counts.pending} · 已采纳 ${item.status_counts.accepted} · 不采纳 ${item.status_counts.rejected}</div>
+        <div class="comments">${kbCandidate}<br>待处理 ${item.status_counts.pending} · 已采纳 ${item.status_counts.accepted} · 不采纳 ${item.status_counts.rejected}</div>
         <details><summary>展开明细（${records.length}）</summary>${details}</details>
       </div>`;
   }).join('');
