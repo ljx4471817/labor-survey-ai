@@ -10,13 +10,13 @@
 
 **迭代 3 进行中 · 内测服务可用**
 
-- ✅ 后端：FastAPI + chat / feedback / auth / admin 分域 API（voice 2026-06-21 已停用）
-- ✅ 前端：H5 多页面（对话 / 登录 / 答题 / 测验管理 / 完成率 / 统一后台 / 白名单管理）
+- ✅ 后端：FastAPI + chat / conversations / hot-questions / feedback / auth / admin / quiz / whitelist 分域 API（voice 2026-06-21 已停用）
+- ✅ 前端：H5 多页面（对话 / 登录 / 答题 / 测验管理 / 完成率 / 统一后台 / 白名单管理），支持服务端会话历史与近一月热点问题
 - ✅ 知识库：Vector + BM25 hybrid 双轨检索，409 条（354 QA + 55 制度 chunk）
 - ✅ 鉴权：手机号白名单 + HMAC token（`whitelist.db` 实时唯一事实源）；双维度权限 admin_level × sys_role + 写操作审计
-- ✅ 后台：统一后台 dashboard（KB 优化 / 使用监测 / 使用侧发现 / 白名单管理模块）+ 区域 5 级下钻；月度测验系统（出题 / 下发 / 完成率）
+- ✅ 后台：统一数据看板 dashboard（KB 复核队列 / 使用监测）+ 区域 5 级下钻；顶部导航进入白名单管理与月度测验系统（出题 / 下发 / 完成率）
 - ✅ 内网穿透：Cloudflare Tunnel quick 模式
-- ✅ 质量门禁：221 项单元测试 + 104 项 RAG 全量评测
+- ✅ 质量门禁：256 项单元测试 + 104 项 RAG 全量评测
 - ⏳ 迭代 3 材料已就绪，待领导决策后启动（域名备案 15-20 工作日）
 
 ## 快速开始
@@ -32,9 +32,7 @@ cp .env.example .env
 # 编辑 .env 填入 DEEPSEEK_API_KEY、DASHSCOPE_API_KEY（XUNFEI_* 2026-06-21 起停用），并设置 LSX_SYSTEM_ADMIN_PHONE（系统管理员手机号）
 
 # 3. 构建知识库（首次必跑；QA + 制度原文双轨）
-python scripts/build_kb.py
-python scripts/build_chunks.py --input "knowledge-base/raw/markdown/劳动力调查制度（2026年定期报表）-定稿.md" --full
-python scripts/build_bm25.py --full
+python scripts/rebuild_all.py
 
 # 4. 启动后端 + 内网穿透（一键）
 scripts\start_tunnel.bat
@@ -57,13 +55,13 @@ labor-survey-ai/
 ├── knowledge-base/             # 知识库（原始素材 + QA + 构建脚本）
 ├── backend/
 │   ├── app/                    # FastAPI 应用代码
-│   │   ├── api/                # chat / feedback / auth / admin 子路由
+│   │   ├── api/                # chat / conversations / hot-questions / feedback / admin 子路由
 │   │   ├── core/               # config
 │   │   ├── models/schemas/     # 按领域拆分的 Pydantic schemas
 │   │   └── rag/                # bm25 / llm / prompts / retriever
 │   ├── data/                   # chroma 持久化 + bm25 索引（不入仓）
 │   ├── static/                 # H5 前端（单页应用）
-│   └── tests/                  # 单元测试（223 tests）
+│   └── tests/                  # 单元测试（256 tests）
 ├── scripts/
 │   ├── build_kb.py             # 向量库构建
 │   ├── build_bm25.py           # BM25 索引构建
@@ -110,6 +108,10 @@ labor-survey-ai/
 - `docs/adr/0013-rag-规则冲突裁决.md` — system prompt 硬规则 + eval 三层冲突裁决
 - `docs/adr/0014-llm-主备切换.md` — LLM 三级路由（MiniMax 主用 → qwen-flash 备用 → DeepSeek 兜底）
 - `docs/adr/0016-llm-三级路由.md` — 三级优先链 + fail-safe 沿链切换
+- `docs/adr/0017-统一管理后台导航与数据看板收敛.md` — 后台导航与看板信息架构
+- `docs/adr/0018-反馈复核闭环v2与近一月热点问题.md` — 结构化纠错反馈与热点问题
+- `docs/adr/0019-rag-grounding锚点.md` — RAG 回答的知识库锚点
+- `docs/adr/0020-服务端会话历史.md` — 永久会话、上下文与最近 10 轮回看
 - `docs/adr/0015-权限系统双维度.md` — admin_level × sys_role + 审计表 + 分级网页维护
 
 ## 项目级 Codex Skills（`.codex/skills/`，已 git 入仓）

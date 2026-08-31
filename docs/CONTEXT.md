@@ -44,6 +44,12 @@
 | RRF | Reciprocal Rank Fusion，Cormack 2009 提出的排名融合算法，c=60 | `rag/pure.py::rrf_fuse()` |
 | `doc_type` | 元数据字段，区分 QA 条目和 chunk 条目 | `rag/prompts.py.format_kb_results` 据此分别渲染 |
 | Embedding | 将 QA、chunk 和用户问题映射为语义向量；当前模型为 DashScope `text-embedding-v4` | `DASHSCOPE_MODEL` / `rag/retriever.py::embed_query` |
+| 近一月热点问题 | 对话前台展示的滚动 30 天全局热门 QA；仅统计有 top1 QA 的成功 RAG 请求，最多展示 5 条标准问法 | `services/hot_questions.py` / `api/hot_questions.py` / `static/index.html` |
+| `top_qa_id` | chat 命中 QA 时记录的 top1 QA 条目 ID；不回填历史数据 | `query_log.db` 的 `query_log` 表 / `api/chat.py` |
+| Grounding 锚点 | RAG 回答缺失 top1 QA 关键词、场景词或指标编号时，追加的知识库内要点提示 | `rag/grounding.py` / `api/chat.py` |
+| 历史会话 | 服务端按手机号永久保存的连续问答；用户可跨设备继续，管理端不可直接查看完整内容 | `persistence/conversations.py` / `api/conversations.py` |
+| 会话轮次 | 一条用户消息 + 一条成功助手回复；失败轮次不进入会话 | `api/chat.py` / `persistence/conversations.py` |
+| 来源快照 | 助手回答当时命中的 QA / 图片 / 来源 / 分数快照，用于历史回看还原依据 | `conversation_messages.sources_json` |
 
 ## 5. 检索模式枚举
 
@@ -62,11 +68,12 @@
 |------|------|------|
 | 反馈事件 | 调查员对 AI 回复的采纳/不采纳投票 | `POST /api/feedback` 写入 `backend/data/feedback.jsonl` |
 | 反馈评级 | `up` = 采纳 / `down` = 不采纳 | `backend/app/core/constants.py::FeedbackRating` |
-| 已处理标记 | 已人工跟进过的反馈 ID | `backend/data/feedback_resolved.jsonl`（append-only event log） |
+| 答案纠错反馈 | RAG 命中后选择“答案不正确，反馈”时必填的 `corrected_answer` + `evidence`；同一 `phone + request_id` 只能提交一次 | `POST /api/feedback` / `backend/data/feedback.jsonl` |
+| 反馈复核 | 管理员对负面反馈标记 `accepted` / `rejected`，可改判，最新事件生效 | `POST /api/admin/feedback/resolve` / `backend/data/feedback_resolved.jsonl` |
+| 复核状态 | `pending` / `accepted` / `rejected`；Dashboard 按状态分组展示 | `services/feedback_reviews.py` / `static/dashboard.html` |
 | Query 日志 | 每次 chat 请求的元数据（不含答案内容） | `backend/data/query_log.db`（SQLite） |
-| Dashboard | 数据看板：系统管理员全量（KB 优化 / 使用监测 / 使用侧发现）；区县业务管理员登录直落「白名单管理」独立页，进入数据看板默认「使用监测」；顶部统一导航（数据看板 / 测验管理 / 白名单管理） | `backend/static/dashboard.html` |
-| 候选 KB 改进 | 自动从 down 反馈 + 高频 query 中识别 KB 缺口 | `aggregate_feedback()` 的 `candidate_improvements` 字段 |
-| `MIN_FREQ` | 进入"候选改进"列表的最低频次阈值（默认 3） | `backend/app/services/feedback_analytics.py` |
+| Dashboard | 数据看板：系统管理员全量（KB 复核队列 / 使用监测）；区县业务管理员登录直落「白名单管理」独立页，进入数据看板默认「使用监测」；顶部统一导航（数据看板 / 测验管理 / 白名单管理） | `backend/static/dashboard.html` |
+| KB 改进候选 | 现在仅来自用户提交的负面反馈修正建议，不再从高频 query 自动生成 | `services/feedback_reviews.py::build_improvement_candidates` |
 
 ## 7. 鉴权与权限（PRD 权限系统改造后）
 
@@ -84,6 +91,7 @@
 | HMAC token | 登录后由服务端签发的 token，前端存在 localStorage | `infra/auth.py::sign_token` / `verify_token` |
 | `LSX_AUTH_SECRET` | HMAC 签名的密钥（生产必须设置） | `.env` |
 | `LSX_SYSTEM_ADMIN_PHONE` | 系统管理员手机号（未设置时系统管理员专属功能 403） | `.env` |
+| `LSX_CONVERSATIONS_DB_PATH` | 会话历史 SQLite 路径；默认 `backend/data/conversations.db` | `.env` / `persistence/conversations.py` |
 | `require_user` | 登录 + 每次请求查 whitelist 确认 active（停用即时生效） | `infra/auth.py` |
 | `require_whitelist_admin` | `sys_role ∈ {系统管理员, 业务管理员}`，返回完整 user | `infra/auth.py` |
 | `require_quiz_admin` | `sys_role ∈ {系统管理员, 业务管理员}` 且 `admin_level ∈ {省级, 市级}` | `infra/auth.py` |

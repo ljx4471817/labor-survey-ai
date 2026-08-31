@@ -9,13 +9,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from loguru import logger
 
 from app.core.config import PROJECT_ROOT
-from app.infra.auth import require_system_admin
-from app.models.schemas import ResolveRequest
+from app.infra.auth import get_current_user, require_system_admin
+from app.models.schemas import FeedbackReviewRequest
 from app.persistence.query_log import stats_by_region as query_stats_by_region
 from app.services.feedback_analytics import (
     REGION_LEVELS,
     aggregate_feedback,
     parent_matches,
+)
+from app.services.feedback_reviews import (
+    build_improvement_candidates,
+    build_review_index,
 )
 from app.services.jsonl_utils import read_jsonl
 
@@ -29,32 +33,51 @@ UTC8 = timezone(timedelta(hours=8))
 @router.get("/feedback/stats")
 def feedback_stats(phone: str = Depends(require_system_admin)) -> dict:
     records = read_jsonl(FEEDBACK_PATH)
-    resolved_events = read_jsonl(RESOLVED_PATH)
-    resolved_ids = {e["resolved_id"] for e in resolved_events if "resolved_id" in e}
+    review_events = read_jsonl(RESOLVED_PATH)
+    review_index = build_review_index(review_events)
+    reviewed_ids = set(review_index)
     logger.info(
-        f"feedback_stats: total={len(records)} resolved={len(resolved_ids)} by={phone[:3]}****"
+        f"feedback_stats: total={len(records)} reviewed={len(reviewed_ids)} by={phone[:3]}****"
     )
-    return aggregate_feedback(records, resolved_ids)
+    stats = aggregate_feedback(records, reviewed_ids)
+    down_records = [record for record in records if record.get("rating") == "down"]
+    review_status_counts = {"pending": 0, "accepted": 0, "rejected": 0}
+    for record in down_records:
+        review = review_index.get(str(record.get("id") or ""))
+        status = str(review.get("action")) if review else "pending"
+        review_status_counts[status] += 1
+    stats.update({
+        "review_status_counts": review_status_counts,
+        "improvement_candidates": build_improvement_candidates(
+            records,
+            review_index,
+        ),
+    })
+    return stats
 
 
 @router.post("/feedback/resolve")
-def resolve_feedback(req: ResolveRequest, phone: str = Depends(require_system_admin)) -> dict:
+def resolve_feedback(req: FeedbackReviewRequest, phone: str = Depends(require_system_admin)) -> dict:
     RESOLVED_PATH.parent.mkdir(parents=True, exist_ok=True)
+    user = get_current_user(phone)
+    record_ids = {str(item.get("id") or "") for item in read_jsonl(FEEDBACK_PATH)}
+    if req.record_id not in record_ids:
+        raise HTTPException(404, "反馈记录不存在")
     ts = datetime.now(UTC8).isoformat(timespec="seconds")
     try:
         with RESOLVED_PATH.open("a", encoding="utf-8") as f:
-            for rid in req.record_ids:
-                f.write(
-                    json.dumps(
-                        {"resolved_id": rid, "ts": ts}, ensure_ascii=False
-                    )
-                    + "\n"
-                )
+            f.write(json.dumps({
+                "record_id": req.record_id,
+                "action": req.action,
+                "ts": ts,
+                "reviewer_phone": phone,
+                "reviewer_name": user.get("name", "") if user else "",
+            }, ensure_ascii=False) + "\n")
     except OSError as e:
         logger.exception("resolve 写入失败")
         raise HTTPException(500, f"resolve 写入失败: {e}")
-    logger.info(f"resolve: count={len(req.record_ids)} by={phone[:3]}****")
-    return {"ok": True, "count": len(req.record_ids)}
+    logger.info(f"resolve: action={req.action} rid={req.record_id} by={phone[:3]}****")
+    return {"ok": True, "record_id": req.record_id, "action": req.action}
 
 
 @router.get("/feedback/stats/region")

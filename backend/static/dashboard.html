@@ -153,6 +153,25 @@ button.primary:hover { background: var(--ink-blue-soft); }
 .pagination { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }
 .pagination .info { font-size: 0.85rem; color: var(--text-dim); }
 
+.review-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.review-tab {
+  font-family: inherit; font-size: 0.82rem; padding: 6px 12px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--paper-dim); color: var(--text-dim); cursor: pointer;
+}
+.review-tab.active { background: var(--ink-blue); border-color: var(--ink-blue); color: white; font-weight: 600; }
+.review-status { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.review-status.pending { background: var(--accent-soft); color: var(--accent); }
+.review-status.accepted { background: #e8f5ee; color: var(--good); }
+.review-status.rejected { background: var(--bad-soft); color: var(--bad); }
+.suggestion-item { border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 10px; }
+.suggestion-item .who { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 4px 12px; font-size: 0.78rem; color: var(--text-dim); margin-top: 6px; }
+.suggestion-item .who b { color: var(--text); font-weight: 600; margin-right: 4px; }
+.suggestion-item .block-label { font-size: 0.75rem; font-weight: 600; color: var(--text-dim); margin: 8px 0 3px; }
+.suggestion-item .text-block { white-space: pre-wrap; background: white; border: 1px solid var(--line); border-radius: 6px; padding: 8px; max-height: 180px; overflow: auto; }
+.suggestion-item .review-history { margin-top: 8px; font-size: 0.76rem; color: var(--text-dim); }
+.candidate .toggle-btn { margin-left: auto; }
+
 .error {
   background: var(--bad-soft);
   color: var(--bad);
@@ -367,29 +386,26 @@ footer {
 /* sub-cards: slate-50 panels on white card for inner hierarchy */
 #tab-kb .row,
 #tab-kb .candidate,
-#tab-kb .recent-item,
-#tab-usage-gaps .row {
+#tab-kb .recent-item {
   background: #F8FAFC;
   border-color: #E2E8F0;
   box-shadow: none;
 }
 #tab-kb .row:hover,
-#tab-kb .candidate:hover,
-#tab-usage-gaps .row:hover {
+#tab-kb .candidate:hover {
   border-color: #CBD5E1;
   box-shadow: 0 4px 12px rgba(15,23,42,.08);
 }
 #tab-kb .row .q,
 #tab-kb .candidate .key,
-#tab-kb .recent-item .q,
-#tab-usage-gaps .row .q { color: #0F172A; }
+#tab-kb .recent-item .q { color: #0F172A; }
 #tab-kb .recent-item .a { color: #334155; }
 #tab-kb .row .meta,
 #tab-kb .candidate .freq,
 #tab-kb .candidate .comments,
 #tab-kb .recent-item .id,
 #tab-kb .recent-item .ts,
-#tab-usage-gaps .row .meta { color: #64748B; }
+#tab-kb .recent-item .ts { color: #64748B; }
 
 /* dark mode: dark panels, keep slim accent bars */
 html[data-theme="dark"] #tab-kb > section { color: var(--c-ink-2); }
@@ -401,15 +417,13 @@ html[data-theme="dark"] #tab-kb section h2 {
 html[data-theme="dark"] #tab-kb > section::before { opacity: .85; }
 html[data-theme="dark"] #tab-kb .row,
 html[data-theme="dark"] #tab-kb .candidate,
-html[data-theme="dark"] #tab-kb .recent-item,
-html[data-theme="dark"] #tab-usage-gaps .row {
+html[data-theme="dark"] #tab-kb .recent-item {
   background: var(--c-bg-tint);
   border-color: var(--c-line);
 }
 html[data-theme="dark"] #tab-kb .row .q,
 html[data-theme="dark"] #tab-kb .candidate .key,
-html[data-theme="dark"] #tab-kb .recent-item .q,
-html[data-theme="dark"] #tab-usage-gaps .row .q { color: var(--c-ink); }
+html[data-theme="dark"] #tab-kb .recent-item .q { color: var(--c-ink); }
 html[data-theme="dark"] #tab-kb .recent-item .a { color: var(--c-ink-2); }
 html[data-theme="dark"] #tab-kb section h2 .h2-sub,
 html[data-theme="dark"] #tab-kb .row .meta,
@@ -417,32 +431,16 @@ html[data-theme="dark"] #tab-kb .candidate .freq,
 html[data-theme="dark"] #tab-kb .candidate .comments,
 html[data-theme="dark"] #tab-kb .recent-item .id,
 html[data-theme="dark"] #tab-kb .recent-item .ts,
-html[data-theme="dark"] #tab-usage-gaps .row .meta { color: var(--c-ink-3); }
-
-/* usage-gaps modules: white card + slim accent bars (blue/orange/red/slate) */
-#tab-usage-gaps > section { position: relative; }
-#tab-usage-gaps > section::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 4px;
-  z-index: 1;
-  border-radius: 10px 0 0 10px;
-  background: #94A3B8;
-}
-#tab-usage-gaps > section:nth-child(1)::before { background: #5B8FD4; }
-#tab-usage-gaps > section:nth-child(2)::before { background: #E2955E; }
-#tab-usage-gaps > section:nth-child(3)::before { background: #D96060; }
-#tab-usage-gaps > section:nth-child(4)::before { background: #94A3B8; }
+html[data-theme="dark"] #tab-kb .recent-item .ts { color: var(--c-ink-3); }
 
 /* dark mode: tinted zones fall back to dark panels, keep the accent bar */
 html[data-theme="dark"] #tab-kb > section,
-html[data-theme="dark"] #tab-usage-gaps > section {
+html[data-theme="dark"] #tab-kb > section {
   background: var(--c-bg-elev);
   border-color: var(--c-line);
 }
 html[data-theme="dark"] #tab-kb > section h2,
-html[data-theme="dark"] #tab-usage-gaps > section h2 {
+html[data-theme="dark"] #tab-kb > section h2 {
   background: linear-gradient(90deg, var(--c-bg-tint), transparent);
   border-bottom-color: var(--c-line);
 }
@@ -482,33 +480,17 @@ html body:not(.blue-bg) section h2 { margin: -16px -20px 14px; padding: 12px 20p
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="kb">KB 优化</button>
     <button class="tab-btn" data-tab="usage">使用监测</button>
-    <button class="tab-btn" data-tab="usage-gaps">使用侧发现</button>
   </div>
 
   <div class="tab-panel active" id="tab-kb">
     <section>
-      <h2>候选 KB 改进</h2>
-      <div id="candidates"></div>
-    </section>
-
-    <section>
-      <h2>集中不采纳问题 · Top 10</h2>
-      <div class="list" id="topQuestions"></div>
-    </section>
-
-    <section>
-      <h2>KB 问题热点 · Top 5（被不采纳答案引用的条目）</h2>
-      <div class="list" id="topKb"></div>
-    </section>
-
-    <section>
-      <h2>最近不采纳明细 <span class="h2-sub" id="resolvedInfo"></span></h2>
-      <div id="recent"></div>
-      <div class="pagination">
-        <button id="prevBtn">上一页</button>
-        <span class="info" id="pageInfo">—</span>
-        <button id="nextBtn">下一页</button>
+      <h2>KB 改进候选 <span class="h2-sub">（负面反馈修正建议队列）</span></h2>
+      <div class="review-tabs" id="reviewTabs">
+        <button class="review-tab active" data-status="pending">待处理 0</button>
+        <button class="review-tab" data-status="accepted">已采纳 0</button>
+        <button class="review-tab" data-status="rejected">不采纳 0</button>
       </div>
+      <div id="improvementCandidates"></div>
     </section>
   </div>
 
@@ -543,47 +525,13 @@ html body:not(.blue-bg) section h2 { margin: -16px -20px 14px; padding: 12px 20p
     </section>
   </div>
 
-  <div class="tab-panel" id="tab-usage-gaps">
-    <section>
-      <h2>使用侧 KB 改进候选 <span class="h2-sub">（query_log + feedback 联合分析）</span></h2>
-      <div class="usage-filters">
-        <div class="field"><label>近 N 天</label><input id="gapsSinceDays" type="number" value="7" min="1" max="90"></div>
-        <div class="field"><label>最小频次</label><input id="gapsMinFreq" type="number" value="3" min="2" max="20"></div>
-        <div class="actions">
-          <button class="primary" onclick="loadGaps()">刷新</button>
-        </div>
-      </div>
-
-          </section>
-
-    <section>
-<h2 >① 高频 out_of_scope <span class="h2-sub">KB 完全未覆盖（应新增条目）</span></h2>
-      <div class="list" id="oosList"></div>
-
-          </section>
-
-    <section>
-<h2 >② 命中但 down <span class="h2-sub">KB 命中但用户不采纳（应改写现有条目）</span></h2>
-      <div class="list" id="downList"></div>
-
-          </section>
-
-    <section>
-<p style="margin-top:18px;font-size:0.82rem;color:var(--text-dim)">
-        ③ 高频但相似度低的 query（含 embedding 计算）由 <code>python scripts/detect_gaps_from_usage.py</code> 离线跑，产物 <code>reports/gap-report-from-usage-&lt;date&gt;.json</code>。
-      </p>
-        </section>
-
-  </div>
-
 </main>
 <footer>劳动力调查 AI 助手 · 反馈看板 v1 · 由 <code>/api/admin/feedback/stats</code> 驱动</footer>
 
 <script src="/static/common.js"></script>
 <script>
-const PAGE_SIZE = 20;
 let state = null;
-let page = 0;
+let reviewStatus = 'pending';
 
 requireLoginOrRedirect();
 
@@ -607,66 +555,6 @@ function renderSummary() {
   const pct = (s.adoption_rate * 100).toFixed(1) + '%';
   $('rate').textContent = pct;
   $('rateCard').classList.toggle('low', s.adoption_rate < 0.6 && s.total > 0);
-}
-
-function renderCandidates() {
-  const cands = state.candidate_improvements;
-  const el = $('candidates');
-  if (!cands.length) {
-    el.innerHTML = '<div class="empty">暂无候选。当前反馈量低于阈值（min_freq=3）。</div>';
-    return;
-  }
-  el.innerHTML = cands.map(c => {
-    const isMissing = c.type === 'missing_entry';
-    const display = isMissing ? c.key : `qa_id=${escapeHtml(c.key)}` + (c.question ? `（${escapeHtml(c.question)}）` : '');
-    const detail = isMissing
-      ? `<div class="comments"><b>用户补充说明：</b><ul>${c.sample_comments.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`
-      : `<div class="comments">该 KB 条目被 ${c.frequency} 条不采纳答案引用，可能答得不准，需要修订或补充上下文。</div>`;
-    return `
-      <div class="candidate">
-        <div class="head">
-          <span class="tag">${isMissing ? 'KB 缺失' : 'KB 待修订'}</span>
-          <span class="freq">${c.frequency} 次不采纳</span>
-        </div>
-        <div class="key">${display}</div>
-        ${detail}
-      </div>`;
-  }).join('');
-}
-
-function renderTopQuestions() {
-  const items = state.top_down_questions;
-  const el = $('topQuestions');
-  if (!items.length) {
-    el.innerHTML = '<div class="empty">无</div>';
-    return;
-  }
-  el.innerHTML = items.map(it => `
-    <div class="row">
-      <div class="count">${it.down_count}</div>
-      <div class="body">
-        <div class="q">${escapeHtml(it.question)}</div>
-        ${it.sample_comments.length ? `<div class="meta">样例评论：${escapeHtml(it.sample_comments[0])}</div>` : ''}
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderTopKb() {
-  const items = state.top_down_kb;
-  const el = $('topKb');
-  if (!items.length) {
-    el.innerHTML = '<div class="empty">无</div>';
-    return;
-  }
-  el.innerHTML = items.map(it => `
-    <div class="row">
-      <div class="count">${it.down_count}</div>
-      <div class="body">
-        <div class="q">qa_id=${escapeHtml(it.qa_id)}：${escapeHtml(it.question || '（无问题文本）')}</div>
-      </div>
-    </div>
-  `).join('');
 }
 
 function renderChart() {
@@ -693,80 +581,135 @@ function renderChart() {
   }).join('');
 }
 
-function renderRecent() {
-  const all = state.recent_down || [];
-  const resolvedSet = new Set(state.resolved_ids || []);
-  const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
-  if (page >= totalPages) page = totalPages - 1;
-  if (page < 0) page = 0;
-  const start = page * PAGE_SIZE;
-  const slice = all.slice(start, start + PAGE_SIZE);
-  const el = $('recent');
-  if (!all.length) {
-    el.innerHTML = '<div class="empty">无</div>';
-    $('pageInfo').textContent = '0 / 0';
-    $('prevBtn').disabled = true;
-    $('nextBtn').disabled = true;
-  } else {
-    el.innerHTML = slice.map(r => {
-      const resolved = resolvedSet.has(r.id);
-      const c = r.comment ? `<div class="c">用户评论：${escapeHtml(r.comment)}</div>` : '';
-      return `
-        <div class="recent-item ${resolved ? 'resolved' : ''}" data-id="${escapeHtml(r.id)}">
-          <div class="head">
-            <span class="id">${escapeHtml(r.id)}</span>
-            <span class="ts">${escapeHtml(r.timestamp || '')}</span>
-            <span style="margin-left:auto">
-              ${resolved ? '<span style="color:var(--text-dim);font-size:0.75rem">✓ 已处理</span>' : `<button class="resolveBtn" data-id="${escapeHtml(r.id)}">标记已处理</button>`}
-            </span>
-          </div>
-          <div class="q">${escapeHtml(r.question || '')}</div>
-          <div class="a">${escapeHtml((r.answer || '').slice(0, 400))}${(r.answer || '').length > 400 ? '…' : ''}</div>
-          ${c}
-        </div>`;
-    }).join('');
-    $('pageInfo').textContent = `第 ${page + 1} / ${totalPages} 页 · 共 ${all.length} 条`;
-    $('prevBtn').disabled = page === 0;
-    $('nextBtn').disabled = page >= totalPages - 1;
-  }
-  $('resolvedInfo').textContent = `· ${(state.resolved_ids || []).length} 条已处理`;
+const REVIEW_LABELS = { pending: '待处理', accepted: '已采纳', rejected: '不采纳' };
+
+function renderReviewTabs() {
+  const counts = state.review_status_counts || { pending: 0, accepted: 0, rejected: 0 };
+  document.querySelectorAll('#reviewTabs .review-tab').forEach(button => {
+    const status = button.dataset.status;
+    button.textContent = `${REVIEW_LABELS[status]} ${counts[status] || 0}`;
+    button.classList.toggle('active', status === reviewStatus);
+  });
 }
 
-async function resolveRecord(rid, btn) {
-  if (btn) btn.disabled = true;
+function renderReviewHistory(record) {
+  const history = record.review?.history || [];
+  if (!history.length) return '';
+  const items = history.map(event =>
+    `<div>${escapeHtml(event.ts || '')} · ${escapeHtml(event.reviewer_name || event.reviewer_phone || '管理员')} · ${REVIEW_LABELS[event.action] || event.action}</div>`
+  ).join('');
+  return `<details class="review-history"><summary>复核历史</summary>${items}</details>`;
+}
+
+function renderSources(record) {
+  const sources = record.sources || [];
+  if (!sources.length) return '';
+  const items = sources.map(s => `<li>${escapeHtml(s.qa_id || '?')} · ${escapeHtml(s.question || '')} · 来源：${escapeHtml(s.source || '?')}</li>`).join('');
+  return `<details><summary>参考资料（${sources.length}）</summary><ul>${items}</ul></details>`;
+}
+
+function renderSuggestion(record) {
+  const status = record.review_status;
+  const currentAction = status === 'pending' ? '' : status;
+  const region = [
+    record.province, record.city, record.county,
+    record.township, record.community,
+  ].filter(Boolean).join(' / ') || '—';
+  return `
+    <div class="suggestion-item" data-record-id="${escapeHtml(record.id)}">
+      <div class="head">
+        <span class="ts">${escapeHtml(record.timestamp || '')}</span>
+        <span class="review-status ${status}">${REVIEW_LABELS[status]}</span>
+        <span class="toggle-btn">
+          <button class="review-btn" data-id="${escapeHtml(record.id)}" data-action="accepted" ${currentAction === 'accepted' ? 'disabled' : ''}>采纳建议</button>
+          <button class="review-btn" data-id="${escapeHtml(record.id)}" data-action="rejected" ${currentAction === 'rejected' ? 'disabled' : ''}>不采纳建议</button>
+        </span>
+      </div>
+      <div class="who">
+        <div><b>姓名</b>${escapeHtml(record.name || '—')}</div>
+        <div><b>手机号</b>${escapeHtml(record.phone || '—')}</div>
+        <div><b>区域</b>${escapeHtml(region)}</div>
+      </div>
+      <div class="block-label">用户问题</div>
+      <div class="text-block">${escapeHtml(record.question || '')}</div>
+      <div class="block-label">原答案</div>
+      <div class="text-block">${escapeHtml(record.answer || '')}</div>
+      <div class="block-label">正确答案</div>
+      <div class="text-block">${escapeHtml(record.corrected_answer || '')}</div>
+      <div class="block-label">依据</div>
+      <div class="text-block">${escapeHtml(record.evidence || '')}</div>
+      ${renderSources(record)}
+      ${renderReviewHistory(record)}
+    </div>`;
+}
+
+function renderImprovementCandidates() {
+  const counts = state.review_status_counts || { pending: 0, accepted: 0, rejected: 0 };
+  const all = state.improvement_candidates || [];
+  const candidates = all
+    .filter(item => (item.status_counts?.[reviewStatus] || 0) > 0)
+    .sort((a, b) => String(b.latest_by_status?.[reviewStatus] || '')
+      .localeCompare(String(a.latest_by_status?.[reviewStatus] || '')));
+  const el = $('improvementCandidates');
+  if (!candidates.length) {
+    el.innerHTML = `<div class="empty">当前${REVIEW_LABELS[reviewStatus]}反馈为空</div>`;
+    return;
+  }
+  el.innerHTML = candidates.map(item => {
+    const records = item.records.filter(record => record.review_status === reviewStatus);
+    const display = item.qa_id
+      ? `qa_id=${escapeHtml(item.qa_id)} · ${escapeHtml(item.question || '')}`
+      : escapeHtml(item.question || '（无问题文本）');
+    const details = records.map(renderSuggestion).join('');
+    return `
+      <div class="candidate">
+        <div class="head">
+          <span class="tag">${REVIEW_LABELS[reviewStatus]}</span>
+          <span class="freq">${item.feedback_count} 条反馈 · ${item.user_count} 位用户</span>
+        </div>
+        <div class="key">${display}</div>
+        <div class="comments">待处理 ${item.status_counts.pending} · 已采纳 ${item.status_counts.accepted} · 不采纳 ${item.status_counts.rejected}</div>
+        <details><summary>展开明细（${records.length}）</summary>${details}</details>
+      </div>`;
+  }).join('');
+}
+
+async function reviewRecord(recordId, action, button) {
+  if (button) button.disabled = true;
   try {
-    const r = await fetch('/api/admin/feedback/resolve', {
+    const response = await fetch('/api/admin/feedback/resolve', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeader() },
-      body: JSON.stringify({ record_ids: [rid] }),
+      body: JSON.stringify({ record_id: recordId, action }),
     });
-    if (await handle401(r)) return;
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    state.resolved_ids.push(rid);
-    renderRecent();
+    if (await handle401(response)) return;
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    await loadStats();
   } catch (e) {
-    alert('标记失败：' + e.message);
-    if (btn) btn.disabled = false;
+    alert('复核失败：' + e.message);
+    if (button) button.disabled = false;
   }
 }
 
 function render() {
   renderSummary();
-  renderCandidates();
-  renderTopQuestions();
-  renderTopKb();
   renderChart();
-  renderRecent();
+  renderReviewTabs();
+  renderImprovementCandidates();
 }
 
 document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.resolveBtn');
-  if (btn) {
-    resolveRecord(btn.dataset.id, btn);
+  const reviewTab = e.target.closest('.review-tab');
+  if (reviewTab) {
+    reviewStatus = reviewTab.dataset.status;
+    renderReviewTabs();
+    renderImprovementCandidates();
     return;
   }
-  if (e.target.id === 'prevBtn') { page--; renderRecent(); }
-  if (e.target.id === 'nextBtn') { page++; renderRecent(); }
+  const btn = e.target.closest('.review-btn');
+  if (btn) {
+    reviewRecord(btn.dataset.id, btn.dataset.action, btn);
+  }
 });
 
 // ---- 角色探测：系统管理员全量；业务管理员只见本区域只读统计 ----
@@ -788,11 +731,10 @@ async function initRole() {
     const sys = me.sys_role === '系统管理员';
     $('feedbackCards').style.display = sys ? '' : 'none';
     $('tab-kb').style.display = sys ? '' : 'none';
-    $('tab-usage-gaps').style.display = sys ? '' : 'none';
     $('llmRouteSection').style.display = sys ? '' : 'none';
     const chartSec = document.querySelector('#tab-usage section:nth-of-type(2)');
     if (chartSec) chartSec.style.display = sys ? '' : 'none';
-    document.querySelectorAll('.tab-btn[data-tab="kb"], .tab-btn[data-tab="usage-gaps"]').forEach(b => b.style.display = sys ? '' : 'none');
+    document.querySelectorAll('.tab-btn[data-tab="kb"]').forEach(b => b.style.display = sys ? '' : 'none');
     await initAdminNav('dashboard', me);
     if (sys) {
       loadStats();
@@ -897,99 +839,8 @@ function switchTab(name) {
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     switchTab(btn.dataset.tab);
-    if (btn.dataset.tab === 'usage-gaps' && !gapsLoaded) loadGaps();
     if (btn.dataset.tab === 'usage' && !llmLoaded) loadLlmRoute();
   });
-});
-
-// ── 使用侧 KB 闭环（v2） ─────
-
-let gapsLoaded = false;
-let gapsState = null;
-
-async function loadGaps() {
-  const sinceDays = parseInt($('gapsSinceDays').value, 10) || 7;
-  const minFreq = parseInt($('gapsMinFreq').value, 10) || 3;
-  $('oosList').innerHTML = '<div class="empty">加载中…</div>';
-  $('downList').innerHTML = '';
-  try {
-    const r = await fetch(
-      `/api/admin/usage/gaps?since_days=${sinceDays}&min_freq=${minFreq}`,
-      { headers: authHeader() },
-    );
-    if (await handle401(r)) return;
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    gapsState = await r.json();
-    renderGaps();
-    gapsLoaded = true;
-  } catch (e) {
-    $('oosList').innerHTML = '<div class="error">加载失败：' + escapeHtml(e.message) + '</div>';
-  }
-}
-
-function renderGaps() {
-  const oos = gapsState.high_freq_out_of_scope || [];
-  const down = gapsState.kb_hit_but_down || [];
-
-  if (!oos.length) {
-    $('oosList').innerHTML = '<div class="empty">无</div>';
-  } else {
-    $('oosList').innerHTML = oos.map((it, i) => `
-      <div class="row" data-q="${escapeHtml(it.query)}">
-        <div class="count">${it.freq}</div>
-        <div class="body">
-          <div class="q">${escapeHtml(it.query)}</div>
-          <div class="meta">${it.user_count} 人问过 · 最近 ${escapeHtml(it.last_seen || '')}</div>
-          <div class="actions" style="margin-top:6px">
-            <button class="markGapBtn" data-idx="${i}" data-source="high_freq_out_of_scope">标记为待入库</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  if (!down.length) {
-    $('downList').innerHTML = '<div class="empty">无</div>';
-  } else {
-    $('downList').innerHTML = down.map((it, i) => {
-      const sq = (it.sample_questions || []).map(q => `<li>${escapeHtml(q)}</li>`).join('');
-      const sc = (it.sample_comments || []).map(c => `<li>${escapeHtml(c)}</li>`).join('');
-      return `
-      <div class="row">
-        <div class="count">${it.down_count}</div>
-        <div class="body">
-          <div class="q">qa_id=${escapeHtml(it.qa_id)} · ${it.down_count} 次不采纳</div>
-          ${sq ? `<div class="meta">样例问题：<ul style="padding-left:18px">${sq}</ul></div>` : ''}
-          ${sc ? `<div class="meta" style="color:var(--bad)">样例评论：<ul style="padding-left:18px">${sc}</ul></div>` : ''}
-        </div>
-      </div>`;
-    }).join('');
-  }
-}
-
-document.addEventListener('click', async (e) => {
-  const btn = e.target.closest('.markGapBtn');
-  if (!btn) return;
-  btn.disabled = true;
-  const idx = parseInt(btn.dataset.idx, 10);
-  const source = btn.dataset.source;
-  const item = gapsState.high_freq_out_of_scope[idx];
-  if (!item) { btn.disabled = false; return; }
-  try {
-    const r = await fetch('/api/admin/usage/gaps/mark', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeader() },
-      body: JSON.stringify({ items: [{ query: item.query }], source }),
-    });
-    if (await handle401(r)) return;
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const j = await r.json();
-    btn.textContent = `✓ 已标记 (${j.total} 条候选)`;
-    btn.classList.add('primary');
-  } catch (err) {
-    btn.disabled = false;
-    alert('标记失败：' + err.message);
-  }
 });
 
 // ── 使用情况筛选查询 ─────

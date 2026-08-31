@@ -18,7 +18,9 @@ from app.api.quiz_admin import router as quiz_admin_router
 from app.api.whitelist_admin import router as whitelist_admin_router
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
+from app.api.conversations import router as conversations_router
 from app.api.feedback import router as feedback_router
+from app.api.hot_questions import router as hot_questions_router
 from app.infra.auth import require_user
 # DISABLED(voice) 2026-06-21
 # DISABLED(voice) 2026-06-21: 语音功能停用，输入法自带语音转写已够用。如需恢复：取消下面一行注释。
@@ -69,6 +71,14 @@ app.include_router(
 )
 app.include_router(
     feedback_router, prefix="/api", tags=["feedback"],
+    dependencies=[Depends(require_user)],
+)
+app.include_router(
+    hot_questions_router, prefix="/api", tags=["chat"],
+    dependencies=[Depends(require_user)],
+)
+app.include_router(
+    conversations_router, prefix="/api", tags=["chat"],
     dependencies=[Depends(require_user)],
 )
 

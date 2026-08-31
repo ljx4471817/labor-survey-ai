@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS query_log (
     retrieval_score REAL,
     request_id      TEXT,
     hits            INTEGER,
-    latency_ms      INTEGER
+    latency_ms      INTEGER,
+    top_qa_id       TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_query_log_region
     ON query_log(province, city, county, township, community);
@@ -49,6 +50,7 @@ _MIGRATIONS = (
     "ALTER TABLE query_log ADD COLUMN request_id TEXT",
     "ALTER TABLE query_log ADD COLUMN hits INTEGER",
     "ALTER TABLE query_log ADD COLUMN latency_ms INTEGER",
+    "ALTER TABLE query_log ADD COLUMN top_qa_id TEXT",
     "CREATE INDEX IF NOT EXISTS idx_query_log_request_id ON query_log(request_id)",
 )
 
@@ -91,8 +93,9 @@ def insert(entry: dict) -> None:
         """
         INSERT INTO query_log
             (ts, phone, name, province, city, county, township, community,
-             query, mode, retrieval_score, request_id, hits, latency_ms)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             query, mode, retrieval_score, request_id, hits, latency_ms,
+             top_qa_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             entry.get("ts") or datetime.now(UTC8).isoformat(timespec="seconds"),
@@ -109,6 +112,7 @@ def insert(entry: dict) -> None:
             entry.get("request_id"),
             entry.get("hits"),
             entry.get("latency_ms"),
+            entry.get("top_qa_id"),
         ),
     )
     conn.commit()
@@ -181,3 +185,34 @@ def search_usage(filters: dict) -> list[dict]:
     )
     rows = _get_conn().execute(sql, params).fetchall()
     return [dict(r) for r in rows]
+
+
+def top_qa_stats(
+    *,
+    days: int = 30,
+    now: datetime | None = None,
+    excluded_phones: frozenset[str] | set[str] = frozenset(),
+) -> list[dict]:
+    """按 top-1 QA 聚合近 N 天的成功 RAG 查询。"""
+    reference_time = now or datetime.now(UTC8)
+    if reference_time.tzinfo is None:
+        reference_time = reference_time.replace(tzinfo=UTC8)
+    cutoff = (reference_time - timedelta(days=days)).isoformat(timespec="seconds")
+    phones = sorted(set(excluded_phones))
+    phone_placeholders = ", ".join("?" for _ in phones)
+
+    sql = f"""
+        SELECT top_qa_id, COUNT(*) AS query_count,
+               COUNT(DISTINCT phone) AS user_count, MAX(ts) AS last_asked_at
+        FROM query_log
+        WHERE ts >= ? AND mode = 'rag'
+          AND top_qa_id IS NOT NULL AND top_qa_id != ''
+    """
+    params: list[str] = [cutoff]
+    if phones:
+        sql += f" AND phone NOT IN ({phone_placeholders})"
+        params.extend(phones)
+    sql += " GROUP BY top_qa_id"
+
+    rows = _get_conn().execute(sql, params).fetchall()
+    return [dict(row) for row in rows]

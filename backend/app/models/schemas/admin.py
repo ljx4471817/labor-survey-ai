@@ -7,8 +7,9 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-class ResolveRequest(BaseModel):
-    record_ids: list[str] = Field(..., min_length=1, max_length=100)
+class FeedbackReviewRequest(BaseModel):
+    record_id: str = Field(..., min_length=1, max_length=12)
+    action: Literal["accepted", "rejected"]
 
 
 class WhitelistEntry(BaseModel):
@@ -50,6 +51,9 @@ class FeedbackRecord(BaseModel):
     answer: str
     rating: Literal["up", "down"]
     comment: str = ""
+    corrected_answer: str = ""
+    evidence: str = ""
+    request_id: str = ""
     timestamp: str
     sources: list[dict] = Field(default_factory=list)
     phone: str = ""

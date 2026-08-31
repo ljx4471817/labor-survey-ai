@@ -10,7 +10,13 @@ from loguru import logger
 
 from app.infra.auth import get_current_user, require_user
 from app.models.schemas import ChatMessage, ChatRequest, ChatResponse, SourceItem
+from app.persistence.conversations import (
+    get_conversation,
+    load_context_messages,
+    save_exchange,
+)
 from app.persistence.query_log import insert as insert_query_log
+from app.rag.grounding import ensure_kb_anchors
 from app.rag.llm import chat as llm_chat
 from app.rag.prompts import SYSTEM_PROMPT, USER_TEMPLATE, format_kb_results
 from app.rag.pure import is_ambiguous, is_in_scope, merge_query_with_history
@@ -55,6 +61,17 @@ def _to_source_items(sources: list[dict]) -> list[SourceItem]:
     ]
 
 
+def _extract_top_qa_id(sources: list[dict]) -> str | None:
+    """取 top-1 的 QA id；top-1 命中制度原文 chunk 时不记录。"""
+    if not sources:
+        return None
+    source = sources[0]
+    metadata = source.get("metadata") or {}
+    if metadata.get("doc_type") == "qa" or "qa_id" in metadata:
+        return str(metadata.get("qa_id") or source.get("id") or "").zfill(3) or None
+    return None
+
+
 def _log_query(
     phone: str,
     msg: str,
@@ -64,6 +81,7 @@ def _log_query(
     request_id: str | None = None,
     hits: int | None = None,
     latency_ms: int | None = None,
+    top_qa_id: str | None = None,
 ) -> None:
     user = get_current_user(phone)
     if not user:
@@ -83,6 +101,7 @@ def _log_query(
             "request_id": request_id,
             "hits": hits,
             "latency_ms": latency_ms,
+            "top_qa_id": top_qa_id,
         })
     except Exception:
         logger.exception("query_log 写入失败")
@@ -106,19 +125,57 @@ def _detect_refusal(answer: str) -> bool:
 
 
 def _handle_out_of_scope(
-    msg: str, phone: str, request_id: str, t_start: float
+    msg: str,
+    phone: str,
+    request_id: str,
+    t_start: float,
+    conversation_id: str | None,
 ) -> ChatResponse:
     latency_ms = int((time.perf_counter() - t_start) * 1000)
+    conversation = save_exchange(
+        phone=phone,
+        conversation_id=conversation_id,
+        user_message=msg,
+        assistant_message=OUT_OF_SCOPE_REPLY,
+        mode="out_of_scope",
+        sources=[],
+        retrieval_score=None,
+        request_id=request_id,
+    )
     _log_query(phone, msg, "out_of_scope", request_id=request_id, latency_ms=latency_ms)
-    return ChatResponse(answer=OUT_OF_SCOPE_REPLY, mode="out_of_scope", request_id=request_id)
+    return ChatResponse(
+        answer=OUT_OF_SCOPE_REPLY,
+        mode="out_of_scope",
+        request_id=request_id,
+        conversation_id=conversation["id"],
+    )
 
 
 def _handle_ambiguous(
-    msg: str, phone: str, request_id: str, t_start: float
+    msg: str,
+    phone: str,
+    request_id: str,
+    t_start: float,
+    conversation_id: str | None,
 ) -> ChatResponse:
     latency_ms = int((time.perf_counter() - t_start) * 1000)
+    conversation = save_exchange(
+        phone=phone,
+        conversation_id=conversation_id,
+        user_message=msg,
+        assistant_message=AMBIGUOUS_REPLY,
+        mode="ambiguous",
+        sources=[],
+        retrieval_score=None,
+        request_id=request_id,
+    )
     _log_query(phone, msg, "ambiguous", request_id=request_id, latency_ms=latency_ms)
-    return ChatResponse(answer=AMBIGUOUS_REPLY, mode="ambiguous", request_id=request_id)
+    return ChatResponse(
+        answer=AMBIGUOUS_REPLY,
+        mode="ambiguous",
+        request_id=request_id,
+        conversation_id=conversation["id"],
+    )
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -130,17 +187,33 @@ def chat_endpoint(
     if not msg:
         raise HTTPException(400, "message 不能为空")
 
-    history = req.history[-8:]  # 上限 4 轮（每轮 user + assistant 各 1 条）
     request_id = uuid.uuid4().hex[:12]
     t_start = time.perf_counter()
 
+    conversation = (
+        get_conversation(phone, req.conversation_id)
+        if req.conversation_id
+        else None
+    )
+    if req.conversation_id and conversation is None:
+        raise HTTPException(404, "会话不存在")
+    if conversation:
+        raw_history = load_context_messages(phone, conversation["id"], limit=8)
+        history = [ChatMessage(**item) for item in raw_history]
+    else:
+        history = req.history[-8:]  # 兼容旧端：无 conversation_id 时仍用请求内历史
+
     # 第一层：越界判断（用单条消息判断，history 不参与越界检测）
     if not is_in_scope(msg):
-        return _handle_out_of_scope(msg, phone, request_id, t_start)
+        return _handle_out_of_scope(
+            msg, phone, request_id, t_start, req.conversation_id
+        )
 
     # 第二层：模糊判断 —— 多轮场景：history 非空时跳过（上下文已能消歧）
     if not history and is_ambiguous(msg):
-        return _handle_ambiguous(msg, phone, request_id, t_start)
+        return _handle_ambiguous(
+            msg, phone, request_id, t_start, req.conversation_id
+        )
 
     # 检索（merged_query 让历史 user 消息也参与 KB 召回）
     merged_query = merge_query_with_history(msg, history)
@@ -152,6 +225,7 @@ def chat_endpoint(
 
     top_score = sources[0]["score"] if sources else 0.0
     hits = len(sources)
+    top_qa_id = _extract_top_qa_id(sources)
 
     # LLM 生成
     # log top-1 for observability
@@ -177,16 +251,32 @@ def chat_endpoint(
 
     # 检测 LLM 是否触发了"未找到"模板，决定走 rag 还是 out_of_kb
     mode = "out_of_kb" if _detect_refusal(answer) else "rag"
+    if mode == "rag":
+        answer = ensure_kb_anchors(answer, sources[0] if sources else None)
     latency_ms = int((time.perf_counter() - t_start) * 1000)
+    sources_items = _to_source_items(sources)
     _log_query(
         phone, msg, mode, top_score,
         request_id=request_id, hits=hits, latency_ms=latency_ms,
+        top_qa_id=top_qa_id,
+    )
+
+    conversation = save_exchange(
+        phone=phone,
+        conversation_id=req.conversation_id,
+        user_message=msg,
+        assistant_message=answer,
+        mode=mode,
+        sources=[item.model_dump(exclude_none=True) for item in sources_items],
+        retrieval_score=top_score,
+        request_id=request_id,
     )
 
     return ChatResponse(
         answer=answer,
-        sources=_to_source_items(sources),
+        sources=sources_items,
         mode=mode,
         retrieval_score=top_score,
         request_id=request_id,
+        conversation_id=conversation["id"],
     )

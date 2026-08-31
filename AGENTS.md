@@ -82,6 +82,9 @@
 | `0015-权限系统双维度.md` | admin_level × sys_role 双维度 + 审计表 + 分级网页维护 | 权限治理 |
 | `0016-llm-三级路由.md` | 三级路由：MiniMax 主用 -> qwen-flash 备用 -> DeepSeek 兜底，5h/7d 用量超阈值切换 | LLM 路由 |
 | `0017-统一管理后台导航与数据看板收敛.md` | 统一顶部导航 + 数据看板只留数据 tab + 区县直落白名单页 | 管理后台导航 |
+| `0018-反馈复核闭环v2与近一月热点问题.md` | 负面反馈弹窗 + 复核状态机 + 改进候选收敛 + top_qa_id 热点聚合 | 反馈闭环 v2 |
+| `0019-rag-grounding锚点.md` | LLM 输出遗漏 KB 关键词时自动追加锚点 | 检索治理 |
+| `0020-服务端会话历史.md` | conversations + messages 永久会话 / 手机号隔离 / 最近 10 轮回看 | 对话 UX |
 
 ## 目录约定
 
@@ -95,17 +98,17 @@
 | `knowledge-base/indicator_catalog.json` | **制度指标目录**（按模块组织的 F/H 编号 + 名称），schema v1 核心 | 制度变更时改 |
 | `knowledge-base/migration_map.json` | **迁移映射**（renamed/removed/added），每次制度变更生成一份 | 自由修改（按需） |
 | `backend/app/` | FastAPI 应用代码 | 自由修改 |
-| `backend/app/api/` | 各业务模块路由（chat / feedback / feedback_admin / usage_admin / whitelist_admin / gaps_admin / auth / voice / **quiz / quiz_admin** / llm_admin） | 自由修改 |
+| `backend/app/api/` | 各业务模块路由（chat / conversations / feedback / feedback_admin / hot_questions / usage_admin / whitelist_admin / gaps_admin / auth / voice / **quiz / quiz_admin** / llm_admin） | 自由修改 |
 | `backend/app/core/` | 配置 + 枚举常量（config.py / constants.py） | 自由修改 |
 | `backend/app/models/schemas/` | Pydantic 请求/响应模型子包（common / chat / admin） | 自由修改 |
-| `backend/app/rag/` | 检索算法（pure.py = 纯函数 / retriever.py = IO 层 / bm25 / llm / prompts） | 自由修改 |
+| `backend/app/rag/` | 检索算法（pure.py = 纯函数 / retriever.py = IO 层 / bm25 / llm / prompts / grounding = 输出锚点） | 自由修改 |
 | `backend/app/infra/` | 基础设施（auth.py = HMAC 签名 + 白名单校验） | 自由修改 |
-| `backend/app/persistence/` | SQLite 持久化（whitelist_db / query_log / **quiz_db**） | 自由修改 |
+| `backend/app/persistence/` | SQLite 持久化（whitelist_db / query_log / conversations / **quiz_db**） | 自由修改 |
 | `backend/app/analytics/` | 使用侧分析（gaps.py = KB 闭环检测） | 自由修改 |
-| `backend/app/services/` | 业务服务（feedback_analytics / jsonl_utils / **quiz_extract / quiz_generator / quiz_llm / aliyun_balance**） | 自由修改 |
+| `backend/app/services/` | 业务服务（feedback_analytics / feedback_reviews / hot_questions / jsonl_utils / **quiz_extract / quiz_generator / quiz_llm / aliyun_balance**） | 自由修改 |
 | `backend/app/api/_xunfei_auth.py` | DISABLED（讯飞语音鉴权，代码完整保留） | 不修改 |
 | `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json / **llm_route.json / quiz_llm_config.json**） | 自由修改 |
-| `backend/tests/` | 后端单元测试（223 tests） | 自由修改 |
+| `backend/tests/` | 后端单元测试（256 tests） | 自由修改 |
 | `scripts/watchdog*.ps1` | 本地 API 可用性监控与自动重启 | 自由修改 |
 | `backend/static/kb-images/` | ????????PPT ?????? `page_XX/` ?? | ???? |
 | `backend/static/` | H5 前端（单页应用）+ 测验 3 页面（quiz.html / quiz_admin.html / quiz-stats.html） | 自由修改 |
@@ -212,7 +215,7 @@ cd backend && pip install -r requirements.txt
 **H5 前端（`backend/static/`）**：
 - `index.html`：调查员对话主页面
 - `login.html`：手机号白名单登录页（门禁启用后所有页面必经）
-- `dashboard.html`：数据看板——系统管理员全量（KB 优化 / 使用监测 / 使用侧发现）；区县业务管理员登录直落「白名单管理」独立页，进入数据看板默认「使用监测」；顶部统一导航（数据看板 / 测验管理 / 白名单管理）+ 退出登录
+- `dashboard.html`：数据看板——系统管理员全量（KB 复核队列 / 使用监测）；区县业务管理员登录直落「白名单管理」独立页，进入数据看板默认「使用监测」；顶部统一导航（数据看板 / 测验管理 / 白名单管理）+ 退出登录
 - `whitelist.html`：白名单管理独立页（角色化 CRUD / 批量停用 / 启用 / 导出 / 审计 / CSV 导入）
 - `quiz-admin.html`：测验管理页（侧边栏测验列表 + 工作台两栏，步骤条按数据状态自动打勾，完成率内嵌 tab）
 - `quiz-stats.html`：完成率看板独立页（带 `quiz_id` 参数，从测验管理打开）

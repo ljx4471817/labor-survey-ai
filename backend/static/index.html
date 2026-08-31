@@ -385,27 +385,90 @@
       font-variant-numeric: tabular-nums;
       letter-spacing: 0.02em;
     }
-    .comment-input {
-      margin-top: 8px;
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.48);
+      backdrop-filter: blur(3px);
+    }
+    .modal-overlay.open { display: flex; }
+    .feedback-modal {
+      width: min(640px, 100%);
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      background: var(--c-bg-elev);
+      border: 1px solid var(--c-line);
+      border-radius: var(--radius-card);
+      box-shadow: 0 18px 48px rgba(15, 23, 42, 0.24);
+      padding: 18px;
+    }
+    .feedback-modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .feedback-modal-head h3 { font-size: 16px; font-weight: 600; color: var(--c-ink); }
+    .modal-close {
+      width: 30px; height: 30px;
+      border: 1px solid var(--c-line);
+      border-radius: 50%;
+      background: var(--c-bg-tint);
+      color: var(--c-ink-2);
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .original-answer { margin-bottom: 14px; border: 1px solid var(--c-line-soft); border-radius: var(--radius-btn); background: var(--c-bg-tint); }
+    .original-answer summary { padding: 9px 12px; font-size: 13px; color: var(--c-ink-2); cursor: pointer; }
+    .original-answer .original-text { padding: 0 12px 12px; white-space: pre-wrap; font-size: 14px; color: var(--c-ink-2); }
+    .modal-field { display: block; margin-bottom: 12px; }
+    .modal-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--c-ink-2); }
+    .char-counter { font-size: 11px; font-weight: 400; color: var(--c-ink-4); font-variant-numeric: tabular-nums; }
+    .modal-textarea {
       width: 100%;
-      padding: 9px 12px;
+      min-height: 112px;
+      padding: 10px 12px;
       border: 1px solid var(--c-line);
       border-radius: var(--radius-btn);
-      font-size: 14px;
-      font-family: inherit;
-      display: none;
-      min-height: 36px;
-      background: var(--c-bg-elev);
+      background: var(--c-bg);
       color: var(--c-ink);
-      transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.55;
+      resize: vertical;
     }
-    .comment-input.show { display: block; }
-    .comment-input:focus {
+    .modal-textarea:focus {
       outline: none;
       border-color: var(--c-brand);
       box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.08);
     }
-    .comment-input::placeholder { color: var(--c-ink-4); }
+    .modal-error {
+      display: none;
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius-btn);
+      background: var(--c-danger-soft);
+      color: var(--c-danger);
+      font-size: 13px;
+    }
+    .modal-error.show { display: block; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .modal-primary {
+      background: var(--c-brand);
+      border-color: var(--c-brand);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: var(--radius-btn);
+      font-size: 13px;
+    }
+    .modal-primary:disabled { opacity: 0.55; }
 
     /* ===== 输入栏 ===== */
     form#input-form {
@@ -585,12 +648,18 @@
       margin-left: auto;
       margin-right: auto;
     }
+    .empty-state .examples-title {
+      margin-top: 22px;
+      color: var(--c-ink-3);
+      font-size: 12px;
+      font-weight: 500;
+    }
     .empty-state .examples {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       justify-content: center;
-      margin-top: 22px;
+      margin-top: 12px;
     }
     .empty-state .example {
       background: var(--c-bg-elev);
@@ -602,10 +671,18 @@
       min-height: 36px;
       display: inline-flex;
       align-items: center;
+      max-width: min(280px, 72vw);
+      overflow: hidden;
       color: var(--c-ink-2);
       font-family: inherit;
       transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
       letter-spacing: 0.01em;
+    }
+    .empty-state .example-text {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .empty-state .example:hover {
       border-color: var(--c-brand);
@@ -663,6 +740,7 @@
       .brand-org { font-size: 9.5px; letter-spacing: 0.02em; }
       header h1 { font-size: 13px; }
       .brand-sub { font-size: 10px; }
+      .history-btn { font-size: 11px; padding: 4px 10px; }
       .logout-btn { font-size: 11px; padding: 4px 10px; }
       header .status { font-size: 10px; padding: 3px 8px; gap: 4px; }
       header .status .dot { width: 5px; height: 5px; }
@@ -748,6 +826,133 @@
     }
     .logout-btn:hover { color: var(--c-danger); border-color: var(--c-danger); }
 
+    .history-btn {
+      border: 1px solid var(--c-line);
+      background: var(--c-bg-elev);
+      color: var(--c-ink-2);
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+    }
+    .history-btn:hover { color: var(--c-brand); border-color: var(--c-brand); }
+
+    .history-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: none;
+      background: var(--c-bg);
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .history-overlay.open { display: flex; flex-direction: column; }
+    .history-drawer {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: 100%;
+      background: var(--c-bg);
+    }
+    .history-head {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--c-line);
+      background: var(--c-bg-elev);
+    }
+    .history-head h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--c-ink);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .history-new, .history-close {
+      border: 1px solid var(--c-line);
+      background: var(--c-bg-tint);
+      color: var(--c-ink-2);
+      font-size: 12px;
+      min-height: 34px;
+      padding: 7px 11px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .history-new { background: var(--c-brand-soft); color: var(--c-brand); border-color: transparent; font-weight: 600; }
+    .history-list {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 8px 12px 16px;
+    }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 48px;
+      margin-bottom: 8px;
+      background: var(--c-bg-elev);
+      border: 1px solid var(--c-line);
+      border-radius: var(--radius-btn);
+      overflow: hidden;
+    }
+    .history-open {
+      flex: 1;
+      min-width: 0;
+      min-height: 46px;
+      border: 0;
+      background: transparent;
+      color: var(--c-ink);
+      font-size: 14px;
+      text-align: left;
+      padding: 10px 4px 10px 12px;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .history-delete {
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      margin-right: 6px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--c-ink-3);
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .history-delete:hover { color: var(--c-danger); background: var(--c-danger-soft); }
+    .history-empty, .history-status {
+      padding: 18px 4px;
+      text-align: center;
+      color: var(--c-ink-3);
+      font-size: 13px;
+    }
+    .history-load-more {
+      flex-shrink: 0;
+      min-height: 44px;
+      margin: 0 16px calc(16px + env(safe-area-inset-bottom));
+      border: 1px solid var(--c-line);
+      border-radius: var(--radius-btn);
+      background: var(--c-bg-elev);
+      color: var(--c-ink-2);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .history-load-more:disabled { opacity: 0.55; cursor: not-allowed; }
+
 </style>
 </head>
 <body>
@@ -774,6 +979,18 @@
     <span class="status" id="status"><span class="dot"></span><span id="status-text">连接中…</span></span>
   </header>
 
+  <div class="history-overlay" id="history-overlay" aria-hidden="true">
+    <div class="history-drawer">
+      <div class="history-head">
+        <h2>历史对话</h2>
+        <button class="history-new" id="history-new" type="button">新对话</button>
+        <button class="history-close" id="history-close" type="button">关闭</button>
+      </div>
+      <div class="history-list" id="history-list"></div>
+      <button class="history-load-more" id="history-load-more" type="button" style="display:none">加载更多</button>
+    </div>
+  </div>
+
   <main id="chat">
     <div class="empty-state" id="empty-state">
       <img class="empty-mascot" src="/static/mascot.png" alt="贵阳调查队吉祥物·筑小调" width="96" height="96">
@@ -781,6 +998,7 @@
       <div class="empty-subtitle">我是贵阳调查队小筑，可以解答所有劳动力调查指标填报的问题。</div>
 
       <p class="empty-hint">回答基于本地制度 QA 知识库；未命中的题目会明确提示「未找到」，不会编造。</p>
+      <div class="examples-title" id="examples-title">近一月热点问题</div>
       <div class="examples" id="examples"></div>
       <div class="quiz-card" id="quiz-card" style="display:none"></div>
 
@@ -798,6 +1016,32 @@
     </button>
   </form>
 
+  <div class="modal-overlay" id="feedback-modal-overlay">
+    <div class="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
+      <div class="feedback-modal-head">
+        <h3 id="feedback-modal-title">答案不正确，反馈</h3>
+        <button class="modal-close" id="feedback-modal-close" type="button" aria-label="关闭">×</button>
+      </div>
+      <details class="original-answer">
+        <summary>查看原答案</summary>
+        <div class="original-text" id="feedback-original-answer"></div>
+      </details>
+      <label class="modal-field" for="corrected-answer">
+        <span class="modal-label"><span>正确答案</span><span class="char-counter" id="corrected-counter">0 / 2000</span></span>
+        <textarea class="modal-textarea" id="corrected-answer" maxlength="2000" placeholder="请写出你认为正确的答案"></textarea>
+      </label>
+      <label class="modal-field" for="feedback-evidence">
+        <span class="modal-label"><span>依据</span><span class="char-counter" id="evidence-counter">0 / 500</span></span>
+        <textarea class="modal-textarea" id="feedback-evidence" maxlength="500" placeholder="请填写章节、指标编号或制度原文片段"></textarea>
+      </label>
+      <div class="modal-error" id="feedback-modal-error"></div>
+      <div class="modal-actions">
+        <button class="feedback-btn" id="feedback-modal-cancel" type="button">取消</button>
+        <button class="modal-primary" id="feedback-modal-submit" type="button">提交反馈</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/static/common.js"></script>
   <script>
     const chatEl = document.getElementById('chat');
@@ -808,14 +1052,30 @@
     const examplesEl = document.getElementById('examples');
     const statusEl = document.getElementById('status');
     const statusText = document.getElementById('status-text');
+    const historyOverlay = document.getElementById('history-overlay');
+    const historyListEl = document.getElementById('history-list');
+    const historyLoadMoreEl = document.getElementById('history-load-more');
 
-    const EXAMPLE_QS = [
+    const FALLBACK_QUESTIONS = [
       '每周工作15小时算就业吗？',
       '退休人员再就业算就业吗？',
       '一人在家打游戏帮别人账号练级赚钱',
       'F16指标怎么填',
       '入户时PAD没有网络信号怎么办',
     ];
+
+    function renderExampleQuestions(questions) {
+      examplesEl.innerHTML = questions.map(q =>
+        `<span class="example" data-q="${escapeHtml(q)}" title="${escapeHtml(q)}"><span class="example-text">${escapeHtml(q)}</span></span>`
+      ).join('');
+      examplesEl.querySelectorAll('.example').forEach(el => {
+        el.addEventListener('click', () => {
+          inputEl.value = el.dataset.q;
+          autoResize();
+          inputEl.focus();
+        });
+      });
+    }
 
     // 未登录直接跳登录页
     requireLoginOrRedirect();
@@ -856,9 +1116,11 @@
       } catch (e) { /* 静默失败：不阻塞聊天入口 */ }
     })();
 
-    // 多轮对话：保留最近 4 轮（8 条消息）。超出时丢掉最早的。
-    const chatHistory = [];
-    const MAX_HISTORY_TURNS = 4;
+    // 服务端会话历史：前端只保留当前 conversation_id。
+    let currentConversationId = null;
+    let historyOffset = 0;
+    let historyHasMore = false;
+    let historyLoading = false;
 
     const MODE_LABEL = {
       rag: 'RAG 命中',
@@ -868,7 +1130,14 @@
     };
 
     function hideEmpty() {
-      if (emptyEl && emptyEl.parentNode) emptyEl.remove();
+      if (emptyEl) emptyEl.style.display = 'none';
+    }
+
+    function resetConversation() {
+      currentConversationId = null;
+      chatEl.innerHTML = '';
+      chatEl.appendChild(emptyEl);
+      emptyEl.style.display = '';
     }
 
     function scrollToBottom() {
@@ -948,16 +1217,18 @@
         </details>
       ` : '';
       const sourceHtml = imageHtml + textHtml;
+      const feedbackHtml = mode === 'rag' ? `
+        <div class="feedback-row" data-rating-state="none">
+          <button class="feedback-btn" data-rating="up" type="button">采纳</button>
+          <button class="feedback-btn" data-rating="down" type="button">答案不正确，反馈</button>
+          <span class="feedback-status"></span>
+        </div>
+      ` : '';
       block.innerHTML = `
         <span class="mode-badge mode-${mode}">${escapeHtml(modeLabel)}</span>
         <div class="answer-text">${escapeHtml(data.answer || '')}</div>
         ${sourceHtml}
-        <div class="feedback-row" data-rating-state="none">
-          <button class="feedback-btn" data-rating="up" type="button">采纳</button>
-          <button class="feedback-btn" data-rating="down" type="button">不采纳</button>
-          <input class="comment-input" placeholder="不采纳原因（可选）" maxlength="500">
-          <span class="feedback-status"></span>
-        </div>
+        ${feedbackHtml}
       `;
       block.dataset.question = currentQuestion;
       block.dataset.answer = data.answer || '';
@@ -973,76 +1244,254 @@
       scrollToBottom();
     }
 
+    function renderHistoryConversation(data) {
+      chatEl.innerHTML = '';
+      currentConversationId = data.conversation_id;
+      data.messages.forEach(message => {
+        if (message.role === 'user') {
+          currentQuestion = message.content || '';
+          addQuestion(message.content || '');
+          return;
+        }
+
+        const turn = chatEl.lastElementChild || addQuestion('');
+        const block = addAnswerPlaceholder(turn);
+        renderAnswer(block, {
+          answer: message.content || '',
+          mode: message.mode || 'rag',
+          sources: message.sources || [],
+          request_id: message.request_id || '',
+        });
+        if (message.feedback_state) {
+          lockFeedback(block, message.feedback_state);
+          const status = block.querySelector('.feedback-status');
+          if (status) {
+            status.textContent = message.feedback_state === 'up' ? '已采纳' : '已反馈不正确';
+          }
+        }
+      });
+      scrollToBottom();
+    }
+
+    async function loadConversation(conversationId) {
+      const resp = await fetch(`/api/chat/conversations/${encodeURIComponent(conversationId)}/messages`, {
+        headers: authHeader(),
+      });
+      if (await handle401(resp)) return;
+      if (!resp.ok) throw new Error('历史会话加载失败');
+      closeHistoryDrawer();
+      renderHistoryConversation(await resp.json());
+    }
+
+    function renderHistoryList(items, append) {
+      if (!append) historyListEl.innerHTML = '';
+      if (!items.length && !append) {
+        historyListEl.innerHTML = '<div class="history-empty">暂无历史对话</div>';
+        return;
+      }
+      historyListEl.insertAdjacentHTML('beforeend', items.map(item => `
+        <div class="history-item" data-id="${escapeHtml(item.id)}">
+          <button class="history-open" type="button" data-id="${escapeHtml(item.id)}">${escapeHtml(item.title || '未命名对话')}</button>
+          <button class="history-delete" type="button" data-id="${escapeHtml(item.id)}" aria-label="删除对话">×</button>
+        </div>
+      `).join(''));
+    }
+
+    async function loadHistory({ append = false } = {}) {
+      if (historyLoading) return;
+      historyLoading = true;
+      historyLoadMoreEl.disabled = true;
+      try {
+        const resp = await fetch(`/api/chat/conversations?limit=10&offset=${historyOffset}`, {
+          headers: authHeader(),
+        });
+        if (await handle401(resp)) return;
+        if (!resp.ok) throw new Error('历史列表加载失败');
+        const data = await resp.json();
+        renderHistoryList(data.items || [], append);
+        historyOffset += (data.items || []).length;
+        historyHasMore = (data.items || []).length === 10;
+        historyLoadMoreEl.style.display = historyHasMore ? '' : 'none';
+      } catch (err) {
+        historyListEl.innerHTML = `<div class="history-status">${escapeHtml(err.message)}</div>`;
+        historyLoadMoreEl.style.display = 'none';
+      } finally {
+        historyLoading = false;
+        historyLoadMoreEl.disabled = false;
+      }
+    }
+
+    function openHistoryDrawer() {
+      historyOverlay.classList.add('open');
+      historyOverlay.setAttribute('aria-hidden', 'false');
+      historyOffset = 0;
+      historyHasMore = false;
+      historyListEl.innerHTML = '<div class="history-status">加载中…</div>';
+      historyLoadMoreEl.style.display = 'none';
+      loadHistory();
+    }
+
+    function closeHistoryDrawer() {
+      historyOverlay.classList.remove('open');
+      historyOverlay.setAttribute('aria-hidden', 'true');
+    }
+
     function wireFeedback(block) {
       const row = block.querySelector('.feedback-row');
       const status = row.querySelector('.feedback-status');
-      const commentInput = row.querySelector('.comment-input');
       const buttons = row.querySelectorAll('.feedback-btn');
       buttons.forEach(btn => {
         btn.addEventListener('click', async () => {
           const rating = btn.dataset.rating;
-          const currentState = row.dataset.ratingState;
-          if (currentState === rating) {
-            row.dataset.ratingState = 'none';
-            buttons.forEach(b => b.classList.remove('active-up', 'active-down'));
-            commentInput.classList.remove('show');
-            status.textContent = '';
-            return;
-          }
-          buttons.forEach(b => b.classList.remove('active-up', 'active-down'));
-          btn.classList.add(rating === 'up' ? 'active-up' : 'active-down');
-          row.dataset.ratingState = rating;
           if (rating === 'down') {
-            commentInput.classList.add('show');
-            setTimeout(() => commentInput.focus(), 100);
-          } else {
-            commentInput.classList.remove('show');
+            openFeedbackModal(block);
+            return;
           }
           status.textContent = '记录中…';
           try {
-            const resp = await fetch('/api/feedback', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', ...authHeader() },
-              body: JSON.stringify({
-                question: block.dataset.question,
-                answer: block.dataset.answer,
-                mode: block.dataset.mode,
-                rating,
-                comment: commentInput.value || '',
-                sources: JSON.parse(block.dataset.sources || '[]'),
-                request_id: block.dataset.requestId || null,
-              }),
-            });
-            if (await handle401(resp)) return;
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            const j = await resp.json();
-            status.textContent = `已记录 (${j.record_id})`;
+            await submitFeedback(block, 'up');
+            lockFeedback(block, 'up');
           } catch (e) {
+            buttons.forEach(b => b.classList.remove('active-up', 'active-down'));
+            row.dataset.ratingState = 'none';
             status.textContent = '记录失败';
           }
         });
       });
-      commentInput.addEventListener('input', () => {
-        clearTimeout(commentInput._t);
-        commentInput._t = setTimeout(() => {
-          if (row.dataset.ratingState !== 'none') {
-            fetch('/api/feedback', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', ...authHeader() },
-              body: JSON.stringify({
-                question: block.dataset.question,
-                answer: block.dataset.answer,
-                mode: block.dataset.mode,
-                rating: row.dataset.ratingState,
-                comment: commentInput.value,
-                sources: JSON.parse(block.dataset.sources || '[]'),
-                request_id: block.dataset.requestId || null,
-              }),
-            }).catch(() => {});
-          }
-        }, 1500);
-      });
     }
+
+    const feedbackModal = document.getElementById('feedback-modal-overlay');
+    const feedbackModalError = document.getElementById('feedback-modal-error');
+    const feedbackModalSubmit = document.getElementById('feedback-modal-submit');
+    const correctedAnswerInput = document.getElementById('corrected-answer');
+    const evidenceInput = document.getElementById('feedback-evidence');
+    let feedbackModalBlock = null;
+    let feedbackSubmitting = false;
+
+    function unicodeLength(text) {
+      return Array.from(text.trim()).length;
+    }
+
+    function updateFeedbackCounter(input, counter, limit) {
+      counter.textContent = `${unicodeLength(input.value)} / ${limit}`;
+    }
+
+    function showFeedbackModalError(message) {
+      feedbackModalError.textContent = message;
+      feedbackModalError.classList.add('show');
+    }
+
+    function openFeedbackModal(block) {
+      feedbackModalBlock = block;
+      document.getElementById('feedback-original-answer').textContent = block.dataset.answer || '';
+      correctedAnswerInput.value = '';
+      evidenceInput.value = '';
+      updateFeedbackCounter(correctedAnswerInput, document.getElementById('corrected-counter'), 2000);
+      updateFeedbackCounter(evidenceInput, document.getElementById('evidence-counter'), 500);
+      feedbackModalError.classList.remove('show');
+      feedbackModal.classList.add('open');
+      setTimeout(() => correctedAnswerInput.focus(), 80);
+    }
+
+    function closeFeedbackModal() {
+      if (feedbackSubmitting) return;
+      feedbackModal.classList.remove('open');
+      feedbackModalBlock = null;
+      feedbackModalError.classList.remove('show');
+    }
+
+    function lockFeedback(block, rating) {
+      const row = block.querySelector('.feedback-row');
+      const status = row.querySelector('.feedback-status');
+      const buttons = row.querySelectorAll('.feedback-btn');
+      buttons.forEach(button => {
+        button.disabled = true;
+        button.classList.remove('active-up', 'active-down');
+        if (button.dataset.rating === rating) {
+          button.classList.add(rating === 'up' ? 'active-up' : 'active-down');
+        }
+      });
+      row.dataset.ratingState = rating;
+      block.dataset.feedbackSubmitted = 'true';
+      status.textContent = '已提交反馈';
+    }
+
+    async function submitFeedback(block, rating, correctedAnswer = '', evidence = '') {
+      const resp = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({
+          question: block.dataset.question,
+          answer: block.dataset.answer,
+          mode: block.dataset.mode,
+          rating,
+          comment: '',
+          corrected_answer: correctedAnswer,
+          evidence,
+          sources: JSON.parse(block.dataset.sources || '[]'),
+          request_id: block.dataset.requestId || '',
+        }),
+      });
+      if (await handle401(resp)) throw new Error('登录已失效');
+      if (resp.status === 409) {
+        lockFeedback(block, block.dataset.ratingState === 'up' ? 'up' : 'down');
+        throw new Error('这条回答已反馈过');
+      }
+      if (!resp.ok) {
+        let message = `HTTP ${resp.status}`;
+        try {
+          const detail = await resp.json();
+          message = Array.isArray(detail.detail)
+            ? detail.detail.map(item => item.msg).join('；')
+            : (detail.detail || message);
+        } catch {}
+        throw new Error(message);
+      }
+      return resp.json();
+    }
+
+    correctedAnswerInput.addEventListener('input', () => updateFeedbackCounter(
+      correctedAnswerInput,
+      document.getElementById('corrected-counter'),
+      2000,
+    ));
+    evidenceInput.addEventListener('input', () => updateFeedbackCounter(
+      evidenceInput,
+      document.getElementById('evidence-counter'),
+      500,
+    ));
+    document.getElementById('feedback-modal-close').addEventListener('click', closeFeedbackModal);
+    document.getElementById('feedback-modal-cancel').addEventListener('click', closeFeedbackModal);
+    feedbackModal.addEventListener('click', (event) => {
+      if (event.target === feedbackModal) closeFeedbackModal();
+    });
+    feedbackModalSubmit.addEventListener('click', async () => {
+      if (!feedbackModalBlock || feedbackSubmitting) return;
+      const correctedAnswer = correctedAnswerInput.value.trim();
+      const evidence = evidenceInput.value.trim();
+      if (unicodeLength(correctedAnswer) < 10) {
+        showFeedbackModalError('正确答案至少需要 10 个字符');
+        return;
+      }
+      if (unicodeLength(evidence) < 10) {
+        showFeedbackModalError('依据至少需要 10 个字符');
+        return;
+      }
+      feedbackSubmitting = true;
+      feedbackModalSubmit.disabled = true;
+      feedbackModalError.classList.remove('show');
+      try {
+        await submitFeedback(feedbackModalBlock, 'down', correctedAnswer, evidence);
+        lockFeedback(feedbackModalBlock, 'down');
+        feedbackModal.classList.remove('open');
+        feedbackModalBlock = null;
+      } catch (e) {
+        showFeedbackModalError(e.message || '提交失败，请重试');
+      } finally {
+        feedbackSubmitting = false;
+        feedbackModalSubmit.disabled = false;
+      }
+    });
 
     let currentQuestion = '';
 
@@ -1194,6 +1643,45 @@
       }
     });
 
+    document.getElementById('history-btn').addEventListener('click', openHistoryDrawer);
+    document.getElementById('history-close').addEventListener('click', closeHistoryDrawer);
+    document.getElementById('history-new').addEventListener('click', () => {
+      resetConversation();
+      closeHistoryDrawer();
+      inputEl.focus();
+    });
+    historyListEl.addEventListener('click', async (event) => {
+      const openButton = event.target.closest('.history-open');
+      if (openButton) {
+        try {
+          await loadConversation(openButton.dataset.id);
+        } catch (err) {
+          alert(err.message || '历史会话加载失败');
+        }
+        return;
+      }
+
+      const deleteButton = event.target.closest('.history-delete');
+      if (!deleteButton) return;
+      const conversationId = deleteButton.dataset.id;
+      if (!window.confirm('删除后不可恢复，确定删除该会话吗？')) return;
+      try {
+        const resp = await fetch(`/api/chat/conversations/${encodeURIComponent(conversationId)}`, {
+          method: 'DELETE',
+          headers: authHeader(),
+        });
+        if (await handle401(resp)) return;
+        if (!resp.ok) throw new Error('删除失败');
+        if (conversationId === currentConversationId) resetConversation();
+        historyOffset = 0;
+        historyHasMore = false;
+        await loadHistory({ append: false });
+      } catch (err) {
+        alert(err.message || '删除失败');
+      }
+    });
+    historyLoadMoreEl.addEventListener('click', () => loadHistory({ append: true }));
+
     formEl.addEventListener('submit', async (e) => {
       e.preventDefault();
       const q = inputEl.value.trim();
@@ -1204,13 +1692,15 @@
       currentQuestion = q;
       const turn = addQuestion(q);
       const block = addAnswerPlaceholder(turn);
-      const historyForRequest = chatHistory.slice(-MAX_HISTORY_TURNS * 2);
       try {
         const t0 = performance.now();
         const resp = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...authHeader() },
-          body: JSON.stringify({ message: q, history: historyForRequest }),
+          body: JSON.stringify({
+            message: q,
+            ...(currentConversationId ? { conversation_id: currentConversationId } : {}),
+          }),
         });
         if (await handle401(resp)) return;
         if (!resp.ok) {
@@ -1218,13 +1708,11 @@
           throw new Error(errText || 'HTTP ' + resp.status);
         }
         const data = await resp.json();
+        if (data.conversation_id) currentConversationId = data.conversation_id;
         const ms = Math.round(performance.now() - t0);
         renderAnswer(block, data);
         const status = block.querySelector('.feedback-status');
         if (status) status.textContent = `${ms}ms`;
-        chatHistory.push({ role: 'user', content: q });
-        chatHistory.push({ role: 'assistant', content: data.answer.slice(0, 4000) });
-        chatHistory.splice(0, Math.max(0, chatHistory.length - MAX_HISTORY_TURNS * 2));
       } catch (err) {
         renderError(block, err.message);
       } finally {
@@ -1233,17 +1721,24 @@
       }
     });
 
-    // 示例问题
-    examplesEl.innerHTML = EXAMPLE_QS.map(q =>
-      `<span class="example" data-q="${escapeHtml(q)}">${escapeHtml(q)}</span>`
-    ).join('');
-    examplesEl.querySelectorAll('.example').forEach(el => {
-      el.addEventListener('click', () => {
-        inputEl.value = el.dataset.q;
-        autoResize();
-        inputEl.focus();
-      });
-    });
+    renderExampleQuestions(FALLBACK_QUESTIONS);
+
+    (async function loadHotQuestions() {
+      try {
+        const resp = await fetch('/api/chat/hot-questions', {
+          headers: authHeader(),
+        });
+        if (await handle401(resp)) return;
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const questions = (data.items || [])
+          .map(item => item.question)
+          .filter(question => typeof question === 'string' && question.trim());
+        if (questions.length) renderExampleQuestions(questions);
+      } catch {
+        return;
+      }
+    })();
 
     // 健康检查
     fetch('/health').then(r => r.json()).then(j => {

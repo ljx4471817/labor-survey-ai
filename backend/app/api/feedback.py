@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import threading
 import uuid
 from datetime import datetime
 
@@ -15,12 +16,14 @@ from loguru import logger
 from app.infra.auth import get_current_user, require_user
 from app.core.config import PROJECT_ROOT
 from app.models.schemas import FeedbackRequest, FeedbackResponse
+from app.services.jsonl_utils import read_jsonl
 
 router = APIRouter()
 
 FEEDBACK_PATH = PROJECT_ROOT / "backend" / "data" / "feedback.jsonl"
 
 _MAX_FEEDBACK_BYTES = 100 * 1024 * 1024  # 100MB 上限
+_FEEDBACK_LOCK = threading.Lock()
 
 
 @router.post("/feedback", response_model=FeedbackResponse)
@@ -30,30 +33,44 @@ def submit_feedback(
 ) -> FeedbackResponse:
     FEEDBACK_PATH.parent.mkdir(parents=True, exist_ok=True)
     user = get_current_user(phone)
-    record = {
-        "id": uuid.uuid4().hex[:12],
-        "timestamp": datetime.now().isoformat(timespec="seconds"),
-        "phone": phone,
-        "name": user["name"] if user else "",
-        "province": user["province"] if user else "",
-        "city": user["city"] if user else "",
-        "county": user["county"] if user else "",
-        "township": (user.get("township") or "") if user else "",
-        "community": user["community"] if user else "",
-        "question": req.question,
-        "answer": req.answer,
-        "mode": req.mode,
-        "rating": req.rating,
-        "comment": req.comment,
-        "sources": req.sources,
-        "request_id": req.request_id,
-    }
-    try:
-        with FEEDBACK_PATH.open("a", encoding="utf-8") as f:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
-    except OSError as e:
-        logger.exception("反馈写入失败")
-        raise HTTPException(500, f"反馈写入失败: {e}")
+    with _FEEDBACK_LOCK:
+        existing_keys = {
+            (str(item.get("phone") or ""), str(item.get("request_id") or ""))
+            for item in read_jsonl(FEEDBACK_PATH)
+        }
+        if (phone, req.request_id) in existing_keys:
+            raise HTTPException(409, "这条回答已反馈过")
+
+        if FEEDBACK_PATH.exists() and FEEDBACK_PATH.stat().st_size > _MAX_FEEDBACK_BYTES:
+            logger.warning(f"feedback.jsonl 超过 {_MAX_FEEDBACK_BYTES} 字节上限，拒绝写入")
+            raise HTTPException(503, "反馈存储已满，请联系管理员清理")
+
+        record = {
+            "id": uuid.uuid4().hex[:12],
+            "timestamp": datetime.now().isoformat(timespec="seconds"),
+            "phone": phone,
+            "name": user["name"] if user else "",
+            "province": user["province"] if user else "",
+            "city": user.get("city", "") if user else "",
+            "county": user.get("county", "") if user else "",
+            "township": user.get("township", "") if user else "",
+            "community": user.get("community", "") if user else "",
+            "question": req.question,
+            "answer": req.answer,
+            "mode": req.mode,
+            "rating": req.rating,
+            "comment": req.comment,
+            "corrected_answer": req.corrected_answer,
+            "evidence": req.evidence,
+            "sources": req.sources,
+            "request_id": req.request_id,
+        }
+        try:
+            with FEEDBACK_PATH.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        except OSError as e:
+            logger.exception("反馈写入失败")
+            raise HTTPException(500, f"反馈写入失败: {e}")
     logger.info(
         f"feedback: rating={req.rating} mode={req.mode} phone={phone[:3]}**** "
         f"q='{req.question[:30]}' record_id={record['id']}"
