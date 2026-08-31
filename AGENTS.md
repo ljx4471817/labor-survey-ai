@@ -108,7 +108,7 @@
 | `backend/app/services/` | 业务服务（feedback_analytics / feedback_reviews / hot_questions / jsonl_utils / **quiz_extract / quiz_generator / quiz_llm / aliyun_balance**） | 自由修改 |
 | `backend/app/api/_xunfei_auth.py` | DISABLED（讯飞语音鉴权，代码完整保留） | 不修改 |
 | `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json / **llm_route.json / quiz_llm_config.json**） | 自由修改 |
-| `backend/tests/` | 后端单元测试（256 tests） | 自由修改 |
+| `backend/tests/` | 后端单元测试（257 tests） | 自由修改 |
 | `scripts/watchdog*.ps1` | 本地 API 可用性监控与自动重启 | 自由修改 |
 | `backend/static/kb-images/` | ????????PPT ?????? `page_XX/` ?? | ???? |
 | `backend/static/` | H5 前端（单页应用）+ 测验 3 页面（quiz.html / quiz_admin.html / quiz-stats.html） | 自由修改 |
