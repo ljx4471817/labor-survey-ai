@@ -235,7 +235,7 @@ def load_context_messages(
         return []
     rows = conn.execute(
         "SELECT * FROM ("
-        "  SELECT role, content FROM conversation_messages "
+        "  SELECT id, role, content FROM conversation_messages "
         "  WHERE conversation_id = ? AND phone = ? "
         "  ORDER BY id DESC LIMIT ?"
         ") ORDER BY id ASC",

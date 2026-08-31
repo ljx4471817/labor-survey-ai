@@ -191,6 +191,70 @@ def test_chat_creates_conversation_and_persists_full_turn(
     ]
 
 
+def test_chat_extends_conversation_after_out_of_scope_turn(
+    conversation_db, monkeypatch
+):
+    monkeypatch.setattr(
+        "app.api.chat.get_current_user",
+        lambda _: {
+            "name": "测试",
+            "province": "贵州省",
+            "city": "贵阳市",
+            "county": "南明区",
+            "community": "",
+        },
+    )
+    monkeypatch.setattr("app.api.chat.retrieve", lambda *_, **__: [])
+    monkeypatch.setattr(
+        "app.api.chat.llm_chat",
+        lambda *_: "知识库中未找到相关内容。",
+    )
+    app.dependency_overrides[require_user] = lambda: "13900000001"
+
+    try:
+        async def send_requests() -> tuple[httpx.Response, httpx.Response]:
+            transport = httpx.ASGITransport(app=app)
+            async with httpx.AsyncClient(
+                transport=transport, base_url="http://test"
+            ) as client:
+                headers = {"X-Phone": "13900000001"}
+                first = await client.post(
+                    "/api/chat",
+                    json={"message": "今天天气如何", "history": []},
+                    headers=headers,
+                )
+                conversation_id = first.json()["conversation_id"]
+                second = await client.post(
+                    "/api/chat",
+                    json={
+                        "message": "你是谁",
+                        "history": [],
+                        "conversation_id": conversation_id,
+                    },
+                    headers=headers,
+                )
+                return first, second
+
+        first, second = asyncio.run(send_requests())
+    finally:
+        app.dependency_overrides.pop(require_user, None)
+
+    assert first.status_code == 200
+    assert first.json()["mode"] == "out_of_scope"
+    assert second.status_code == 200
+    assert second.json()["mode"] == "out_of_kb"
+    messages = conversation_db.list_messages(
+        phone="13900000001",
+        conversation_id=first.json()["conversation_id"],
+    )
+    assert [(item["role"], item["mode"]) for item in messages] == [
+        ("user", None),
+        ("assistant", "out_of_scope"),
+        ("user", None),
+        ("assistant", "out_of_kb"),
+    ]
+
+
 def test_conversation_messages_endpoint_restores_feedback_state(
     conversation_db, monkeypatch, tmp_path
 ):
