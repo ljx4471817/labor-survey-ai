@@ -1,0 +1,5035 @@
+[
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "新华路街道",
+    "community": "神奇路社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "水口寺街道",
+    "community": "蟠桃宫社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "河滨街道",
+    "community": "省工会社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "兴关路街道",
+    "community": "南厂路社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "沙冲路街道",
+    "community": "桃园路社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "望城街道",
+    "community": "绿苑社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "太慈桥街道",
+    "community": "青山路社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "太慈桥街道",
+    "community": "国际城三社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "油榨街道",
+    "community": "雨高桥社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "中曹司街道",
+    "community": "四方河社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "二戈街道",
+    "community": "富源南路社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "花果园街道",
+    "community": "松山南路社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "花果园街道",
+    "community": "隆园社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "小车河街道",
+    "community": "延都社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "小车河街道",
+    "community": "花锦社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "五里冲街道",
+    "community": "丰园社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "兰花都街道",
+    "community": "广场社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "兰花都街道",
+    "community": "公园中路社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "后巢乡",
+    "community": "四方河村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "云关乡",
+    "community": "油榨村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "云关乡",
+    "community": "云关村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "大营路街道",
+    "community": "冠竹苑社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "大营路街道",
+    "community": "金狮社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "黔灵东路街道",
+    "community": "旭东社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "文昌阁街道",
+    "community": "东新路社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "盐务街街道",
+    "community": "南垭社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "八鸽岩街道",
+    "community": "北新区路社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "毓秀路街道",
+    "community": "毓秀社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "市西河街道",
+    "community": "乌金路社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "头桥街道",
+    "community": "龙城社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "头桥街道",
+    "community": "云松社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "三桥路街道",
+    "community": "星荟社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "马王街道",
+    "community": "鑫园社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "金关街道",
+    "community": "金关村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "茶园路街道",
+    "community": "野鸭社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "杨惠街道",
+    "community": "惠源社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "渔安街道",
+    "community": "三省社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "渔安街道",
+    "community": "渔安村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "水东路街道",
+    "community": "澜湾社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "黔灵镇",
+    "community": "景馨社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "黔灵镇",
+    "community": "云山社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "黔灵镇",
+    "community": "茶店村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "云岩区",
+    "township": "黔灵镇",
+    "community": "三桥村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "贵筑街道",
+    "community": "筑安社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "阳光街道",
+    "community": "望哨坡社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "清溪街道",
+    "community": "桐木岭村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "溪北街道",
+    "community": "溪北社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "溪北街道",
+    "community": "朝阳社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "黄河路街道",
+    "community": "大兴社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "黄河路街道",
+    "community": "万科社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "黄河路街道",
+    "community": "云凯社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "平桥街道",
+    "community": "兴隆社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "平桥街道",
+    "community": "大寨村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "小孟街道",
+    "community": "安心小区社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "小孟街道",
+    "community": "翁岩村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "金筑街道",
+    "community": "金山村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "贵安新区",
+    "township": "党武街道",
+    "community": "下坝村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "贵安新区",
+    "township": "党武街道",
+    "community": "思丫村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "麦坪镇",
+    "community": "场坝村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "乌当区",
+    "township": "观溪路街道",
+    "community": "育新社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "乌当区",
+    "township": "新光路街道",
+    "community": "保利温泉新城社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "乌当区",
+    "township": "新创路街道",
+    "community": "新联社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "乌当区",
+    "township": "龙广路街道",
+    "community": "新云社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "乌当区",
+    "township": "高新路街道",
+    "community": "大桥社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "乌当区",
+    "township": "水田镇",
+    "community": "水田村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "白云区",
+    "township": "泉湖街道",
+    "community": "米兰春天社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "白云区",
+    "township": "泉湖街道",
+    "community": "蓝天社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "白云区",
+    "township": "大山洞街道",
+    "community": "云晖社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "白云区",
+    "township": "云城街道",
+    "community": "云尚社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "白云区",
+    "township": "龚家寨街道",
+    "community": "白沙关社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "白云区",
+    "township": "艳山红镇",
+    "community": "刘庄村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "白云区",
+    "township": "艳山红镇",
+    "community": "鸡场村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "白云区",
+    "township": "麦架镇",
+    "community": "马堰村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "白云区",
+    "township": "沙文镇",
+    "community": "四方坡村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "白云区",
+    "township": "都拉布依族乡",
+    "community": "小河村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "宾阳街道",
+    "community": "天悦府社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "云潭街道",
+    "community": "阅湖社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "金华园街道",
+    "community": "临境社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "金华园街道",
+    "community": "金枫社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "长岭街道",
+    "community": "会锦社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "长岭街道",
+    "community": "聚融社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "观山街道",
+    "community": "新寨村委会"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "世纪城街道",
+    "community": "龙贤社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "世纪城街道",
+    "community": "兰凯社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "世纪城街道",
+    "community": "睿力上城社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "金阳街道",
+    "community": "云潭社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "金阳街道",
+    "community": "云境社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "金华镇",
+    "community": "金华村委会"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "开阳县",
+    "township": "硒城街道",
+    "community": "凌角堰社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "开阳县",
+    "township": "云开街道",
+    "community": "东兴社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "开阳县",
+    "township": "云开街道",
+    "community": "新世纪社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "开阳县",
+    "township": "云开街道",
+    "community": "东山村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "开阳县",
+    "township": "楠木渡镇",
+    "community": "临江村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "息烽县",
+    "township": "永阳街道",
+    "community": "北门社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "息烽县",
+    "township": "永阳街道",
+    "community": "新村社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "息烽县",
+    "township": "小寨坝镇",
+    "community": "上寨村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "修文县",
+    "township": "龙场街道",
+    "community": "宾阳社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "修文县",
+    "township": "龙场街道",
+    "community": "新寨村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "修文县",
+    "township": "景阳街道",
+    "community": "景阳社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "修文县",
+    "township": "扎佐街道",
+    "community": "新柱村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "清镇市",
+    "township": "青龙山街道",
+    "community": "青龙社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "清镇市",
+    "township": "青龙山街道",
+    "community": "新民社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "清镇市",
+    "township": "青龙山街道",
+    "community": "中环河滨社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "清镇市",
+    "township": "青龙山街道",
+    "community": "东北村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "清镇市",
+    "township": "青龙山街道",
+    "community": "凉水井村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "清镇市",
+    "township": "滨湖街道",
+    "community": "时光社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "清镇市",
+    "township": "滨湖街道",
+    "community": "乡愁社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "清镇市",
+    "township": "站街镇",
+    "community": "站街社区"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "黄土坡街道",
+    "community": "二屯社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "黄土坡街道",
+    "community": "人民西路社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "红岩街道",
+    "community": "水西社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "荷泉街道",
+    "community": "恒达路社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "荷城街道",
+    "community": "花园社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "荷城街道",
+    "community": "官寨社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "杨柳街道",
+    "community": "巴西社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "凤凰街道",
+    "community": "星筑社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "凤凰街道",
+    "community": "松坪南路社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "凤凰街道",
+    "community": "兴隆社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "德坞街道",
+    "community": "德西社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "德坞街道",
+    "community": "西宁村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "汪家寨镇",
+    "community": "纳福社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "木果镇",
+    "community": "木果社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "六枝特区",
+    "township": "九龙街道",
+    "community": "营盘社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "六枝特区",
+    "township": "银壶街道",
+    "community": "补林社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "六枝特区",
+    "township": "塔山街道",
+    "community": "塔山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "六枝特区",
+    "township": "关寨镇",
+    "community": "堕却社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "六枝特区",
+    "township": "龙河镇",
+    "community": "龙场村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "双水街道",
+    "community": "黄家桥社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "双水街道",
+    "community": "沙龙社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "海坪街道",
+    "community": "阿娄社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "石龙街道",
+    "community": "石桥社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "红桥街道",
+    "community": "严家寨社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "都格镇",
+    "community": "龙井社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "米箩镇",
+    "community": "米箩村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "亦资街道",
+    "community": "南湖社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "亦资街道",
+    "community": "杜鹃社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "翰林街道",
+    "community": "迎旭社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "翰林街道",
+    "community": "江源社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "两河街道",
+    "community": "下寨社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "红果街道",
+    "community": "中沙社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "刘官街道",
+    "community": "新街社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "响水镇",
+    "community": "车田社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "柏果镇",
+    "community": "团结社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "盘关镇",
+    "community": "胜江社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "鸡场坪镇",
+    "community": "官山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "双凤镇",
+    "community": "大庄社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "老城街道",
+    "community": "纪念馆社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "中华路街道",
+    "community": "环城社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "迎红街道",
+    "community": "海风社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "延安路街道",
+    "community": "聚泉阁社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "舟水桥街道",
+    "community": "红舟村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "长征街道",
+    "community": "杨柳堰社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "长征街道",
+    "community": "凉水村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "新蒲新区",
+    "township": "礼仪街道",
+    "community": "沙湾社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "新蒲新区",
+    "township": "礼仪街道",
+    "community": "平庄社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "南关街道",
+    "community": "护城村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "忠庄街道",
+    "community": "东欣社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "忠庄街道",
+    "community": "银山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "新蒲新区",
+    "township": "新蒲街道",
+    "community": "新华社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "新蒲新区",
+    "township": "新蒲街道",
+    "community": "青城桥社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "新蒲新区",
+    "township": "新蒲街道",
+    "community": "兴鑫社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "新蒲新区",
+    "township": "新中街道",
+    "community": "幸福社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "新蒲新区",
+    "township": "新中街道",
+    "community": "文化社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "深溪镇",
+    "community": "坪桥村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "红花岗区",
+    "township": "金鼎山镇",
+    "community": "金川村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "新蒲新区",
+    "township": "三渡镇",
+    "community": "水洋村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "汇川区",
+    "township": "上海路街道",
+    "community": "茅草西社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "汇川区",
+    "township": "上海路街道",
+    "community": "南京路社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "汇川区",
+    "township": "洗马路街道",
+    "community": "仁和苑社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "汇川区",
+    "township": "大连路街道",
+    "community": "大山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "汇川区",
+    "township": "大连路街道",
+    "community": "坪山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "汇川区",
+    "township": "高桥街道",
+    "community": "高桥社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "汇川区",
+    "township": "董公寺街道",
+    "community": "交通社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "汇川区",
+    "township": "高坪街道",
+    "community": "大桥村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "汇川区",
+    "township": "团泽镇",
+    "community": "洪江村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "汇川区",
+    "township": "松林镇",
+    "community": "松林社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "南白街道",
+    "community": "娄山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "播南街道",
+    "community": "白龙社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "桂花桥街道",
+    "community": "桂花社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "桂花桥街道",
+    "community": "遵南社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "龙坑街道",
+    "community": "中山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "龙坑街道",
+    "community": "八里社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "三岔镇",
+    "community": "庆远社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "三合镇",
+    "community": "刀靶社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "龙坪镇",
+    "community": "龙坝社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "新民镇",
+    "community": "新民社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "枫香镇",
+    "community": "枫胜社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "桐梓县",
+    "township": "海校街道",
+    "community": "凤鸣社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "桐梓县",
+    "township": "海校街道",
+    "community": "东山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "桐梓县",
+    "township": "娄山关街道",
+    "community": "长征社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "桐梓县",
+    "township": "娄山关街道",
+    "community": "鞍山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "桐梓县",
+    "township": "娄山关街道",
+    "community": "杉坪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "桐梓县",
+    "township": "羊磴镇",
+    "community": "苦楝社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "桐梓县",
+    "township": "燎原镇",
+    "community": "花园社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "绥阳县",
+    "township": "洋川街道",
+    "community": "西街社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "绥阳县",
+    "township": "洋川街道",
+    "community": "雅泉社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "绥阳县",
+    "township": "旺草镇",
+    "community": "尹珍社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "绥阳县",
+    "township": "风华镇",
+    "community": "金承社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "正安县",
+    "township": "凤仪街道",
+    "community": "山奇社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "正安县",
+    "township": "凤仪街道",
+    "community": "文昌社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "正安县",
+    "township": "凤仪街道",
+    "community": "桃园社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "正安县",
+    "township": "瑞濠街道",
+    "community": "新龙孔社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "正安县",
+    "township": "安场镇",
+    "community": "石井社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "正安县",
+    "township": "桴?镇",
+    "community": "桴?社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "道真仡佬族苗族自治县",
+    "township": "尹珍街道",
+    "community": "新城社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "道真仡佬族苗族自治县",
+    "township": "尹珍街道",
+    "community": "金台社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "道真仡佬族苗族自治县",
+    "township": "洛龙镇",
+    "community": "丁氏坝社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "务川仡佬族苗族自治县",
+    "township": "丹砂街道",
+    "community": "洪渡社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "务川仡佬族苗族自治县",
+    "township": "丹砂街道",
+    "community": "银杏社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "务川仡佬族苗族自治县",
+    "township": "都濡街道",
+    "community": "东昇社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "务川仡佬族苗族自治县",
+    "township": "黄都镇",
+    "community": "黄都社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "凤冈县",
+    "township": "龙泉街道",
+    "community": "龙井社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "凤冈县",
+    "township": "龙泉街道",
+    "community": "明阳社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "凤冈县",
+    "township": "凤岭街道",
+    "community": "文峰社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "凤冈县",
+    "township": "土溪镇",
+    "community": "鱼泉村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "湄潭县",
+    "township": "湄江街道",
+    "community": "茶城社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "湄潭县",
+    "township": "湄江街道",
+    "community": "湄江社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "湄潭县",
+    "township": "湄江街道",
+    "community": "碧波湾社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "湄潭县",
+    "township": "黄家坝街道",
+    "community": "民建社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "湄潭县",
+    "township": "永兴镇",
+    "community": "共和村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "湄潭县",
+    "township": "石莲镇",
+    "community": "九坝社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "余庆县",
+    "township": "子营街道",
+    "community": "梓桐社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "余庆县",
+    "township": "构皮滩镇",
+    "community": "太平社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "东皇街道",
+    "community": "丹霞社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "东皇街道",
+    "community": "洋台湾社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "东皇街道",
+    "community": "红城社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "杉王街道",
+    "community": "虹顶社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "杉王街道",
+    "community": "希望社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "杉王街道",
+    "community": "大榜村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "马临街道",
+    "community": "和平社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "官店镇",
+    "community": "官店村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "三岔河镇",
+    "community": "天水池村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "赤水市",
+    "township": "市中街道",
+    "community": "滨西社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "赤水市",
+    "township": "文华街道",
+    "community": "红岭社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "赤水市",
+    "township": "文华街道",
+    "community": "建设社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "赤水市",
+    "township": "长期镇",
+    "community": "康桥社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "盐津街道",
+    "community": "盐津社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "盐津街道",
+    "community": "罗家坝社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "盐津街道",
+    "community": "两路口社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "中枢街道",
+    "community": "城北社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "中枢街道",
+    "community": "林园社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "苍龙街道",
+    "community": "龙井社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "鲁班街道",
+    "community": "双龙社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "鲁班街道",
+    "community": "隆堡社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "美酒河镇",
+    "community": "沙滩社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "南街街道",
+    "community": "南华社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "东关街道",
+    "community": "安电社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "东关街道",
+    "community": "青苑社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "东关街道",
+    "community": "新寨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "华西街道",
+    "community": "太平社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "华西街道",
+    "community": "华西村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "西航街道",
+    "community": "北航社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "西航街道",
+    "community": "王庄社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "新安街道",
+    "community": "家喻社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "新安街道",
+    "community": "新哨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "大西桥镇",
+    "community": "大西桥社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "蔡官镇",
+    "community": "张官村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "平坝区",
+    "township": "安平街道",
+    "community": "塔南社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "平坝区",
+    "township": "鼓楼街道",
+    "community": "东方社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "平坝区",
+    "township": "天龙镇",
+    "community": "天龙村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "平坝区",
+    "township": "马场镇",
+    "community": "凯掌社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "平坝区",
+    "township": "马场镇",
+    "community": "刘家村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "普定县",
+    "township": "定南街道",
+    "community": "定南社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "普定县",
+    "township": "黄桶街道",
+    "community": "陈旗村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "普定县",
+    "township": "玉秀街道",
+    "community": "红新社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "普定县",
+    "township": "马场镇",
+    "community": "土牛村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "镇宁布依族苗族自治县",
+    "township": "白马湖街道",
+    "community": "民新社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "镇宁布依族苗族自治县",
+    "township": "环翠街道",
+    "community": "迎阳社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "关岭布依族苗族自治县",
+    "township": "顶云街道",
+    "community": "八角社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "关岭布依族苗族自治县",
+    "township": "关索街道",
+    "community": "城内社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "关岭布依族苗族自治县",
+    "township": "花江镇",
+    "community": "中山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "紫云苗族布依族自治县",
+    "township": "五峰街道",
+    "community": "城北社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "紫云苗族布依族自治县",
+    "township": "云岭街道",
+    "community": "磨南村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "紫云苗族布依族自治县",
+    "township": "火花镇",
+    "community": "兴合村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "市西街道",
+    "community": "翠西社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "市东街道",
+    "community": "水西田社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "三板桥街道",
+    "community": "六合社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "观音桥街道",
+    "community": "迎宾社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "洪山街道",
+    "community": "环南社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "麻园街道",
+    "community": "双城社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "碧阳街道",
+    "community": "大兰社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "碧阳街道",
+    "community": "同心社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "德溪街道",
+    "community": "后河社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "碧海街道",
+    "community": "马过河社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "柏杨林街道",
+    "community": "阳光社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "鸭池镇",
+    "community": "营脚社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "朱昌镇",
+    "community": "朱昌社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "长春堡镇",
+    "community": "清丰社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "何官屯镇",
+    "community": "猫猫洞社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "八寨镇",
+    "community": "劳动社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "龙场营镇",
+    "community": "龙场营社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "红旗街道",
+    "community": "西南社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "红旗街道",
+    "community": "东郊社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "顺德街道",
+    "community": "龙昌社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "九驿街道",
+    "community": "余石社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "猫场镇",
+    "community": "猫场社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "黄泥塘镇",
+    "community": "新塘社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "达溪镇",
+    "community": "冷底社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "长石镇",
+    "community": "杨柳社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "金沙县",
+    "township": "西洛街道",
+    "community": "群立社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "金沙县",
+    "township": "五龙街道",
+    "community": "五关社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "金沙县",
+    "township": "鼓场街道",
+    "community": "长安社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "金沙县",
+    "township": "鼓场街道",
+    "community": "黎明社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "金沙县",
+    "township": "民兴街道",
+    "community": "金槐社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "金沙县",
+    "township": "沙土镇",
+    "community": "光明社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "金沙县",
+    "township": "禹谟镇",
+    "community": "沙兴社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "金沙县",
+    "township": "木孔镇",
+    "community": "大树社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "双堰街道",
+    "community": "金南社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "文腾街道",
+    "community": "金北社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "文腾街道",
+    "community": "金西社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "三甲街道",
+    "community": "龙潭社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "八步街道",
+    "community": "利民社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "牛场镇",
+    "community": "群裕社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "三塘镇",
+    "community": "街上社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "黑土镇",
+    "community": "红星社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "雍熙街道",
+    "community": "公园社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "雍熙街道",
+    "community": "大寨社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "文昌街道",
+    "community": "左翼河社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "利园街道",
+    "community": "和瑞社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "阳长镇",
+    "community": "海摩社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "龙场镇",
+    "community": "干河沟村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "勺窝镇",
+    "community": "新天地社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "曙光镇",
+    "community": "猴儿关社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "海边街道",
+    "community": "下坝社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "五里岗街道",
+    "community": "燎原社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "六桥街道",
+    "community": "大马城社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "六桥街道",
+    "community": "民中社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "陕桥街道",
+    "community": "板仓村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "草海镇",
+    "community": "东山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "么站镇",
+    "community": "么站社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "炉山镇",
+    "community": "结里社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "哲觉镇",
+    "community": "哲觉社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "迤那镇",
+    "community": "五星社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "小海镇",
+    "community": "小海社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "二塘镇",
+    "community": "新合社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "双龙镇",
+    "community": "水潮社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "双河街道",
+    "community": "前河社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "汉阳街道",
+    "community": "下街社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "金银山街道",
+    "community": "煤炭沟社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "金银山街道",
+    "community": "双井社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "野马川镇",
+    "community": "大田社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "德卓镇",
+    "community": "坝塘村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "水西街道",
+    "community": "幸福社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "莲城街道",
+    "community": "莲城社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "莲城街道",
+    "community": "老鸹河社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "文峰街道",
+    "community": "双星社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "杜鹃街道",
+    "community": "乌骡坝社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "金碧镇",
+    "community": "中同村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "重新镇",
+    "community": "桥边社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "甘棠镇",
+    "community": "大锡社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "碧江区",
+    "township": "环北街道",
+    "community": "北门社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "碧江区",
+    "township": "环北街道",
+    "community": "南岳社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "碧江区",
+    "township": "河西街道",
+    "community": "文笔峰社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "碧江区",
+    "township": "河西街道",
+    "community": "锦云社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "碧江区",
+    "township": "灯塔街道",
+    "community": "矮屯社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "碧江区",
+    "township": "川硐街道",
+    "community": "小江口村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "碧江区",
+    "township": "锦江街道",
+    "community": "鹭鸶岩社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "碧江区",
+    "township": "铜兴街道",
+    "community": "铜江社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "碧江区",
+    "township": "正光街道",
+    "community": "三寨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "万山区",
+    "township": "茶店街道",
+    "community": "大元村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "万山区",
+    "township": "丹都街道",
+    "community": "河坪社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "江口县",
+    "township": "双江街道",
+    "community": "双月社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "江口县",
+    "township": "凯德街道",
+    "community": "金钟社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "玉屏侗族自治县",
+    "township": "皂角坪街道",
+    "community": "四眼塘社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "玉屏侗族自治县",
+    "township": "大龙街道",
+    "community": "大龙堡村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "石阡县",
+    "township": "汤山街道",
+    "community": "平阳社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "石阡县",
+    "township": "泉都街道",
+    "community": "荆坪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "思南县",
+    "township": "思唐街道",
+    "community": "安化社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "思南县",
+    "township": "思唐街道",
+    "community": "城北社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "思南县",
+    "township": "塘头镇",
+    "community": "唐乔社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "思南县",
+    "township": "香坝镇",
+    "community": "香坝社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "印江土家族苗族自治县",
+    "township": "峨岭街道",
+    "community": "城东社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "印江土家族苗族自治县",
+    "township": "龙津街道",
+    "community": "城北社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "印江土家族苗族自治县",
+    "township": "龙津街道",
+    "community": "长坡社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "德江县",
+    "township": "青龙街道",
+    "community": "柏杨社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "德江县",
+    "township": "青龙街道",
+    "community": "黎家堡社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "德江县",
+    "township": "玉水街道",
+    "community": "厦阡社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "德江县",
+    "township": "安化街道",
+    "community": "场口社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "德江县",
+    "township": "复兴镇",
+    "community": "七星社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "沿河土家族自治县",
+    "township": "团结街道",
+    "community": "田坝社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "沿河土家族自治县",
+    "township": "和平街道",
+    "community": "花花桥社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "沿河土家族自治县",
+    "township": "祐溪街道",
+    "community": "坝坨社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "沿河土家族自治县",
+    "township": "官舟镇",
+    "community": "和舟社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "松桃苗族自治县",
+    "township": "大兴街道",
+    "community": "大兴社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "松桃苗族自治县",
+    "township": "蓼皋街道",
+    "community": "南门社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "松桃苗族自治县",
+    "township": "蓼皋街道",
+    "community": "马田龙社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "松桃苗族自治县",
+    "township": "蓼皋街道",
+    "community": "团山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "松桃苗族自治县",
+    "township": "迓驾镇",
+    "community": "迓驾村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "松桃苗族自治县",
+    "township": "平头镇",
+    "community": "平头司村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "黄草街道",
+    "community": "盘江社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "兴泰街道",
+    "community": "水库社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "桔山街道",
+    "community": "金桔社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "桔山街道",
+    "community": "新场社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "桔山街道",
+    "community": "桔园社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "桔山街道",
+    "community": "民航社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "丰都街道",
+    "community": "赵家渡村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "坪东街道",
+    "community": "锅底河村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "下五屯街道",
+    "community": "永康社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "万峰林街道",
+    "community": "乐立村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "马岭街道",
+    "community": "龙盛社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "木陇街道",
+    "community": "步马社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "乌沙镇",
+    "community": "乌沙社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "万屯镇",
+    "community": "万屯村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "则戎镇",
+    "community": "安章社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴仁市",
+    "township": "东湖街道",
+    "community": "五峰村委会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴仁市",
+    "township": "城北街道",
+    "community": "民主社区居委会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴仁市",
+    "township": "巴铃镇",
+    "community": "东街社区居委会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "普安县",
+    "township": "盘水街道",
+    "community": "云盘社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "普安县",
+    "township": "青山镇",
+    "community": "下街社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "晴隆县",
+    "township": "莲城街道",
+    "community": "南街社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "晴隆县",
+    "township": "大厂镇",
+    "community": "大厂社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "贞丰县",
+    "township": "珉谷街道",
+    "community": "旗洋社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "贞丰县",
+    "township": "双峰街道",
+    "community": "鸾山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "望谟县",
+    "township": "王母街道",
+    "community": "河西社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "望谟县",
+    "township": "蟠桃街道",
+    "community": "平郎社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "册亨县",
+    "township": "者楼街道",
+    "community": "前进社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "册亨县",
+    "township": "巧马镇",
+    "community": "纳桃村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "安龙县",
+    "township": "栖凤街道",
+    "community": "大坪社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "安龙县",
+    "township": "栖凤街道",
+    "community": "者跃村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "安龙县",
+    "township": "龙广镇",
+    "community": "合兴村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "城西街道",
+    "community": "北京西路社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "城西街道",
+    "community": "未来城社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "大十字街道",
+    "community": "苹果山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "大十字街道",
+    "community": "和谐社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "大十字街道",
+    "community": "南山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "西门街道",
+    "community": "大阁山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "西门街道",
+    "community": "龙头村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "洗马河街道",
+    "community": "振华社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "湾溪街道",
+    "community": "龙井社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "开怀街道",
+    "community": "上马石社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "白午街道",
+    "community": "白午社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "白果井街道",
+    "community": "思源社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "下司镇",
+    "community": "清江村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黄平县",
+    "township": "新州镇",
+    "community": "东营社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黄平县",
+    "township": "谷陇镇",
+    "community": "苗岭社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "施秉县",
+    "township": "城关镇",
+    "community": "鼓楼社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "三穗县",
+    "township": "文笔街道",
+    "community": "永灵社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "三穗县",
+    "township": "武笔街道",
+    "community": "青洞村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "镇远县",
+    "township": "舞阳镇",
+    "community": "盘龙社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "镇远县",
+    "township": "羊坪镇",
+    "community": "羊坪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "岑巩县",
+    "township": "?水街道",
+    "community": "大园社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "岑巩县",
+    "township": "思旸镇",
+    "community": "思州社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "天柱县",
+    "township": "凤城街道",
+    "community": "东门社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "天柱县",
+    "township": "凤城街道",
+    "community": "新和村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "天柱县",
+    "township": "蓝田镇",
+    "community": "蓝田村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "锦屏县",
+    "township": "三江镇",
+    "community": "风雨桥社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "锦屏县",
+    "township": "三江镇",
+    "community": "潘寨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "剑河县",
+    "township": "仰阿莎街道",
+    "community": "城北社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "剑河县",
+    "township": "仰阿莎街道",
+    "community": "大稿午村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "台江县",
+    "township": "台拱街道",
+    "community": "台拱村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黎平县",
+    "township": "德凤街道",
+    "community": "贡院社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黎平县",
+    "township": "德凤街道",
+    "community": "矮枧社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黎平县",
+    "township": "龙形街道",
+    "community": "何家庄社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黎平县",
+    "township": "中潮镇",
+    "community": "中潮村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "榕江县",
+    "township": "车民街道",
+    "community": "富民社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "榕江县",
+    "township": "车民街道",
+    "community": "东环特和社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "榕江县",
+    "township": "古州镇",
+    "community": "六佰塘社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "从江县",
+    "township": "丙梅街道",
+    "community": "江东社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "从江县",
+    "township": "贯洞镇",
+    "community": "腊阳村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "雷山县",
+    "township": "丹江镇",
+    "community": "响楼社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "麻江县",
+    "township": "杏山街道",
+    "community": "群英社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "麻江县",
+    "township": "宣威镇",
+    "community": "光明村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "丹寨县",
+    "township": "龙泉镇",
+    "community": "马寨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "都匀市",
+    "township": "文峰街道",
+    "community": "龙潭社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "都匀市",
+    "township": "文峰街道",
+    "community": "庆云宫村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "都匀市",
+    "township": "广惠街道",
+    "community": "平桥社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "都匀市",
+    "township": "广惠街道",
+    "community": "石板街社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "都匀市",
+    "township": "沙包堡街道",
+    "community": "龙昌社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "都匀市",
+    "township": "沙包堡街道",
+    "community": "龙山社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "都匀市",
+    "township": "绿茵湖街道",
+    "community": "绿茵湖村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "福泉市",
+    "township": "金山街道",
+    "community": "藜峨社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "福泉市",
+    "township": "金山街道",
+    "community": "叠翠社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "福泉市",
+    "township": "马场坪街道",
+    "community": "马场坪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "福泉市",
+    "township": "牛场镇",
+    "community": "瓮福磷矿社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "荔波县",
+    "township": "玉屏街道",
+    "community": "古城社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "荔波县",
+    "township": "朝阳镇",
+    "community": "朝阳村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "贵定县",
+    "township": "金南街道",
+    "community": "迎宾社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "贵定县",
+    "township": "宝山街道",
+    "community": "南阳社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "贵定县",
+    "township": "沿山镇",
+    "community": "星溪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "瓮安县",
+    "township": "雍阳街道",
+    "community": "城北社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "瓮安县",
+    "township": "雍阳街道",
+    "community": "映山红社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "瓮安县",
+    "township": "雍阳街道",
+    "community": "七星社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "瓮安县",
+    "township": "瓮水街道",
+    "community": "金龙社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "瓮安县",
+    "township": "瓮水街道",
+    "community": "河西社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "瓮安县",
+    "township": "天文镇",
+    "community": "天文社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "瓮安县",
+    "township": "猴场镇",
+    "community": "下司社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "独山县",
+    "township": "井城街道",
+    "community": "三桥社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "独山县",
+    "township": "百泉镇",
+    "community": "望城社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "独山县",
+    "township": "麻万镇",
+    "community": "麻抹社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "平塘县",
+    "township": "金盆街道",
+    "community": "回龙村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "平塘县",
+    "township": "克度镇",
+    "community": "金星村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "罗甸县",
+    "township": "斛兴街道",
+    "community": "城东社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "罗甸县",
+    "township": "斛兴街道",
+    "community": "河滨社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "罗甸县",
+    "township": "沫阳镇",
+    "community": "柏林村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "长顺县",
+    "township": "长寨街道",
+    "community": "城南社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "长顺县",
+    "township": "广顺镇",
+    "community": "南福新苑社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "龙里县",
+    "township": "冠山街道",
+    "community": "大冲社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "龙里县",
+    "township": "冠山街道",
+    "community": "兴龙社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "惠水县",
+    "township": "涟江街道",
+    "community": "涟江社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "惠水县",
+    "township": "涟江街道",
+    "community": "江桥社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "惠水县",
+    "township": "涟江街道",
+    "community": "新城村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "惠水县",
+    "township": "好花红镇",
+    "community": "三都村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "三都水族自治县",
+    "township": "三合街道",
+    "community": "小河社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "三都水族自治县",
+    "township": "大河镇",
+    "community": "红星移民社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "永乐乡",
+    "community": "干井村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "麦坪镇",
+    "community": "彭官村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "花溪区",
+    "township": "高坡苗族乡",
+    "community": "硐口村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "乌当区",
+    "township": "羊昌镇",
+    "community": "中河村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "观山湖区",
+    "township": "金华镇",
+    "community": "上枧村委会"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "开阳县",
+    "township": "冯三镇",
+    "community": "安坪村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "开阳县",
+    "township": "宅吉乡",
+    "community": "保星村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "息烽县",
+    "township": "九庄镇",
+    "community": "腰寨村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "息烽县",
+    "township": "青山苗族乡",
+    "community": "大林村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "修文县",
+    "township": "六广镇",
+    "community": "中心村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "修文县",
+    "township": "六桶镇",
+    "community": "关寨村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "清镇市",
+    "township": "站街镇",
+    "community": "龙泉村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "清镇市",
+    "township": "新店镇",
+    "community": "永和村"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "清镇市",
+    "township": "流长苗族乡",
+    "community": "上街村"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "大河镇",
+    "community": "大箐村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "保华镇",
+    "community": "双桥村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "钟山区",
+    "township": "青林苗族彝族乡",
+    "community": "灰依村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "六枝特区",
+    "township": "大用镇",
+    "community": "岱港村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "六枝特区",
+    "township": "新窑镇",
+    "community": "播雨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "六枝特区",
+    "township": "牛场苗族彝族乡",
+    "community": "牛场村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "六枝特区",
+    "township": "落别布依族彝族乡",
+    "community": "木厂村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "蟠龙镇",
+    "community": "发贡村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "化乐镇",
+    "community": "赵家河村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "陡箐镇",
+    "community": "阿佐村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "营盘苗族彝族白族乡",
+    "community": "鸡戏坪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "水城区",
+    "township": "野钟苗族彝族布依族乡",
+    "community": "发射村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "民主镇",
+    "community": "马龙村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "石桥镇",
+    "community": "香田村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "新民镇",
+    "community": "祭山树村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "鸡场坪镇",
+    "community": "旧寨社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "丹霞镇",
+    "community": "核桃树村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "普古彝族苗族乡",
+    "community": "厂上村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "六盘水市",
+    "county": "盘州市",
+    "township": "保基苗族彝族乡",
+    "community": "雨那洼村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "新蒲新区",
+    "township": "新舟镇",
+    "community": "绿塘村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "新蒲新区",
+    "township": "喇叭镇",
+    "community": "瓦龙村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "汇川区",
+    "township": "泗渡镇",
+    "community": "双仙村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "三合镇",
+    "community": "长丰村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "尚嵇镇",
+    "community": "清水村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "播州区",
+    "township": "泮水镇",
+    "community": "喻河村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "桐梓县",
+    "township": "新站镇",
+    "community": "蒙渡村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "桐梓县",
+    "township": "花秋镇",
+    "community": "乐境村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "桐梓县",
+    "township": "狮溪镇",
+    "community": "黄坪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "绥阳县",
+    "township": "郑场镇",
+    "community": "伞水村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "绥阳县",
+    "township": "茅垭镇",
+    "community": "拥德村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "正安县",
+    "township": "瑞溪镇",
+    "community": "三把车村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "正安县",
+    "township": "格林镇",
+    "community": "保丰村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "正安县",
+    "township": "市坪苗族仡佬族乡",
+    "community": "市坪社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "道真仡佬族苗族自治县",
+    "township": "大磏镇",
+    "community": "福星村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "务川仡佬族苗族自治县",
+    "township": "黄都镇",
+    "community": "桂花村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "务川仡佬族苗族自治县",
+    "township": "镇南镇",
+    "community": "同心村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "凤冈县",
+    "township": "进化镇",
+    "community": "大堰村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "凤冈县",
+    "township": "永安镇",
+    "community": "田坝社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "湄潭县",
+    "township": "黄家坝街道",
+    "community": "牛场村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "湄潭县",
+    "township": "石莲镇",
+    "community": "沿江村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "余庆县",
+    "township": "大乌江镇",
+    "community": "关塘村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "余庆县",
+    "township": "花山苗族乡",
+    "community": "万里村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "习酒镇",
+    "community": "石林村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "温水镇",
+    "community": "下坝村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "习水县",
+    "township": "二里镇",
+    "community": "红工村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "赤水市",
+    "township": "复兴镇",
+    "community": "凯旋村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "中枢街道",
+    "community": "火炉坎村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "茅坝镇",
+    "community": "杨柳村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "仁怀市",
+    "township": "学孔镇",
+    "community": "桃子坪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "大西桥镇",
+    "community": "九溪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "轿子山镇",
+    "community": "河安村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "轿子山镇",
+    "community": "青山村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "西秀区",
+    "township": "杨武布依族苗族乡",
+    "community": "杨武社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "平坝区",
+    "township": "白云镇",
+    "community": "林下村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "平坝区",
+    "township": "马场镇",
+    "community": "洋塘村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "平坝区",
+    "township": "十字回族苗族乡",
+    "community": "摆捞村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "普定县",
+    "township": "化处镇",
+    "community": "焦家村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "普定县",
+    "township": "化处镇",
+    "community": "朵贝村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "镇宁布依族苗族自治县",
+    "township": "双龙山街道",
+    "community": "龙井社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "镇宁布依族苗族自治县",
+    "township": "江龙镇",
+    "community": "西门社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "关岭布依族苗族自治县",
+    "township": "顶云街道",
+    "community": "包包村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "关岭布依族苗族自治县",
+    "township": "花江镇",
+    "community": "元林村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "关岭布依族苗族自治县",
+    "township": "花江镇",
+    "community": "太坪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "紫云苗族布依族自治县",
+    "township": "猴场镇",
+    "community": "坪坝村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "紫云苗族布依族自治县",
+    "township": "宗地镇",
+    "community": "歪寨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "安顺市",
+    "county": "紫云苗族布依族自治县",
+    "township": "四大寨乡",
+    "community": "落城村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "撒拉溪镇",
+    "community": "沙乐村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "撒拉溪镇",
+    "community": "永丰村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "水箐镇",
+    "community": "马鞍村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "林口镇",
+    "community": "大地村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "普宜镇",
+    "community": "摆盖村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "七星关区",
+    "township": "团结彝族苗族乡",
+    "community": "团结村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "马场镇",
+    "community": "金龙村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "长石镇",
+    "community": "和平村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "绿塘乡",
+    "community": "高潮村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "牛场苗族彝族乡",
+    "community": "立新村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "理化苗族彝族乡",
+    "community": "大塘村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "大方县",
+    "township": "核桃彝族白族乡",
+    "community": "核桃村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "金沙县",
+    "township": "禹谟镇",
+    "community": "金岩村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "金沙县",
+    "township": "高坪镇",
+    "community": "幸福村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "金沙县",
+    "township": "桂花乡",
+    "community": "回龙村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "三甲街道",
+    "community": "新峰村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "猫场镇",
+    "community": "大寨社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "白泥镇",
+    "community": "先锋村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "鸡场苗族彝族乡",
+    "community": "修文县村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "织金县",
+    "township": "纳雍乡",
+    "community": "八耳岩村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "龙场镇",
+    "community": "万家寨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "董地苗族彝族乡",
+    "community": "玉龙村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "化作苗族彝族乡",
+    "community": "赵家寨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "纳雍县",
+    "township": "锅圈岩苗族彝族乡",
+    "community": "马场村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "金钟镇",
+    "community": "院箐村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "龙场镇",
+    "community": "营丰村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "哲觉镇",
+    "community": "新营村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "迤那镇",
+    "community": "大山村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "雪山镇",
+    "community": "灼乐多村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "盐仓镇",
+    "community": "松海村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "麻乍镇",
+    "community": "启戛村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "海拉镇",
+    "community": "火箭村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "岔河镇",
+    "community": "迎江村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "威宁彝族回族苗族自治县",
+    "township": "石门乡",
+    "community": "新龙村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "妈姑镇",
+    "community": "鱼塘村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "达依乡",
+    "community": "坪子村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "松林坡白族彝族苗族乡",
+    "community": "塔土村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "雉街彝族苗族乡",
+    "community": "发达村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "可乐彝族苗族乡",
+    "community": "银光村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "赫章县",
+    "township": "古达苗族彝族乡",
+    "community": "三爱村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "金碧镇",
+    "community": "红寨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "中坪镇",
+    "community": "证明村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "铁石苗族彝族乡",
+    "community": "安乐场村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "毕节市",
+    "county": "黔西市",
+    "township": "金坡苗族彝族满族乡",
+    "community": "附源村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "碧江区",
+    "township": "滑石侗族苗族土家族乡",
+    "community": "老麻塘村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "万山区",
+    "township": "鱼塘侗族苗族乡",
+    "community": "高峰村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "江口县",
+    "township": "怒溪镇",
+    "community": "骆家屯村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "玉屏侗族自治县",
+    "township": "亚鱼乡",
+    "community": "亚鱼村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "石阡县",
+    "township": "白沙镇",
+    "community": "柿坪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "石阡县",
+    "township": "坪地场仡佬族侗族乡",
+    "community": "老鸹林村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "思南县",
+    "township": "塘头镇",
+    "community": "沙都村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "思南县",
+    "township": "许家坝镇",
+    "community": "万塘村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "思南县",
+    "township": "许家坝镇",
+    "community": "黎家坝村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "思南县",
+    "township": "鹦鹉溪镇",
+    "community": "大水溪村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "思南县",
+    "township": "青杠坡镇",
+    "community": "茶园村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "印江土家族苗族自治县",
+    "township": "板溪镇",
+    "community": "毛寨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "德江县",
+    "township": "复兴镇",
+    "community": "楠木村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "德江县",
+    "township": "龙泉土家族乡",
+    "community": "居池坝村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "沿河土家族自治县",
+    "township": "谯家镇",
+    "community": "兴隆村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "沿河土家族自治县",
+    "township": "官舟镇",
+    "community": "马脑村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "沿河土家族自治县",
+    "township": "板场镇",
+    "community": "联文村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "松桃苗族自治县",
+    "township": "大兴街道",
+    "community": "高岩村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "松桃苗族自治县",
+    "township": "长坪乡",
+    "community": "兴隆村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "铜仁市",
+    "county": "松桃苗族自治县",
+    "township": "石梁乡",
+    "community": "石梁村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "敬南镇",
+    "community": "巴布村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "鲁布格镇",
+    "community": "坪上村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "清水河镇",
+    "community": "联丰村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴义市",
+    "township": "猪场坪镇",
+    "community": "丫溪田村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴仁市",
+    "township": "城南街道",
+    "community": "李关村委会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴仁市",
+    "township": "城南街道",
+    "community": "保驹村委会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴仁市",
+    "township": "百德镇",
+    "community": "小川村委会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "兴仁市",
+    "township": "回龙镇",
+    "community": "打汞村委会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "普安县",
+    "township": "南湖街道",
+    "community": "大湾村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "普安县",
+    "township": "九峰街道",
+    "community": "云庄村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "晴隆县",
+    "township": "东观街道",
+    "community": "老营社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "晴隆县",
+    "township": "花贡镇",
+    "community": "竹塘村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "晴隆县",
+    "township": "安谷乡",
+    "community": "四合村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "贞丰县",
+    "township": "北盘江镇",
+    "community": "岜浩村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "贞丰县",
+    "township": "长田镇",
+    "community": "甘田村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "望谟县",
+    "township": "乐元镇",
+    "community": "坝怀村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "望谟县",
+    "township": "郊纳镇",
+    "community": "鸭龙村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "册亨县",
+    "township": "岩架镇",
+    "community": "洛王村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "册亨县",
+    "township": "双江镇",
+    "community": "洛法村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "安龙县",
+    "township": "春潭街道",
+    "community": "冗华村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "安龙县",
+    "township": "万峰湖镇",
+    "community": "龙万村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔西南布依族苗族自治州",
+    "county": "安龙县",
+    "township": "海子镇",
+    "community": "堡堡村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "三棵树镇",
+    "community": "格冲村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "炉山镇",
+    "community": "平初村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "凯里市",
+    "township": "大风洞镇",
+    "community": "老君寨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黄平县",
+    "township": "重安镇",
+    "community": "石头堡村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黄平县",
+    "township": "野洞河镇",
+    "community": "茶山村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "施秉县",
+    "township": "马号镇",
+    "community": "老县村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "三穗县",
+    "township": "长吉镇",
+    "community": "司前村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "镇远县",
+    "township": "羊场镇",
+    "community": "半屯村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "岑巩县",
+    "township": "天马镇",
+    "community": "苗落村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "天柱县",
+    "township": "邦洞街道",
+    "community": "赖洞村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "天柱县",
+    "township": "石洞镇",
+    "community": "冷水村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "锦屏县",
+    "township": "隆里乡",
+    "community": "龙里司村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "剑河县",
+    "township": "南明镇",
+    "community": "河口村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "台江县",
+    "township": "萃文街道",
+    "community": "南省村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黎平县",
+    "township": "高屯街道",
+    "community": "古顿村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黎平县",
+    "township": "岩洞镇",
+    "community": "宰拱村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黎平县",
+    "township": "肇兴镇",
+    "community": "纪堂村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "黎平县",
+    "township": "罗里乡",
+    "community": "五福村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "榕江县",
+    "township": "忠诚镇",
+    "community": "孖腊中心村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "榕江县",
+    "township": "三江水族乡",
+    "community": "怎冷村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "从江县",
+    "township": "丙妹镇",
+    "community": "归林村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "从江县",
+    "township": "往洞镇",
+    "community": "孔寨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "从江县",
+    "township": "加榜乡",
+    "community": "加榜村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "雷山县",
+    "township": "西江镇",
+    "community": "开觉村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "麻江县",
+    "township": "龙山镇",
+    "community": "干桥村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔东南苗族侗族自治州",
+    "county": "丹寨县",
+    "township": "排调镇",
+    "community": "宰宿村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "都匀市",
+    "township": "平浪镇",
+    "community": "罗雍村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "都匀市",
+    "township": "匀东镇",
+    "community": "坝固村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "都匀市",
+    "township": "归兰水族乡",
+    "community": "翁高村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "福泉市",
+    "township": "陆坪镇",
+    "community": "罗坳村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "福泉市",
+    "township": "仙桥乡",
+    "community": "大花水村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "荔波县",
+    "township": "瑶山瑶族乡",
+    "community": "瑶山村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "贵定县",
+    "township": "盘江镇",
+    "community": "长江村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "贵定县",
+    "township": "云雾镇",
+    "community": "抱管村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "瓮安县",
+    "township": "玉山镇",
+    "community": "中火村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "独山县",
+    "township": "百泉镇",
+    "community": "里腊村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "独山县",
+    "township": "麻尾镇",
+    "community": "新董村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "平塘县",
+    "township": "平舟镇",
+    "community": "龙兴村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "平塘县",
+    "township": "大塘镇",
+    "community": "公峨村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "罗甸县",
+    "township": "边阳镇",
+    "community": "者任村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "长顺县",
+    "township": "长寨街道",
+    "community": "冗雷村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "长顺县",
+    "township": "广顺镇",
+    "community": "安乐村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "龙里县",
+    "township": "冠山街道",
+    "community": "大新村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "龙里县",
+    "township": "洗马镇",
+    "community": "平坡村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "惠水县",
+    "township": "濛江街道",
+    "community": "双庆村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "惠水县",
+    "township": "摆金镇",
+    "community": "白龙村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "惠水县",
+    "township": "羡塘镇",
+    "community": "西混村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "三都水族自治县",
+    "township": "普安镇",
+    "community": "重阳村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "黔南布依族苗族自治州",
+    "county": "三都水族自治县",
+    "township": "中和镇",
+    "community": "塘州村村民委员会"
+  }
+]

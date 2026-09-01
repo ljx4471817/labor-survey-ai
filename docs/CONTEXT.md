@@ -80,9 +80,11 @@
 | 概念 | 定义 | 在哪里 |
 |------|------|------|
 | 手机号白名单 | 通过手机号 + 5 级区域预登记的可访问用户列表；**whitelist.db 是实时唯一事实源**（xlsx 仅初始导入/恢复模板） | `backend/data/whitelist.db`（SQLite） |
-| `admin_level` | 业务管辖范围：省级 / 市级 / 区县 / 调查员 | `whitelist` 表 + `core/constants.py::AdminLevel` |
-| `sys_role` | 系统职能：系统管理员 / 业务管理员 / 普通用户（仅三种取值） | `whitelist` 表 + `core/constants.py::SysRole` |
-| 系统管理员 | `sys_role=系统管理员`，仅 1 人（`.env` 的 `LSX_SYSTEM_ADMIN_PHONE` 指定）；全后台：反馈/KB/LLM/审计/CSV 导入 | `.env` → `whitelist_db._migrate` 强制 active=1 |
+| `admin_level` | 业务管辖范围；界面表述为「管理范围」，取值：省级 / 市级 / 区县 / 调查员 | `whitelist` 表 + `core/constants.py::AdminLevel` |
+| `sys_role` | 系统职能；界面表述为「账号类型」，取值：系统管理员 / 业务管理员 / 普通用户 | `whitelist` 表 + `core/constants.py::SysRole` |
+| 标准调查点 | 白名单新增时四级区域的唯一可选数据源；先由源 Excel 转成 JSON，再通过接口下发 | `backend/data/region_points.json` / `services/region_points.py` / `api/whitelist_regions.py` |
+| 调查点选择器 | 白名单表单中省 / 市 / 县 / 乡镇 / 社区的可搜索级联下拉；新增流程不允许手填兜底 | `static/whitelist-form.js` / `static/whitelist.html` |
+| 系统管理员 | `sys_role=系统管理员`，仅 1 人（`.env` 的 `LSX_SYSTEM_ADMIN_PHONE` 指定）；全后台：反馈/KB/LLM/审计 | `.env` → `whitelist_db._migrate` 强制 active=1 |
 | 业务管理员 | `sys_role=业务管理员`，按 `admin_level` 管辖本区域白名单 + 只读统计；市级及以上可管理测验 | `infra/auth.py` |
 | `region_scope(actor)` | 管辖范围元组 (province, city, county)；系统管理员 = None（无限制） | `infra/auth.py` 纯函数 |
 | `in_scope(actor, target)` | 目标记录是否在管辖范围内（省级=同省，市级=同市，区县=同县） | `infra/auth.py` 纯函数 |

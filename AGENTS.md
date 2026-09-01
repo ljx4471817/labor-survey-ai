@@ -85,6 +85,7 @@
 | `0018-反馈复核闭环v2与近一月热点问题.md` | 负面反馈弹窗 + 复核状态机 + 改进候选收敛 + top_qa_id 热点聚合 | 反馈闭环 v2 |
 | `0019-rag-grounding锚点.md` | LLM 输出遗漏 KB 关键词时自动追加锚点 | 检索治理 |
 | `0020-服务端会话历史.md` | conversations + messages 永久会话 / 手机号隔离 / 最近 10 轮回看 | 对话 UX |
+| `0021-标准调查点选择与账号类型表单.md` | 标准调查点唯一数据源 + 管理范围/账号类型单选 + CSV 导入停用 | 白名单表单治理 |
 
 ## 目录约定
 
@@ -98,14 +99,14 @@
 | `knowledge-base/indicator_catalog.json` | **制度指标目录**（按模块组织的 F/H 编号 + 名称），schema v1 核心 | 制度变更时改 |
 | `knowledge-base/migration_map.json` | **迁移映射**（renamed/removed/added），每次制度变更生成一份 | 自由修改（按需） |
 | `backend/app/` | FastAPI 应用代码 | 自由修改 |
-| `backend/app/api/` | 各业务模块路由（chat / conversations / feedback / feedback_admin / hot_questions / usage_admin / whitelist_admin / gaps_admin / auth / voice / **quiz / quiz_admin** / llm_admin） | 自由修改 |
+| `backend/app/api/` | 各业务模块路由（chat / conversations / feedback / feedback_admin / hot_questions / usage_admin / whitelist_admin / whitelist_regions / gaps_admin / auth / voice / **quiz / quiz_admin** / llm_admin） | 自由修改 |
 | `backend/app/core/` | 配置 + 枚举常量（config.py / constants.py） | 自由修改 |
 | `backend/app/models/schemas/` | Pydantic 请求/响应模型子包（common / chat / admin） | 自由修改 |
 | `backend/app/rag/` | 检索算法（pure.py = 纯函数 / retriever.py = IO 层 / bm25 / llm / prompts / grounding = 输出锚点） | 自由修改 |
 | `backend/app/infra/` | 基础设施（auth.py = HMAC 签名 + 白名单校验） | 自由修改 |
 | `backend/app/persistence/` | SQLite 持久化（whitelist_db / query_log / conversations / **quiz_db**） | 自由修改 |
 | `backend/app/analytics/` | 使用侧分析（gaps.py = KB 闭环检测） | 自由修改 |
-| `backend/app/services/` | 业务服务（feedback_analytics / feedback_reviews / hot_questions / jsonl_utils / **quiz_extract / quiz_generator / quiz_llm / aliyun_balance**） | 自由修改 |
+| `backend/app/services/` | 业务服务（feedback_analytics / feedback_reviews / hot_questions / jsonl_utils / **region_points / quiz_extract / quiz_generator / quiz_llm / aliyun_balance**） | 自由修改 |
 | `backend/app/api/_xunfei_auth.py` | DISABLED（讯飞语音鉴权，代码完整保留） | 不修改 |
 | `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json / **llm_route.json / quiz_llm_config.json**） | 自由修改 |
 | `backend/tests/` | 后端单元测试（257 tests） | 自由修改 |
@@ -177,6 +178,8 @@ python scripts/extract_cf_url.py
 # 白名单：whitelist.db 实时唯一事实源（PRD 权限系统改造后）；网页 /whitelist-admin 分级维护
 python scripts/migrate_whitelist_rbac.py --dry-run  # 上线前迁移 dry-run（输出 sys_role diff）
 python scripts/migrate_whitelist_rbac.py --apply    # 真实迁移（自动备份 backend/data/backups/）
+# 白名单：调查点源表更新后重建标准调查点 JSON（不要手工改网页数据）
+python scripts/convert_region_points.py <调查点Excel路径>
 # 注意：sync_whitelist_xlsx.py 已 DEPRECATED（仅初始导入/恢复），日常禁止再跑，否则旧 xlsx 会覆盖线上名单
 # LLM：模型 A/B 评测 + 阿里云余额监控
 python scripts/compare_models.py --models minimax,qwen-flash --limit 25  # 模型 A/B（同检索同 prompt 同评分；全量 104 题加 --out 落盘）
@@ -216,7 +219,7 @@ cd backend && pip install -r requirements.txt
 - `index.html`：调查员对话主页面
 - `login.html`：手机号白名单登录页（门禁启用后所有页面必经）
 - `dashboard.html`：数据看板——系统管理员全量（KB 复核队列 / 使用监测）；区县业务管理员登录直落「白名单管理」独立页，进入数据看板默认「使用监测」；顶部统一导航（数据看板 / 测验管理 / 白名单管理）+ 退出登录
-- `whitelist.html`：白名单管理独立页（角色化 CRUD / 批量停用 / 启用 / 导出 / 审计 / CSV 导入）
+- `whitelist.html`：白名单管理独立页（角色化 CRUD / 批量停用 / 启用 / 导出 / 审计 / 标准调查点级联选择；CSV 导入已停用）
 - `quiz-admin.html`：测验管理页（侧边栏测验列表 + 工作台两栏，步骤条按数据状态自动打勾，完成率内嵌 tab）
 - `quiz-stats.html`：完成率看板独立页（带 `quiz_id` 参数，从测验管理打开）
 - 共享工具函数放 `common.js`（`$()`、`escapeHtml()`、token 管理）

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """白名单管理 API（PRD 权限系统改造 M2）。
 
-- whoami / 列表 / 新增 / 更新 / 启用 / 软删除 / 批量停用 / 导出 / 审计 / CSV 导入
+- whoami / 列表 / 新增 / 更新 / 启用 / 软删除 / 批量停用 / 导出 / 审计
 - 所有写操作写审计（whitelist_audit）；手机号日志脱敏 phone[:3]****
 - 业务管理员操作受 scope + admin_level 上限 + 保护号 + 系统管理员账号四重约束
 """
@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import csv
 import io
-from typing import Literal
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from loguru import logger
 from openpyxl import Workbook
 
@@ -25,6 +24,12 @@ from app.infra.auth import (
 )
 from app.models.schemas import BatchDisableRequest, WhitelistEntry
 from app.persistence import whitelist_db
+from app.services.region_points import (
+    REGION_FIELDS,
+    load_region_points,
+    validate_account_scope,
+    validate_region_selection,
+)
 
 router = APIRouter()
 
@@ -72,6 +77,22 @@ def _ensure_admin_level_allowed(actor: dict, admin_level: str) -> None:
         raise HTTPException(403, f"不可设置管理员层级：{admin_level}")
 
 
+def _clean_entry(entry: WhitelistEntry) -> WhitelistEntry:
+    """Trim boundary text without mutating the request model in place."""
+    text_fields = ("phone", "name", "province", "city", "county", "township", "community", "remark")
+    return entry.model_copy(update={field: getattr(entry, field).strip() for field in text_fields})
+
+
+def _region_changed(before: dict | None, after: dict) -> bool:
+    if before is None:
+        return True
+    return any((before.get(field) or "").strip() != (after.get(field) or "").strip() for field in REGION_FIELDS)
+
+
+def _region_http_error(exc: ValueError) -> HTTPException:
+    return HTTPException(422, str(exc))
+
+
 def _audit(actor: dict, action: str, phone: str, before: dict | None = None, after: dict | None = None) -> None:
     whitelist_db.log_audit(
         actor_phone=actor["phone"],
@@ -113,11 +134,26 @@ def list_whitelist(user: dict = Depends(require_whitelist_admin)) -> dict:
 
 @router.post("/whitelist")
 def create_whitelist(entry: WhitelistEntry, user: dict = Depends(require_whitelist_admin)) -> dict:
-    """新增；校验 scope + admin_level 上限；业务管理员忽略 body 中 sys_role。"""
+    """新增；校验标准调查点、scope、admin_level 上限；业务管理员忽略 body 中 sys_role。"""
+    entry = _clean_entry(entry)
     if whitelist_db.get_user_any(entry.phone):
         raise HTTPException(409, "该手机号已存在，请直接编辑")
     _ensure_admin_level_allowed(user, entry.admin_level)
-    new_record = {**entry.model_dump(), "sys_role": _effective_sys_role(user, entry.admin_level, entry.sys_role)}
+    new_sys_role = _effective_sys_role(user, entry.admin_level, entry.sys_role)
+    try:
+        validate_account_scope(entry.admin_level, new_sys_role)
+        validate_region_selection(
+            load_region_points(),
+            admin_level=entry.admin_level,
+            province=entry.province,
+            city=entry.city,
+            county=entry.county,
+            township=entry.township,
+            community=entry.community,
+        )
+    except ValueError as exc:
+        raise _region_http_error(exc) from exc
+    new_record = {**entry.model_dump(), "sys_role": new_sys_role}
     if not in_scope(user, new_record):
         raise HTTPException(403, "目标不在管辖范围内")
     if not _is_system_admin(user) and is_protected_phone(entry.phone):
@@ -133,6 +169,7 @@ def update_whitelist(phone: str, entry: WhitelistEntry, user: dict = Depends(req
     """编辑条目；不改变 active（停用后编辑不会复活）；sys_role 仅系统管理员可改。"""
     if phone != entry.phone:
         raise HTTPException(400, "phone 路径参数与 body 不一致")
+    entry = _clean_entry(entry)
     before = whitelist_db.get_user_any(phone)
     _ensure_operable(user, before, phone)
     _ensure_admin_level_allowed(user, entry.admin_level)
@@ -140,6 +177,25 @@ def update_whitelist(phone: str, entry: WhitelistEntry, user: dict = Depends(req
     after = {**entry.model_dump(), "sys_role": new_sys_role, "active": before["active"]}
     if not in_scope(user, after):
         raise HTTPException(403, "目标不在管辖范围内")
+
+    scope_changed = (before.get("admin_level") or "") != entry.admin_level
+    role_changed = (before.get("sys_role") or SysRole.USER.value) != new_sys_role
+    try:
+        if scope_changed or role_changed:
+            validate_account_scope(entry.admin_level, new_sys_role)
+        if _region_changed(before, after) or scope_changed:
+            validate_region_selection(
+                load_region_points(),
+                admin_level=entry.admin_level,
+                province=entry.province,
+                city=entry.city,
+                county=entry.county,
+                township=entry.township,
+                community=entry.community,
+            )
+    except ValueError as exc:
+        raise _region_http_error(exc) from exc
+
     whitelist_db.upsert({k: v for k, v in after.items() if v is not None})
     _audit(user, "update", phone, before=before, after=after)
     if (before.get("sys_role") or SysRole.USER.value) != new_sys_role:
@@ -288,31 +344,9 @@ def whitelist_audit(
     return {"items": items, "count": len(items)}
 
 
-# --- CSV 批量导入（仅系统管理员） ------------------------------------------------
+# --- CSV 批量导入（已停用） ------------------------------------------------------
 
 @router.post("/whitelist/import-csv")
-async def import_whitelist_csv(
-    file: UploadFile = File(...),
-    user: dict = Depends(require_whitelist_admin),
-) -> dict:
-    """上传 CSV 批量导入白名单（收紧为系统管理员；逐条写 import 审计）。
-
-    必填表头：phone, name, province, city, admin_level
-    选填表头：county, township, community, remark
-    """
-    if not _is_system_admin(user):
-        raise HTTPException(403, "仅系统管理员可导入")
-    raw = await file.read()
-    try:
-        text = raw.decode("utf-8-sig")  # Excel 导出的 UTF-8-BOM 也兼容
-    except UnicodeDecodeError:
-        text = raw.decode("gbk")
-    result = whitelist_db.bulk_import_csv(text)
-    for p in result.get("phones", []):
-        after = whitelist_db.get_user_any(p)
-        _audit(user, "import", p, after=after)
-    logger.info(
-        f"whitelist csv import: inserted={result['inserted']} "
-        f"updated={result['updated']} errors={len(result['errors'])}"
-    )
-    return result
+def import_whitelist_csv(user: dict = Depends(require_whitelist_admin)) -> dict:
+    """Disabled endpoint: manual page entry is the supported workflow."""
+    raise HTTPException(403, "批量导入功能已停用")

@@ -172,7 +172,10 @@ def list_all(active_only: bool = True) -> list[dict]:
 
 def upsert(record: dict) -> str:
     """新增或更新；更新时不改 active（PUT 不复活），sys_role 仅在显式传入时更新。"""
-    required = ('phone', 'name', 'province', 'city')
+    required = ('phone', 'name', 'province')
+    # 省级 / 系统管理员没有下级区域；其他范围仍必须落市。
+    if (record.get('admin_level') or '调查员') != '省级':
+        required += ('city',)
     for k in required:
         if not record.get(k):
             raise ValueError(f'缺少必填字段：{k}')
