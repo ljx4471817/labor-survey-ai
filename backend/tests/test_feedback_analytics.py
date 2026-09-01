@@ -5,6 +5,7 @@
 
 锁住关键不变量：adoption_rate 精度、candidates 阈值 MIN_FREQ=3、resolved_ids 去重。
 """
+import sys
 from datetime import datetime, timezone, timedelta
 
 from app.services.feedback_analytics import (
@@ -151,8 +152,12 @@ def test_day_bucket_utc8_handles_naive_and_invalid():
     assert day_bucket_utc8("not-a-date") is None
     assert day_bucket_utc8("") is None
     assert day_bucket_utc8(None) is None
-    # Python 3.10 fromisoformat 不支持 'Z' 后缀 → 防御性返回 None
-    assert day_bucket_utc8("2026-06-01T00:00:00Z") is None
+    # Python 3.10 fromisoformat 不支持 'Z' 后缀 → 防御性返回 None；
+    # 3.11+ 支持 'Z'，正常解析并转 UTC+8（CI 用 3.11）
+    if sys.version_info >= (3, 11):
+        assert day_bucket_utc8("2026-06-01T00:00:00Z") == "2026-06-01"
+    else:
+        assert day_bucket_utc8("2026-06-01T00:00:00Z") is None
 
 
 def test_parent_matches_filters_by_subtree():

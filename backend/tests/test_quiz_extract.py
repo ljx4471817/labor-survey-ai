@@ -2,6 +2,8 @@
 """quiz_extract 纯函数与编排测试（PRD v3 10.1）。"""
 from __future__ import annotations
 
+import sys
+
 import pytest
 
 from app.services import quiz_extract as qe
@@ -125,6 +127,7 @@ def test_extract_doc_text_dispatches_by_suffix(tmp_path, monkeypatch):
     assert calls == {"docx": 1, "legacy": 3}
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Word/WPS COM 仅存在于 Windows")
 def test_legacy_doc_com_success(tmp_path, monkeypatch):
     import win32com.client
 
@@ -160,6 +163,7 @@ def test_legacy_doc_com_success(tmp_path, monkeypatch):
     assert calls == ["Word.Application"]
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Word/WPS COM 仅存在于 Windows")
 def test_legacy_doc_com_failure_raises_clear_error(tmp_path, monkeypatch):
     import win32com.client
 
@@ -172,6 +176,20 @@ def test_legacy_doc_com_failure_raises_clear_error(tmp_path, monkeypatch):
         raise Exception("cannot start " + prog_id)
 
     monkeypatch.setattr(win32com.client, "Dispatch", fake_dispatch)
+    with pytest.raises(RuntimeError, match="无法解析"):
+        qe._extract_legacy_doc_text(str(p))
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="Linux/无 Word 环境：验证缺 LibreOffice 且缺 COM 时的清晰报错")
+def test_legacy_doc_unavailable_raises_clear_error(tmp_path, monkeypatch):
+    """Linux 服务器（如 hermes）无 Word COM：soffice 也缺失时必须抛清晰错误。"""
+    import shutil
+
+    import app.services.quiz_extract as qe
+
+    monkeypatch.setattr(shutil, "which", lambda *a, **k: None)
+    p = tmp_path / "a.doc"
+    p.write_text("x")
     with pytest.raises(RuntimeError, match="无法解析"):
         qe._extract_legacy_doc_text(str(p))
 

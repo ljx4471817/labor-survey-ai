@@ -1,0 +1,39 @@
+# CI：PR / main 推送时自动跑全量单元测试
+# 知识库 eval（104 题）需要真实 API key，不在 CI 运行，由维护者本地跑
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # 测验模块强制 mock LLM，保证 CI 不访问任何外部服务
+      QUIZ_MOCK_LLM: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run tests
+        run: |
+          cd backend
+          pytest tests/ -q
