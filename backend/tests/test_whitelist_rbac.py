@@ -34,9 +34,11 @@ def _user(role, level, province="贵州省", city="贵阳市", county="南明区
     }
 
 
-def _entry(phone, name="测试", admin_level="调查员", province="贵州省", city="贵阳市", county="南明区", sys_role=None):
+def _entry(phone, name="测试", admin_level="调查员", province="贵州省", city="贵阳市", county="南明区", sys_role=None,
+           township="", community=""):
     return WhitelistEntry(
         phone=phone, name=name, province=province, city=city, county=county,
+        township=township, community=community,
         admin_level=admin_level, sys_role=sys_role,
     )
 
@@ -117,7 +119,7 @@ def test_require_user_checks_active(monkeypatch):
 def test_district_cannot_create_outside_county(tmp_db):
     actor = _user(SysRole.BUSINESS_ADMIN.value, AdminLevel.DISTRICT.value, county="南明区")
     with pytest.raises(HTTPException) as e:
-        wl_api.create_whitelist(_entry("13800000001", county="云岩区"), user=actor)
+        wl_api.create_whitelist(_entry("13800000001", admin_level="区县", county="云岩区"), user=actor)
     assert e.value.status_code == 403
 
 
@@ -131,7 +133,13 @@ def test_district_cannot_set_district_level(tmp_db):
 def test_business_admin_sys_role_forced(tmp_db):
     actor = _user(SysRole.BUSINESS_ADMIN.value, AdminLevel.CITY.value)
     # 业务管理员 body 里塞 sys_role=系统管理员 -> 忽略，按 admin_level 推导
-    wl_api.create_whitelist(_entry("13800000001", admin_level="调查员", sys_role="系统管理员"), user=actor)
+    wl_api.create_whitelist(
+        _entry(
+            "13800000001", admin_level="调查员", sys_role="系统管理员",
+            township="新华路街道", community="神奇路社区",
+        ),
+        user=actor,
+    )
     assert wl.get_user_any("13800000001")["sys_role"] == "普通用户"
     # 业务管理员建区县管理岗 -> 推导为业务管理员
     wl_api.create_whitelist(_entry("13800000002", admin_level="区县"), user=actor)
@@ -162,8 +170,11 @@ def test_business_admin_cannot_touch_system_admin_account(tmp_db):
 
 def test_district_crud_in_county_ok(tmp_db):
     actor = _user(SysRole.BUSINESS_ADMIN.value, AdminLevel.DISTRICT.value, county="南明区")
-    assert wl_api.create_whitelist(_entry("13800000001", county="南明区"), user=actor)["ok"]
-    assert wl_api.update_whitelist("13800000001", _entry("13800000001", name="新名", county="南明区"), user=actor)["ok"]
+    full_point = dict(township="新华路街道", community="神奇路社区")
+    assert wl_api.create_whitelist(_entry("13800000001", county="南明区", **full_point), user=actor)["ok"]
+    assert wl_api.update_whitelist(
+        "13800000001", _entry("13800000001", name="新名", county="南明区", **full_point), user=actor,
+    )["ok"]
     assert wl.get_user("13800000001")["name"] == "新名"
     assert wl_api.enable_whitelist("13800000001", user=actor)["ok"]
     assert wl_api.remove_whitelist("13800000001", user=actor)["ok"]
@@ -172,7 +183,10 @@ def test_district_crud_in_county_ok(tmp_db):
 
 def test_system_admin_global_crud(tmp_db):
     actor = _user(SysRole.SYSTEM_ADMIN.value, AdminLevel.ENUMERATOR.value)
-    r = wl_api.create_whitelist(_entry("13800000001", county="遵义市", city="遵义市", sys_role="业务管理员"), user=actor)
+    r = wl_api.create_whitelist(
+        _entry("13800000001", admin_level="区县", county="南明区", sys_role="业务管理员"),
+        user=actor,
+    )
     assert r["ok"]
     assert wl.get_user_any("13800000001")["sys_role"] == "业务管理员"
 
@@ -205,10 +219,14 @@ def test_batch_disable_partial_skip(tmp_db):
 
 
 def test_put_does_not_reactivate_and_enable_recovers(tmp_db):
-    _upsert("13800000001")
+    _upsert("13800000001", township="新华路街道", community="神奇路社区")
     actor = _user(SysRole.BUSINESS_ADMIN.value, AdminLevel.CITY.value)
     wl.delete("13800000001", soft=True)
-    wl_api.update_whitelist("13800000001", _entry("13800000001", name="改名"), user=actor)
+    wl_api.update_whitelist(
+        "13800000001",
+        _entry("13800000001", name="改名", township="新华路街道", community="神奇路社区"),
+        user=actor,
+    )
     u = wl.get_user_any("13800000001")
     assert u["name"] == "改名" and u["active"] == 0  # PUT 不复活
     wl_api.enable_whitelist("13800000001", user=actor)

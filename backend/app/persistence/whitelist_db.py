@@ -21,8 +21,6 @@ SQLite 在 Python 内部使用 WAL，连接跨线程安全。
 '''
 from __future__ import annotations
 
-import csv
-import io
 import os
 import sqlite3
 from datetime import datetime, timezone, timedelta
@@ -172,7 +170,10 @@ def list_all(active_only: bool = True) -> list[dict]:
 
 def upsert(record: dict) -> str:
     """新增或更新；更新时不改 active（PUT 不复活），sys_role 仅在显式传入时更新。"""
-    required = ('phone', 'name', 'province', 'city')
+    required = ('phone', 'name', 'province')
+    # 省级 / 系统管理员没有下级区域；其他范围仍必须落市。
+    if (record.get('admin_level') or '调查员') != '省级':
+        required += ('city',)
     for k in required:
         if not record.get(k):
             raise ValueError(f'缺少必填字段：{k}')
@@ -362,32 +363,3 @@ def cleanup_audit(months: int = AUDIT_RETENTION_MONTHS) -> int:
     return cur.rowcount
 
 
-def bulk_import_csv(csv_text: str) -> dict:
-    reader = csv.DictReader(io.StringIO(csv_text))
-    required = ('phone', 'name', 'province', 'city', 'admin_level')
-    missing_cols = [c for c in required if c not in (reader.fieldnames or [])]
-    if missing_cols:
-        raise ValueError(f'CSV 缺少必要列：{missing_cols}')
-
-    inserted = updated = 0
-    errors = []
-    phones: list[str] = []
-    for line_no, row in enumerate(reader, start=2):
-        try:
-            action = upsert(
-                {
-                    k: (row.get(k) or '').strip()
-                    for k in (
-                        'phone', 'name', 'province', 'city', 'county',
-                        'township', 'community', 'admin_level', 'remark',
-                    )
-                }
-            )
-            phones.append((row.get('phone') or '').strip())
-            if action == 'inserted':
-                inserted += 1
-            else:
-                updated += 1
-        except Exception as e:
-            errors.append({'line': line_no, 'error': str(e), 'row': dict(row)})
-    return {'inserted': inserted, 'updated': updated, 'errors': errors, 'phones': phones}

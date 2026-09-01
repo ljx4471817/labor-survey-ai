@@ -16,6 +16,7 @@ from app.api.llm_admin import router as llm_admin_router
 from app.api.quiz import router as quiz_router
 from app.api.quiz_admin import router as quiz_admin_router
 from app.api.whitelist_admin import router as whitelist_admin_router
+from app.api.whitelist_regions import router as whitelist_regions_router
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
 from app.api.conversations import router as conversations_router
@@ -99,7 +100,7 @@ async def rate_limit_middleware(request: Request, call_next):
     return response
 
 
-for _r in (feedback_admin_router, gaps_admin_router, usage_admin_router, whitelist_admin_router, quiz_admin_router, llm_admin_router):
+for _r in (feedback_admin_router, gaps_admin_router, usage_admin_router, whitelist_admin_router, whitelist_regions_router, quiz_admin_router, llm_admin_router):
     app.include_router(
         _r,
         prefix="/api/admin",

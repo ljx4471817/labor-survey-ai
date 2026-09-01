@@ -13,6 +13,12 @@ from app.models.schemas import WhitelistEntry
 from app.persistence import whitelist_db as wl
 
 UTC8 = timezone(timedelta(hours=8))
+STANDARD_POINT = {
+    "city": "贵阳市",
+    "county": "南明区",
+    "township": "新华路街道",
+    "community": "神奇路社区",
+}
 
 
 @pytest.fixture
@@ -63,7 +69,10 @@ def test_audit_desc_order_and_target_filter(tmp_db):
 def test_api_write_operations_log_audit(tmp_db):
     actor = _user(SysRole.BUSINESS_ADMIN.value, AdminLevel.CITY.value)
     wl_api.create_whitelist(
-        WhitelistEntry(phone="13800000001", name="甲", province="贵州省", city="贵阳市", county="南明区"),
+        WhitelistEntry(
+            phone="13800000001", name="甲", province="贵州省", admin_level=AdminLevel.ENUMERATOR.value,
+            **STANDARD_POINT,
+        ),
         user=actor,
     )
     wl_api.remove_whitelist("13800000001", user=actor)
@@ -77,14 +86,18 @@ def test_api_write_operations_log_audit(tmp_db):
 def test_api_update_sys_role_change_logged(tmp_db):
     actor = _user(SysRole.SYSTEM_ADMIN.value, AdminLevel.ENUMERATOR.value)
     wl_api.create_whitelist(
-        WhitelistEntry(phone="13800000001", name="甲", province="贵州省", city="贵阳市",
-                              county="南明区", admin_level="调查员", sys_role="普通用户"),
+        WhitelistEntry(
+            phone="13800000001", name="甲", province="贵州省", admin_level="调查员",
+            sys_role="普通用户", **STANDARD_POINT,
+        ),
         user=actor,
     )
     wl_api.update_whitelist(
         "13800000001",
-        WhitelistEntry(phone="13800000001", name="甲", province="贵州省", city="贵阳市",
-                              county="南明区", admin_level="调查员", sys_role="业务管理员"),
+        WhitelistEntry(
+            phone="13800000001", name="甲", province="贵州省", admin_level="区县",
+            sys_role="业务管理员", city=STANDARD_POINT["city"], county=STANDARD_POINT["county"],
+        ),
         user=actor,
     )
     actions = [r["action"] for r in wl.list_audit(limit=10)]
