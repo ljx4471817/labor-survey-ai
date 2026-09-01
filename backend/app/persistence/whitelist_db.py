@@ -21,8 +21,6 @@ SQLite 在 Python 内部使用 WAL，连接跨线程安全。
 '''
 from __future__ import annotations
 
-import csv
-import io
 import os
 import sqlite3
 from datetime import datetime, timezone, timedelta
@@ -365,32 +363,3 @@ def cleanup_audit(months: int = AUDIT_RETENTION_MONTHS) -> int:
     return cur.rowcount
 
 
-def bulk_import_csv(csv_text: str) -> dict:
-    reader = csv.DictReader(io.StringIO(csv_text))
-    required = ('phone', 'name', 'province', 'city', 'admin_level')
-    missing_cols = [c for c in required if c not in (reader.fieldnames or [])]
-    if missing_cols:
-        raise ValueError(f'CSV 缺少必要列：{missing_cols}')
-
-    inserted = updated = 0
-    errors = []
-    phones: list[str] = []
-    for line_no, row in enumerate(reader, start=2):
-        try:
-            action = upsert(
-                {
-                    k: (row.get(k) or '').strip()
-                    for k in (
-                        'phone', 'name', 'province', 'city', 'county',
-                        'township', 'community', 'admin_level', 'remark',
-                    )
-                }
-            )
-            phones.append((row.get('phone') or '').strip())
-            if action == 'inserted':
-                inserted += 1
-            else:
-                updated += 1
-        except Exception as e:
-            errors.append({'line': line_no, 'error': str(e), 'row': dict(row)})
-    return {'inserted': inserted, 'updated': updated, 'errors': errors, 'phones': phones}
