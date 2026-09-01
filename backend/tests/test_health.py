@@ -15,6 +15,11 @@ from httpx import ASGITransport
 
 from app.main import app
 
+from pathlib import Path
+
+BACKEND_ROOT = Path(__file__).resolve().parents[1]
+CHROMA_SQLITE = BACKEND_ROOT / "data" / "chroma" / "chroma.sqlite3"
+
 
 async def _get_health():
     transport = ASGITransport(app=app)
@@ -22,6 +27,10 @@ async def _get_health():
         return await client.get("/health")
 
 
+@pytest.mark.skipif(
+    not CHROMA_SQLITE.exists(),
+    reason="本机未构建知识库（无 chroma 持久化文件），跳过真实计数断言",
+)
 def test_health_returns_real_counts():
     """health 端点应返回非零计数（KB 已构建的前提下）。"""
     r = asyncio.run(_get_health())
