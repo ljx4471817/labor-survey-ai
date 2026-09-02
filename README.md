@@ -12,11 +12,11 @@
 
 - ✅ 后端：FastAPI + chat / conversations / hot-questions / feedback / auth / admin / quiz / whitelist 分域 API（voice 2026-06-21 已停用）
 - ✅ 前端：H5 多页面（对话 / 登录 / 答题 / 测验管理 / 完成率 / 统一后台 / 白名单管理），支持服务端会话历史与近一月热点问题
-- ✅ 知识库：Vector + BM25 hybrid 双轨检索，409 条（354 QA + 55 制度 chunk）
+- ✅ 知识库：Vector + BM25 hybrid 双轨检索，570 条（428 QA + 142 制度 chunk）
 - ✅ 鉴权：手机号白名单 + HMAC token（`whitelist.db` 实时唯一事实源）；双维度权限 admin_level × sys_role + 写操作审计
 - ✅ 后台：统一数据看板 dashboard（KB 复核队列 / 使用监测）+ 区域 5 级下钻；顶部导航进入白名单管理与月度测验系统（出题 / 下发 / 完成率）
 - ✅ 内网穿透：Cloudflare Tunnel quick 模式
-- ✅ 质量门禁：257 项单元测试 + 104 项 RAG 全量评测
+- ✅ 质量门禁：单元测试 + 104 项 RAG 全量评测
 - ⏳ 迭代 3 材料已就绪，待领导决策后启动（域名备案 15-20 工作日）
 
 ## 快速开始
@@ -61,7 +61,7 @@ labor-survey-ai/
 │   │   └── rag/                # bm25 / llm / prompts / retriever
 │   ├── data/                   # chroma 持久化 + bm25 索引（不入仓）
 │   ├── static/                 # H5 前端（单页应用）
-│   └── tests/                  # 单元测试（256 tests）
+│   └── tests/                  # 单元测试
 ├── scripts/
 │   ├── build_kb.py             # 向量库构建
 │   ├── build_bm25.py           # BM25 索引构建
@@ -105,6 +105,7 @@ labor-survey-ai/
 - `docs/adr/0008-制度对齐机制.md` — indicators 字段 + migration_map.json + regulations-migrate skill
 - `docs/adr/0010-embedding-v4.md` — text-embedding-v4 + QA/chunk 共享 collection 重建边界
 - `docs/adr/0011-不引入ponytail.md` — 评估后不引入（与分层规则冲突）
+- `docs/adr/0012-月度测验系统.md` — 6 表 SQLite + LLM 要点提取 + 选择题生成
 - `docs/adr/0013-rag-规则冲突裁决.md` — system prompt 硬规则 + eval 三层冲突裁决
 - `docs/adr/0014-llm-主备切换.md` — LLM 三级路由（MiniMax 主用 → qwen-flash 备用 → DeepSeek 兜底）
 - `docs/adr/0016-llm-三级路由.md` — 三级优先链 + fail-safe 沿链切换
@@ -112,6 +113,7 @@ labor-survey-ai/
 - `docs/adr/0018-反馈复核闭环v2与近一月热点问题.md` — 结构化纠错反馈与热点问题
 - `docs/adr/0019-rag-grounding锚点.md` — RAG 回答的知识库锚点
 - `docs/adr/0020-服务端会话历史.md` — 永久会话、上下文与最近 10 轮回看
+- `docs/adr/0021-标准调查点选择与账号类型表单.md` — 标准调查点唯一数据源与表单治理
 - `docs/adr/0015-权限系统双维度.md` — admin_level × sys_role + 审计表 + 分级网页维护
 
 ## 项目级 Codex Skills（`.codex/skills/`，已 git 入仓）

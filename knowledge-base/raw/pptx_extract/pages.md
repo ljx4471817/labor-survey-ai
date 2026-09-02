@@ -4,7 +4,7 @@
 
 **备注**: 接下来进行专用直报系统业务流程及功能的介绍
 
-![../pptx_extract/images/page_01/image12.jpeg](../pptx_extract/images/page_01/image12.jpeg)
+![../../../backend/static/kb-images/page_01/image12.jpeg](../../../backend/static/kb-images/page_01/image12.jpeg)
 
 > 图片内容(可检索): 统计云
 一网通办一云统管
@@ -46,7 +46,7 @@
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_04/image13.png](../pptx_extract/images/page_04/image13.png)
+![../../../backend/static/kb-images/page_04/image13.png](../../../backend/static/kb-images/page_04/image13.png)
 
 > 图片内容(可检索): 统计云
 NBS
@@ -84,7 +84,7 @@ CA数字证书
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_05/image14.png](../pptx_extract/images/page_05/image14.png)
+![../../../backend/static/kb-images/page_05/image14.png](../../../backend/static/kb-images/page_05/image14.png)
 
 > 图片内容(可检索): 用户登录
 短信验证码
@@ -111,7 +111,7 @@ CA数字证书
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_06/image15.wmf](../pptx_extract/images/page_06/image15.wmf)
+![../../../backend/static/kb-images/page_06/image15.wmf](../../../backend/static/kb-images/page_06/image15.wmf)
 
 > 图片内容(可检索): 手机短信验证码
 设置
@@ -132,7 +132,7 @@ CA数字证书
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_07/image16.png](../pptx_extract/images/page_07/image16.png)
+![../../../backend/static/kb-images/page_07/image16.png](../../../backend/static/kb-images/page_07/image16.png)
 
 > 图片内容(可检索): 09:47
 09:52 8
@@ -157,7 +157,7 @@ App下载
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_08/image17.png](../pptx_extract/images/page_08/image17.png)
+![../../../backend/static/kb-images/page_08/image17.png](../../../backend/static/kb-images/page_08/image17.png)
 
 > 图片内容(可检索): 1.10
 12:35
@@ -204,7 +204,7 @@ KB/s
 花果园C区8
 未填报
 
-![../pptx_extract/images/page_08/image18.png](../pptx_extract/images/page_08/image18.png)
+![../../../backend/static/kb-images/page_08/image18.png](../../../backend/static/kb-images/page_08/image18.png)
 
 > 图片内容(可检索): 12:35(b)
 0.60 5G HD
@@ -275,7 +275,7 @@ KB/s ..ll
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_10/image19.png](../pptx_extract/images/page_10/image19.png)
+![../../../backend/static/kb-images/page_10/image19.png](../../../backend/static/kb-images/page_10/image19.png)
 
 > 图片内容(可检索): 统计云工作台
 退出
@@ -325,7 +325,7 @@ KB/s ..ll
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_11/image20.png](../pptx_extract/images/page_11/image20.png)
+![../../../backend/static/kb-images/page_11/image20.png](../../../backend/static/kb-images/page_11/image20.png)
 
 > 图片内容(可检索): 统计联网直报平台
 专用直报系统
@@ -402,7 +402,7 @@ Q查看最新数据
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_12/image21.png](../pptx_extract/images/page_12/image21.png)
+![../../../backend/static/kb-images/page_12/image21.png](../../../backend/static/kb-images/page_12/image21.png)
 
 > 图片内容(可检索): 书签
 4.5辅调员账号管理
@@ -457,7 +457,7 @@ Q查看最新数据
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_13/image22.png](../pptx_extract/images/page_13/image22.png)
+![../../../backend/static/kb-images/page_13/image22.png](../../../backend/static/kb-images/page_13/image22.png)
 
 > 图片内容(可检索): 统计云工作台
 退出
@@ -497,7 +497,7 @@ Q查看最新数据
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_14/image23.png](../pptx_extract/images/page_14/image23.png)
+![../../../backend/static/kb-images/page_14/image23.png](../../../backend/static/kb-images/page_14/image23.png)
 
 > 图片内容(可检索): 统一用户权限
 已选：0条
@@ -576,7 +576,7 @@ Q查看最新数据
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_15/image24.png](../pptx_extract/images/page_15/image24.png)
+![../../../backend/static/kb-images/page_15/image24.png](../../../backend/static/kb-images/page_15/image24.png)
 
 > 图片内容(可检索): 辅助调查员
 辅调员
@@ -626,7 +626,7 @@ Q查看最新数据
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_16/image25.png](../pptx_extract/images/page_16/image25.png)
+![../../../backend/static/kb-images/page_16/image25.png](../../../backend/static/kb-images/page_16/image25.png)
 
 > 图片内容(可检索): 导出设置
 辅调员列
@@ -669,7 +669,7 @@ Q查看最新数据
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_17/image26.png](../pptx_extract/images/page_17/image26.png)
+![../../../backend/static/kb-images/page_17/image26.png](../../../backend/static/kb-images/page_17/image26.png)
 
 > 图片内容(可检索): 统计云应用管理平台辅调员导人模板
 是否
@@ -755,7 +755,7 @@ Q查看最新数据
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_18/image27.png](../pptx_extract/images/page_18/image27.png)
+![../../../backend/static/kb-images/page_18/image27.png](../../../backend/static/kb-images/page_18/image27.png)
 
 > 图片内容(可检索): media
 位置(L):
@@ -783,7 +783,7 @@ Q 搜索
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_19/image28.png](../pptx_extract/images/page_19/image28.png)
+![../../../backend/static/kb-images/page_19/image28.png](../../../backend/static/kb-images/page_19/image28.png)
 
 > 图片内容(可检索): 专用直报系统
 品 常用菜单
@@ -881,7 +881,7 @@ J00000
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_20/image29.png](../pptx_extract/images/page_20/image29.png)
+![../../../backend/static/kb-images/page_20/image29.png](../../../backend/static/kb-images/page_20/image29.png)
 
 > 图片内容(可检索): 首页
 调查员管理×
@@ -927,7 +927,7 @@ J19003
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_21/image30.png](../pptx_extract/images/page_21/image30.png)
+![../../../backend/static/kb-images/page_21/image30.png](../../../backend/static/kb-images/page_21/image30.png)
 
 > 图片内容(可检索): 首页
 调查员管理×
@@ -1002,7 +1002,7 @@ $29927
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_22/image31.png](../pptx_extract/images/page_22/image31.png)
+![../../../backend/static/kb-images/page_22/image31.png](../../../backend/static/kb-images/page_22/image31.png)
 
 > 图片内容(可检索): 首页
 样本户管理×
@@ -1071,7 +1071,7 @@ e同步调查员
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_23/image32.png](../pptx_extract/images/page_23/image32.png)
+![../../../backend/static/kb-images/page_23/image32.png](../../../backend/static/kb-images/page_23/image32.png)
 
 > 图片内容(可检索): 首页
 样本户管理×
@@ -1221,7 +1221,7 @@ $287107
 
 **备注**: 进入“专用直报平台”后，按照业务流程首先要做的“开网前的准备”工作
 
-![../pptx_extract/images/page_24/image33.png](../pptx_extract/images/page_24/image33.png)
+![../../../backend/static/kb-images/page_24/image33.png](../../../backend/static/kb-images/page_24/image33.png)
 
 > 图片内容(可检索): 首页
 样本户管理×
@@ -1319,7 +1319,7 @@ J00000
 **备注**: 接下来看下样本户管理，样本户管理主要包含两大业务模块“调查户管理”和”备选户管理”。
 调查户管理中的样本是由运维人员根据我们”制度中的轮换表“在系统进行配置生成的。
 
-![../pptx_extract/images/page_25/image34.png](../pptx_extract/images/page_25/image34.png)
+![../../../backend/static/kb-images/page_25/image34.png](../../../backend/static/kb-images/page_25/image34.png)
 
 > 图片内容(可检索): 首页
 样本户管理
@@ -1404,7 +1404,7 @@ C36
 2.2 样本户管理
 图2-16
 
-![../pptx_extract/images/page_26/image35.png](../pptx_extract/images/page_26/image35.png)
+![../../../backend/static/kb-images/page_26/image35.png](../../../backend/static/kb-images/page_26/image35.png)
 
 > 图片内容(可检索): 不安全
 https://10.209.25.145/stat/taskDeployment/ldManagement
@@ -1508,7 +1508,7 @@ Q 查询
 2.2 样本户管理
 图2-17
 
-![../pptx_extract/images/page_27/image36.png](../pptx_extract/images/page_27/image36.png)
+![../../../backend/static/kb-images/page_27/image36.png](../../../backend/static/kb-images/page_27/image36.png)
 
 > 图片内容(可检索): 首页
 样本户管理×
@@ -1548,7 +1548,7 @@ Q 查询
 2.2 样本户管理
 图2-18
 
-![../pptx_extract/images/page_28/image37.png](../pptx_extract/images/page_28/image37.png)
+![../../../backend/static/kb-images/page_28/image37.png](../../../backend/static/kb-images/page_28/image37.png)
 
 > 图片内容(可检索): 首页
 样本户管理×
@@ -1600,7 +1600,7 @@ Q 查询
 注意：平台端的“样本户管理”模块进行的换户、空户操作无需审批，仅移动端需要审批。
 图2-19
 
-![../pptx_extract/images/page_29/image38.png](../pptx_extract/images/page_29/image38.png)
+![../../../backend/static/kb-images/page_29/image38.png](../../../backend/static/kb-images/page_29/image38.png)
 
 > 图片内容(可检索): 首页
 角色管理×
@@ -1773,7 +1773,7 @@ D移动端资源管理V
 2.3 住户审批
 图2-20
 
-![../pptx_extract/images/page_30/image39.png](../pptx_extract/images/page_30/image39.png)
+![../../../backend/static/kb-images/page_30/image39.png](../../../backend/static/kb-images/page_30/image39.png)
 
 > 图片内容(可检索): 2024年劳动力调查制度
 二切换任务
@@ -1793,7 +1793,7 @@ D移动端资源管理V
 首页
 我的
 
-![../pptx_extract/images/page_30/image40.png](../pptx_extract/images/page_30/image40.png)
+![../../../backend/static/kb-images/page_30/image40.png](../../../backend/static/kb-images/page_30/image40.png)
 
 > 图片内容(可检索): 1016:17
 2024年劳动力调查制度
@@ -1848,7 +1848,7 @@ D移动端资源管理V
 
 图3-1
 
-![../pptx_extract/images/page_33/image41.png](../pptx_extract/images/page_33/image41.png)
+![../../../backend/static/kb-images/page_33/image41.png](../../../backend/static/kb-images/page_33/image41.png)
 
 > 图片内容(可检索): 首页
 血统计机构录入
@@ -1889,7 +1889,7 @@ R201JZ
 3.1 统计机构录入
 图3-2
 
-![../pptx_extract/images/page_34/image42.png](../pptx_extract/images/page_34/image42.png)
+![../../../backend/static/kb-images/page_34/image42.png](../../../backend/static/kb-images/page_34/image42.png)
 
 > 图片内容(可检索): 首页
 统计机构录入×
@@ -2036,7 +2036,7 @@ F4.您的出生年月是：
 3.1 统计机构录入
 图3-3
 
-![../pptx_extract/images/page_36/image43.png](../pptx_extract/images/page_36/image43.png)
+![../../../backend/static/kb-images/page_36/image43.png](../../../backend/static/kb-images/page_36/image43.png)
 
 > 图片内容(可检索): 首页
 统计机构录入×
@@ -2110,7 +2110,7 @@ J0500000336001
 3.1 统计机构录入
 图3-4
 
-![../pptx_extract/images/page_37/image44.png](../pptx_extract/images/page_37/image44.png)
+![../../../backend/static/kb-images/page_37/image44.png](../../../backend/static/kb-images/page_37/image44.png)
 
 > 图片内容(可检索): 首页
 审核信息查询X
@@ -2178,7 +2178,7 @@ J0500000336001
 3.2 录入进度监测
 图3-5
 
-![../pptx_extract/images/page_38/image45.png](../pptx_extract/images/page_38/image45.png)
+![../../../backend/static/kb-images/page_38/image45.png](../../../backend/static/kb-images/page_38/image45.png)
 
 > 图片内容(可检索): 首页
 调查员数据接收×
@@ -2247,7 +2247,7 @@ Q农村移动录入查询
 3.3 数据接收
 图3-6
 
-![../pptx_extract/images/page_39/image46.png](../pptx_extract/images/page_39/image46.png)
+![../../../backend/static/kb-images/page_39/image46.png](../../../backend/static/kb-images/page_39/image46.png)
 
 > 图片内容(可检索): 35:54
 <返回
@@ -2259,7 +2259,7 @@ Q农村移动录入查询
 数据导出
 查看导出文件
 
-![../pptx_extract/images/page_39/image47.png](../pptx_extract/images/page_39/image47.png)
+![../../../backend/static/kb-images/page_39/image47.png](../../../backend/static/kb-images/page_39/image47.png)
 
 > 图片内容(可检索): 101 [33 5:54
 杨增
@@ -2282,7 +2282,7 @@ Q农村移动录入查询
 
 图3-7
 
-![../pptx_extract/images/page_40/image48.png](../pptx_extract/images/page_40/image48.png)
+![../../../backend/static/kb-images/page_40/image48.png](../../../backend/static/kb-images/page_40/image48.png)
 
 > 图片内容(可检索): 专用直报系统
 常用菜单
@@ -2349,7 +2349,7 @@ Q农村移动录入查询
 正式上线后初期会使用杭州的，也就是老平台使用的智能赋码接口。后续会替换成大数据的。
 当前的智能赋码和老系统功能类似，前面的显示列是可调的，赋码过程多了一步“确认”操作。
 
-![../pptx_extract/images/page_41/image49.png](../pptx_extract/images/page_41/image49.png)
+![../../../backend/static/kb-images/page_41/image49.png](../../../backend/static/kb-images/page_41/image49.png)
 
 > 图片内容(可检索): 首页
 金统计机构录入
@@ -2456,7 +2456,7 @@ Q 查询
 正式上线后初期会使用杭州的，也就是老平台使用的智能赋码接口。后续会替换成大数据的。
 当前的智能赋码和老系统功能类似，前面的显示列是可调的，赋码过程多了一步“确认”操作。
 
-![../pptx_extract/images/page_43/image50.png](../pptx_extract/images/page_43/image50.png)
+![../../../backend/static/kb-images/page_43/image50.png](../../../backend/static/kb-images/page_43/image50.png)
 
 > 图片内容(可检索): 首页
 智能赋码×
@@ -2612,7 +2612,7 @@ J102019
 
 **备注**: 对于查询出的数据的我们可以定位到社区、人、户等，找对应的负责人员进行信息核对。
 
-![../pptx_extract/images/page_44/image51.png](../pptx_extract/images/page_44/image51.png)
+![../../../backend/static/kb-images/page_44/image51.png](../../../backend/static/kb-images/page_44/image51.png)
 
 > 图片内容(可检索): 首页
 智能赋码×
@@ -2675,7 +2675,7 @@ J0000
 
 **备注**: 对于查询出的数据的我们可以定位到社区、人、户等，找对应的负责人员进行信息核对。
 
-![../pptx_extract/images/page_45/image52.png](../pptx_extract/images/page_45/image52.png)
+![../../../backend/static/kb-images/page_45/image52.png](../../../backend/static/kb-images/page_45/image52.png)
 
 > 图片内容(可检索): 首页
 智能赋码×
@@ -2751,7 +2751,7 @@ Q 查询
 
 **备注**: 对于查询出的数据的我们可以定位到社区、人、户等，找对应的负责人员进行信息核对。
 
-![../pptx_extract/images/page_46/image53.png](../pptx_extract/images/page_46/image53.png)
+![../../../backend/static/kb-images/page_46/image53.png](../../../backend/static/kb-images/page_46/image53.png)
 
 > 图片内容(可检索): 首页
 智能赋码×
@@ -2807,7 +2807,7 @@ J00000
 
 **备注**: 对于查询出的数据的我们可以定位到社区、人、户等，找对应的负责人员进行信息核对。
 
-![../pptx_extract/images/page_47/image54.png](../pptx_extract/images/page_47/image54.png)
+![../../../backend/static/kb-images/page_47/image54.png](../../../backend/static/kb-images/page_47/image54.png)
 
 > 图片内容(可检索): 首页
 智能赋码X
@@ -2877,7 +2877,7 @@ J2000000
 
 **备注**: 对于查询出的数据的我们可以定位到社区、人、户等，找对应的负责人员进行信息核对。
 
-![../pptx_extract/images/page_48/image55.png](../pptx_extract/images/page_48/image55.png)
+![../../../backend/static/kb-images/page_48/image55.png](../../../backend/static/kb-images/page_48/image55.png)
 
 > 图片内容(可检索): 首页
 智能赋码×
@@ -2953,7 +2953,7 @@ Q查询
 4.1 公式审核和配置
 图4-1
 
-![../pptx_extract/images/page_50/image56.png](../pptx_extract/images/page_50/image56.png)
+![../../../backend/static/kb-images/page_50/image56.png](../../../backend/static/kb-images/page_50/image56.png)
 
 > 图片内容(可检索): 首页
 函公式审核和配置
@@ -3005,7 +3005,7 @@ R201/Z
 4.2 审核任务查看
 图4-2
 
-![../pptx_extract/images/page_51/image57.png](../pptx_extract/images/page_51/image57.png)
+![../../../backend/static/kb-images/page_51/image57.png](../../../backend/static/kb-images/page_51/image57.png)
 
 > 图片内容(可检索): 首页
 公式审核和配置×
@@ -3062,7 +3062,7 @@ R201
 4.3 审核信息查询
 图4-3
 
-![../pptx_extract/images/page_52/image58.png](../pptx_extract/images/page_52/image58.png)
+![../../../backend/static/kb-images/page_52/image58.png](../../../backend/static/kb-images/page_52/image58.png)
 
 > 图片内容(可检索): 首页
 劳动力数据核查X
@@ -3125,7 +3125,7 @@ R201JZZZ
 4.3 审核信息查询
 图4-4
 
-![../pptx_extract/images/page_53/image59.png](../pptx_extract/images/page_53/image59.png)
+![../../../backend/static/kb-images/page_53/image59.png](../../../backend/static/kb-images/page_53/image59.png)
 
 > 图片内容(可检索): 首页
 审核信息查询×
@@ -3338,7 +3338,7 @@ D04003
 4.4 审核和验收
 图4-5
 
-![../pptx_extract/images/page_54/image60.png](../pptx_extract/images/page_54/image60.png)
+![../../../backend/static/kb-images/page_54/image60.png](../../../backend/static/kb-images/page_54/image60.png)
 
 > 图片内容(可检索): 首页
 审核信息香询×
@@ -3389,7 +3389,7 @@ R201JZ
 建筑物利和口住房采集程序
 查看
 
-![../pptx_extract/images/page_54/image61.png](../pptx_extract/images/page_54/image61.png)
+![../../../backend/static/kb-images/page_54/image61.png](../../../backend/static/kb-images/page_54/image61.png)
 
 > 图片内容(可检索): 首页
 劳动力数据核查×公式审核和配置×
@@ -3513,7 +3513,7 @@ D快速汇总
 4.4 审核和验收
 图4-5
 
-![../pptx_extract/images/page_55/image61.png](../pptx_extract/images/page_55/image61.png)
+![../../../backend/static/kb-images/page_55/image61.png](../../../backend/static/kb-images/page_55/image61.png)
 
 > 图片内容(可检索): 首页
 劳动力数据核查×公式审核和配置×
@@ -3637,7 +3637,7 @@ D快速汇总
 4.4 审核和验收
 图4-6
 
-![../pptx_extract/images/page_56/image62.png](../pptx_extract/images/page_56/image62.png)
+![../../../backend/static/kb-images/page_56/image62.png](../../../backend/static/kb-images/page_56/image62.png)
 
 > 图片内容(可检索): 首页
 审核和验收×
@@ -3892,7 +3892,7 @@ J0000336001
 图4-7
 按过滤条件查询可自行编辑查询条件，如查询填报日期早于10号的数据：双击调查表内填报日期的“日”指标，选择运算符“<小于”，输入数字“10”，点击验证，校验成功后即可确定查询。
 
-![../pptx_extract/images/page_57/image63.png](../pptx_extract/images/page_57/image63.png)
+![../../../backend/static/kb-images/page_57/image63.png](../../../backend/static/kb-images/page_57/image63.png)
 
 > 图片内容(可检索): 过滤条件
 校验成功
@@ -3985,7 +3985,7 @@ GPS坐标
 图4-8
 过滤查询结果
 
-![../pptx_extract/images/page_58/image64.png](../pptx_extract/images/page_58/image64.png)
+![../../../backend/static/kb-images/page_58/image64.png](../../../backend/static/kb-images/page_58/image64.png)
 
 > 图片内容(可检索): 首页
 审核和验收×
@@ -4073,7 +4073,7 @@ G 取消返回修改
 图4-9
 设置好的过滤条件，还可以保存为模板，方便下次使用。
 
-![../pptx_extract/images/page_59/image65.png](../pptx_extract/images/page_59/image65.png)
+![../../../backend/static/kb-images/page_59/image65.png](../../../backend/static/kb-images/page_59/image65.png)
 
 > 图片内容(可检索): 首页
 审核和验收×
@@ -4154,7 +4154,7 @@ G取消返回修改
 -新区统计局
 暂无数据
 
-![../pptx_extract/images/page_59/image66.png](../pptx_extract/images/page_59/image66.png)
+![../../../backend/static/kb-images/page_59/image66.png](../../../backend/static/kb-images/page_59/image66.png)
 
 > 图片内容(可检索): 新增模板
 【指标查询】、【过滤条件】、【公式查询】和显示列将保存为查询模板
@@ -4179,7 +4179,7 @@ G取消返回修改
 按模板查询，国家已创建大量模板，专业人员在数据审核时应多次查询国家模板，如有错误及时修正。
 （还可以将模板增加快捷按钮，方便点击）
 
-![../pptx_extract/images/page_60/image67.png](../pptx_extract/images/page_60/image67.png)
+![../../../backend/static/kb-images/page_60/image67.png](../../../backend/static/kb-images/page_60/image67.png)
 
 > 图片内容(可检索): 首页
 审核和验收X
@@ -4230,9 +4230,9 @@ GPS定位为空
 图4-11
 本级设置的模板，可以设置共享地区，共享给下级机构。
 
-![../pptx_extract/images/page_61/image68.png](../pptx_extract/images/page_61/image68.png)
+![../../../backend/static/kb-images/page_61/image68.png](../../../backend/static/kb-images/page_61/image68.png)
 
-![../pptx_extract/images/page_61/image69.png](../pptx_extract/images/page_61/image69.png)
+![../../../backend/static/kb-images/page_61/image69.png](../../../backend/static/kb-images/page_61/image69.png)
 
 > 图片内容(可检索): 审核验收工作台(R201)X
 首页
@@ -4318,7 +4318,7 @@ GPS定位为空
 图4-12
 数据验收：勾选需要验收的数据，可以批量“验收通过”或逐个验收，验收后可以查看本级验收状态。
 
-![../pptx_extract/images/page_63/image70.png](../pptx_extract/images/page_63/image70.png)
+![../../../backend/static/kb-images/page_63/image70.png](../../../backend/static/kb-images/page_63/image70.png)
 
 > 图片内容(可检索): 首页
 审核和验收×
@@ -4440,7 +4440,7 @@ E导出结果
 未审核或审核未通过的数据不可做验收操作。可点击“查看”此户，然后点击“审核”按钮，数据无误即可重新进行验收。
 图4-13
 
-![../pptx_extract/images/page_64/image71.png](../pptx_extract/images/page_64/image71.png)
+![../../../backend/static/kb-images/page_64/image71.png](../../../backend/static/kb-images/page_64/image71.png)
 
 > 图片内容(可检索): 首页
 模板管理×
@@ -4522,7 +4522,7 @@ H43
 4.5 审核进度监测
 图4-14
 
-![../pptx_extract/images/page_65/image72.png](../pptx_extract/images/page_65/image72.png)
+![../../../backend/static/kb-images/page_65/image72.png](../../../backend/static/kb-images/page_65/image72.png)
 
 > 图片内容(可检索): 专用直报系统
 常用菜单
@@ -4595,7 +4595,7 @@ R201JZ
 4.6 验收进度监测
 图4-15
 
-![../pptx_extract/images/page_66/image73.png](../pptx_extract/images/page_66/image73.png)
+![../../../backend/static/kb-images/page_66/image73.png](../../../backend/static/kb-images/page_66/image73.png)
 
 > 图片内容(可检索): 专用直报系统
 88
@@ -4694,7 +4694,7 @@ R201JZ
 05 汇总执行
 图5-1
 
-![../pptx_extract/images/page_68/image74.png](../pptx_extract/images/page_68/image74.png)
+![../../../backend/static/kb-images/page_68/image74.png](../../../backend/static/kb-images/page_68/image74.png)
 
 > 图片内容(可检索): 首页
 山快速汇总
@@ -4835,7 +4835,7 @@ T2-10按职业大类...
 05 汇总执行
 图5-2
 
-![../pptx_extract/images/page_69/image75.png](../pptx_extract/images/page_69/image75.png)
+![../../../backend/static/kb-images/page_69/image75.png](../../../backend/static/kb-images/page_69/image75.png)
 
 > 图片内容(可检索): <返回
 执行记录（T1-1按地区、性别分16岁及以上人口的就业状况）
@@ -5013,7 +5013,7 @@ T1-1按地区、性...
 6.1 数据导出
 图6-1
 
-![../pptx_extract/images/page_71/image76.png](../pptx_extract/images/page_71/image76.png)
+![../../../backend/static/kb-images/page_71/image76.png](../../../backend/static/kb-images/page_71/image76.png)
 
 > 图片内容(可检索): 专用直报系统
 品常用菜单
@@ -5094,7 +5094,7 @@ I字段
 6.1 数据导出
 图6-2
 
-![../pptx_extract/images/page_72/image77.png](../pptx_extract/images/page_72/image77.png)
+![../../../backend/static/kb-images/page_72/image77.png](../../../backend/static/kb-images/page_72/image77.png)
 
 > 图片内容(可检索): 配置导出字段
 常规导出
@@ -5253,7 +5253,7 @@ c...I. Dr nar
 6.1 数据导出
 图6-3
 
-![../pptx_extract/images/page_73/image78.png](../pptx_extract/images/page_73/image78.png)
+![../../../backend/static/kb-images/page_73/image78.png](../../../backend/static/kb-images/page_73/image78.png)
 
 > 图片内容(可检索): 首页
 汇总执行×
@@ -5326,7 +5326,7 @@ c...I. Dr nar
 6.1 数据导出
 图6-4
 
-![../pptx_extract/images/page_74/image79.png](../pptx_extract/images/page_74/image79.png)
+![../../../backend/static/kb-images/page_74/image79.png](../../../backend/static/kb-images/page_74/image79.png)
 
 > 图片内容(可检索): 系统
 品常用菜单
@@ -5402,7 +5402,7 @@ ANSI
 6.1 数据导出
 图6-5
 
-![../pptx_extract/images/page_75/image80.png](../pptx_extract/images/page_75/image80.png)
+![../../../backend/static/kb-images/page_75/image80.png](../../../backend/static/kb-images/page_75/image80.png)
 
 > 图片内容(可检索): 导出数据
 系统提示
@@ -5452,7 +5452,7 @@ ANSI
 图6-6
 一、查看申请的导出任务，并在更多菜单-消息管理-消息通知里下载导出数据。
 
-![../pptx_extract/images/page_76/image81.png](../pptx_extract/images/page_76/image81.png)
+![../../../backend/static/kb-images/page_76/image81.png](../../../backend/static/kb-images/page_76/image81.png)
 
 > 图片内容(可检索): 首页
 汇总执行X
@@ -5518,7 +5518,7 @@ Q查询
 查看详情
 下载
 
-![../pptx_extract/images/page_76/image82.png](../pptx_extract/images/page_76/image82.png)
+![../../../backend/static/kb-images/page_76/image82.png](../../../backend/static/kb-images/page_76/image82.png)
 
 > 图片内容(可检索): 专用直报系统
 常用菜单
@@ -5574,7 +5574,7 @@ Q查询
 图6-7
 二、审核本级或下级其他人提交的导出申请
 
-![../pptx_extract/images/page_77/image83.png](../pptx_extract/images/page_77/image83.png)
+![../../../backend/static/kb-images/page_77/image83.png](../../../backend/static/kb-images/page_77/image83.png)
 
 > 图片内容(可检索): 首页
 进度查询×
@@ -5667,7 +5667,7 @@ Q查询
 图6-8
 三、新增本级审核人：具体请参考8月下发的《附件3  统计云联网直报系统管理员操作手册》中第6.1条。（新增审批人需由本单位统计云管理员才能操作，更多菜单-角色管理）
 
-![../pptx_extract/images/page_78/image84.png](../pptx_extract/images/page_78/image84.png)
+![../../../backend/static/kb-images/page_78/image84.png](../../../backend/static/kb-images/page_78/image84.png)
 
 > 图片内容(可检索): 6.1.指定/维护“数据导出审批人”
 批人，添加到此角色中
@@ -5749,7 +5749,7 @@ E功能管理
 
 **标题**: 谢谢！
 
-![../pptx_extract/images/page_79/image85.png](../pptx_extract/images/page_79/image85.png)
+![../../../backend/static/kb-images/page_79/image85.png](../../../backend/static/kb-images/page_79/image85.png)
 
 > 图片内容(可检索): WW
 

@@ -73,6 +73,7 @@ $RECYCLE.BIN/
 
 # 知识库构建产物（不入仓）
 knowledge-base/chunks.jsonl
+knowledge-base/raw/pptx_extract/images/
 
 # 知识库原始素材（量大，不入仓）
 knowledge-base/raw/*.pdf
@@ -100,8 +101,13 @@ scripts/_*.py
 # LLM routing runtime state
 backend/data/llm_route.json
 backend/data/quiz_llm_config.json
+
+# 评测运行时结果（保留本地最新，不入仓）
+reports/eval-latest.json
 # 白名单迁移备份（含真实手机号，不入库）
 backend/data/backups/
+# 权限表含真实人员信息，不入库
+docs/权限表.xlsx
 # 白名单区域对齐报告含真实手机号，不入库
 reports/region-alignment-audit.md
 # uvicorn 本地开发日志

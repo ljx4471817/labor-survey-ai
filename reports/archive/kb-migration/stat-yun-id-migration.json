@@ -1,0 +1,286 @@
+[
+  {
+    "old_id": "stat-yun-login",
+    "new_id": "358"
+  },
+  {
+    "old_id": "stat-yun-password",
+    "new_id": "359"
+  },
+  {
+    "old_id": "stat-yun-app",
+    "new_id": "360"
+  },
+  {
+    "old_id": "stat-yun-001",
+    "new_id": "361"
+  },
+  {
+    "old_id": "stat-yun-004",
+    "new_id": "362"
+  },
+  {
+    "old_id": "stat-yun-005",
+    "new_id": "363"
+  },
+  {
+    "old_id": "stat-yun-006",
+    "new_id": "364"
+  },
+  {
+    "old_id": "stat-yun-007",
+    "new_id": "365"
+  },
+  {
+    "old_id": "stat-yun-008",
+    "new_id": "366"
+  },
+  {
+    "old_id": "stat-yun-010",
+    "new_id": "367"
+  },
+  {
+    "old_id": "stat-yun-011",
+    "new_id": "368"
+  },
+  {
+    "old_id": "stat-yun-012",
+    "new_id": "369"
+  },
+  {
+    "old_id": "stat-yun-013",
+    "new_id": "370"
+  },
+  {
+    "old_id": "stat-yun-014",
+    "new_id": "371"
+  },
+  {
+    "old_id": "stat-yun-015",
+    "new_id": "372"
+  },
+  {
+    "old_id": "stat-yun-016",
+    "new_id": "373"
+  },
+  {
+    "old_id": "stat-yun-017",
+    "new_id": "374"
+  },
+  {
+    "old_id": "stat-yun-018",
+    "new_id": "375"
+  },
+  {
+    "old_id": "stat-yun-019",
+    "new_id": "376"
+  },
+  {
+    "old_id": "stat-yun-020",
+    "new_id": "377"
+  },
+  {
+    "old_id": "stat-yun-021",
+    "new_id": "378"
+  },
+  {
+    "old_id": "stat-yun-022",
+    "new_id": "379"
+  },
+  {
+    "old_id": "stat-yun-023",
+    "new_id": "380"
+  },
+  {
+    "old_id": "stat-yun-024",
+    "new_id": "381"
+  },
+  {
+    "old_id": "stat-yun-025",
+    "new_id": "382"
+  },
+  {
+    "old_id": "stat-yun-026",
+    "new_id": "383"
+  },
+  {
+    "old_id": "stat-yun-027",
+    "new_id": "384"
+  },
+  {
+    "old_id": "stat-yun-028",
+    "new_id": "385"
+  },
+  {
+    "old_id": "stat-yun-029",
+    "new_id": "386"
+  },
+  {
+    "old_id": "stat-yun-030",
+    "new_id": "387"
+  },
+  {
+    "old_id": "stat-yun-033",
+    "new_id": "388"
+  },
+  {
+    "old_id": "stat-yun-034",
+    "new_id": "389"
+  },
+  {
+    "old_id": "stat-yun-036",
+    "new_id": "390"
+  },
+  {
+    "old_id": "stat-yun-037",
+    "new_id": "391"
+  },
+  {
+    "old_id": "stat-yun-038",
+    "new_id": "392"
+  },
+  {
+    "old_id": "stat-yun-039",
+    "new_id": "393"
+  },
+  {
+    "old_id": "stat-yun-040",
+    "new_id": "394"
+  },
+  {
+    "old_id": "stat-yun-041",
+    "new_id": "395"
+  },
+  {
+    "old_id": "stat-yun-043",
+    "new_id": "396"
+  },
+  {
+    "old_id": "stat-yun-044",
+    "new_id": "397"
+  },
+  {
+    "old_id": "stat-yun-045",
+    "new_id": "398"
+  },
+  {
+    "old_id": "stat-yun-046",
+    "new_id": "399"
+  },
+  {
+    "old_id": "stat-yun-047",
+    "new_id": "400"
+  },
+  {
+    "old_id": "stat-yun-048",
+    "new_id": "401"
+  },
+  {
+    "old_id": "stat-yun-050",
+    "new_id": "402"
+  },
+  {
+    "old_id": "stat-yun-051",
+    "new_id": "403"
+  },
+  {
+    "old_id": "stat-yun-052",
+    "new_id": "404"
+  },
+  {
+    "old_id": "stat-yun-053",
+    "new_id": "405"
+  },
+  {
+    "old_id": "stat-yun-054",
+    "new_id": "406"
+  },
+  {
+    "old_id": "stat-yun-055",
+    "new_id": "407"
+  },
+  {
+    "old_id": "stat-yun-056",
+    "new_id": "408"
+  },
+  {
+    "old_id": "stat-yun-057",
+    "new_id": "409"
+  },
+  {
+    "old_id": "stat-yun-058",
+    "new_id": "410"
+  },
+  {
+    "old_id": "stat-yun-059",
+    "new_id": "411"
+  },
+  {
+    "old_id": "stat-yun-060",
+    "new_id": "412"
+  },
+  {
+    "old_id": "stat-yun-061",
+    "new_id": "413"
+  },
+  {
+    "old_id": "stat-yun-063",
+    "new_id": "414"
+  },
+  {
+    "old_id": "stat-yun-064",
+    "new_id": "415"
+  },
+  {
+    "old_id": "stat-yun-065",
+    "new_id": "416"
+  },
+  {
+    "old_id": "stat-yun-066",
+    "new_id": "417"
+  },
+  {
+    "old_id": "stat-yun-068",
+    "new_id": "418"
+  },
+  {
+    "old_id": "stat-yun-069",
+    "new_id": "419"
+  },
+  {
+    "old_id": "stat-yun-071",
+    "new_id": "420"
+  },
+  {
+    "old_id": "stat-yun-072",
+    "new_id": "421"
+  },
+  {
+    "old_id": "stat-yun-073",
+    "new_id": "422"
+  },
+  {
+    "old_id": "stat-yun-074",
+    "new_id": "423"
+  },
+  {
+    "old_id": "stat-yun-075",
+    "new_id": "424"
+  },
+  {
+    "old_id": "stat-yun-076",
+    "new_id": "425"
+  },
+  {
+    "old_id": "stat-yun-077",
+    "new_id": "426"
+  },
+  {
+    "old_id": "stat-yun-078",
+    "new_id": "427"
+  },
+  {
+    "old_id": "stat-yun-079",
+    "new_id": "428"
+  }
+]
