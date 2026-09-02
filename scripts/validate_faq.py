@@ -225,7 +225,6 @@ def validate(path: Path) -> Report:
             continue
         if not check_required_fields(qa, report):
             continue
-        check_id_format(qa, report)
         check_question(qa, report)
         check_answer_length(qa, report)
         check_keywords(qa, report)

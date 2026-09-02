@@ -1,4 +1,4 @@
-﻿# kb-optimize — 单 query 检索结果优化（奥卡姆版 v2）
+# kb-optimize — 单 query 检索结果优化（奥卡姆版 v2）
 
 > 触发：用户说「这个 query 答得不好 / 答得不一致 / 答非所问」或主动调用 `/kb-optimize`。
 > 边界：**单 query / 一类 query 的单点优化**。不做批量、不做架构决策、不做新增代码层。

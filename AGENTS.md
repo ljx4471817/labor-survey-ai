@@ -77,7 +77,7 @@
 | `0010-embedding-v4.md` | DashScope text-embedding-v4 + 共享 collection 重建边界 | 检索依赖 |
 | `0011-不引入ponytail.md` | 2026-07-30 评估后决定不引入（与项目分层规则冲突，无实际痛点驱动） | 开发规范 |
 | `0012-月度测验系统.md` | 6 表 SQLite + LLM 要点提取 + 4 选 1 选择题 + 完成率看板 | 测验系统 |
-| 013-rag-规则冲突裁决.md | system prompt 硬规则 + FAQ scope + eval 三层冲突裁决 | 检索治理 |
+| `0013-rag-规则冲突裁决.md` | system prompt 硬规则 + FAQ scope + eval 三层冲突裁决 | 检索治理 |
 | `0014-llm-主备切换.md` | 三级路由：MiniMax 主用 -> qwen-flash 备用 -> DeepSeek 兜底，5h/7d 用量超阈值切换 | LLM 路由 |
 | `0015-权限系统双维度.md` | admin_level × sys_role 双维度 + 审计表 + 分级网页维护 | 权限治理 |
 | `0016-llm-三级路由.md` | 三级路由：MiniMax 主用 -> qwen-flash 备用 -> DeepSeek 兜底，5h/7d 用量超阈值切换 | LLM 路由 |
@@ -93,6 +93,8 @@
 |------|------|--------|
 | `docs/` | 方案、审核、架构、ADR 等静态文档 | 自由修改 |
 | `docs/adr/` | 架构决策记录（一旦写定不轻易改） | 增量追加，不改旧 ADR |
+| `docs/archive/` | 已被新版文档取代的历史文档 | 只增不改 |
+| `docs/runbooks/` | 带日期的运维记录 | 只增不改 |
 | `knowledge-base/raw/` | 原始 PDF/Word 制度文档 | **不直接修改**，只读 |
 | `knowledge-base/qa/` | 结构化 QA JSON | 自由修改 |
 | `knowledge-base/chunks.jsonl` | **构建产物**（markdown→chunk），不入 git | `build_chunks.py` 管理 |
@@ -109,11 +111,12 @@
 | `backend/app/services/` | 业务服务（feedback_analytics / feedback_reviews / hot_questions / jsonl_utils / **region_points / quiz_extract / quiz_generator / quiz_llm / aliyun_balance**） | 自由修改 |
 | `backend/app/api/_xunfei_auth.py` | DISABLED（讯飞语音鉴权，代码完整保留） | 不修改 |
 | `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json / **llm_route.json / quiz_llm_config.json**） | 自由修改 |
-| `backend/tests/` | 后端单元测试（257 tests） | 自由修改 |
+| `backend/tests/` | 后端单元测试 | 自由修改 |
 | `scripts/watchdog*.ps1` | 本地 API 可用性监控与自动重启 | 自由修改 |
-| `backend/static/kb-images/` | ????????PPT ?????? `page_XX/` ?? | ???? |
+| `backend/static/kb-images/` | 培训 PPT 结构化截图，按 `page_XX/` 供 KB 引用 | 自由修改 |
 | `backend/static/` | H5 前端（单页应用）+ 测验 3 页面（quiz.html / quiz_admin.html / quiz-stats.html） | 自由修改 |
 | `scripts/` | 跨子项目运维脚本 | 自由修改 |
+| `scripts/archive/` | 已退役或仅用于历史复盘的脚本 | 只增不改 |
 | `deploy/` | 部署配置（含 ssl/ / systemd/ 占位） | 谨慎修改，影响线上 |
 | `.codex/skills/` | **项目级 Codex skill**（已 git 入仓），含 `regulations-migrate` / `kb-update-workflow` / `kb-optimize` / `kb-cleanup` / `whitelist-sync` / `pptx-structured-ocr` | 自由修改 |
 
@@ -139,9 +142,9 @@ python scripts/rebuild_all.py --incremental  # 增量更新（仅更新变动条
 # python scripts/build_bm25.py --full  # 构建 BM25 索引
 # 知识库：QA 字段完整性校验（改 faq.json 后必跑，含 indicators 合法性）
 python scripts/validate_faq.py
-# ????PPT ?????????? PPT ???? + OCR?
-python scripts/extract_pptx.py <source.pptx> <out_dir>  # ??????+??
-python scripts/ocr_images.py <out_dir>                  # ?? OCR ????
+# 图片型 PPT 拆页结构化 + 图片 OCR（先拆页，再识别图片内文字）
+python scripts/extract_pptx.py <source.pptx> <out_dir>  # 输出页面结构 + 图片
+python scripts/ocr_images.py <out_dir>                  # 生成 OCR 结果
 # 知识库：制度对齐（首次/制度变更后必跑）
 python scripts/backfill_indicators.py         # 从 source/question/answer 自动提取 indicators
 python scripts/backfill_indicators.py --write  # 写入
