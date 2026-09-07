@@ -11,10 +11,10 @@
 **迭代 3 进行中 · 内测服务可用**
 
 - ✅ 后端：FastAPI + chat / conversations / hot-questions / feedback / auth / admin / quiz / whitelist 分域 API（voice 2026-06-21 已停用）
-- ✅ 前端：H5 多页面（对话 / 登录 / 答题 / 测验管理 / 完成率 / 统一后台 / 白名单管理），支持服务端会话历史与近一月热点问题
+- ✅ 前端：H5 多页面（对话 / 登录 / 答题 / 测验管理 / 完成率 / 统一后台 / 白名单管理），支持服务端会话历史、开始新对话与近一月热点问题
 - ✅ 知识库：Vector + BM25 hybrid 双轨检索，570 条（428 QA + 142 制度 chunk）
 - ✅ 鉴权：手机号白名单 + HMAC token（`whitelist.db` 实时唯一事实源）；双维度权限 admin_level × sys_role + 写操作审计
-- ✅ 后台：统一数据看板 dashboard（KB 复核队列 / 使用监测）+ 区域 5 级下钻；顶部导航进入白名单管理与月度测验系统（出题 / 下发 / 完成率）
+- ✅ 后台：统一数据看板 dashboard（KB 复核队列 / 使用监测 + 7/30 日使用频率趋势）+ 区域 5 级下钻；顶部导航进入白名单管理与月度测验系统（出题 / 下发 / 完成率）
 - ✅ 内网穿透：Cloudflare Tunnel quick 模式
 - ✅ 质量门禁：单元测试 + 104 项 RAG 全量评测
 - ⏳ 迭代 3 材料已就绪，待领导决策后启动（域名备案 15-20 工作日）
@@ -114,6 +114,7 @@ labor-survey-ai/
 - `docs/adr/0019-rag-grounding锚点.md` — RAG 回答的知识库锚点
 - `docs/adr/0020-服务端会话历史.md` — 永久会话、上下文与最近 10 轮回看
 - `docs/adr/0021-标准调查点选择与账号类型表单.md` — 标准调查点唯一数据源与表单治理
+- `docs/adr/0022-使用频率趋势与前台新对话入口.md` — 使用频率口径与前台会话入口
 - `docs/adr/0015-权限系统双维度.md` — admin_level × sys_role + 审计表 + 分级网页维护
 
 ## 项目级 Codex Skills（`.codex/skills/`，已 git 入仓）

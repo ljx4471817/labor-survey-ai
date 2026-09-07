@@ -740,7 +740,7 @@
       .brand-org { font-size: 9.5px; letter-spacing: 0.02em; }
       header h1 { font-size: 13px; }
       .brand-sub { font-size: 10px; }
-      .history-btn { font-size: 11px; padding: 4px 10px; }
+      .history-btn, .new-chat-btn { font-size: 11px; padding: 4px 10px; }
       .logout-btn { font-size: 11px; padding: 4px 10px; }
       header .status { font-size: 10px; padding: 3px 8px; gap: 4px; }
       header .status .dot { width: 5px; height: 5px; }
@@ -826,7 +826,8 @@
     }
     .logout-btn:hover { color: var(--c-danger); border-color: var(--c-danger); }
 
-    .history-btn {
+    .history-btn,
+    .new-chat-btn {
       border: 1px solid var(--c-line);
       background: var(--c-bg-elev);
       color: var(--c-ink-2);
@@ -837,7 +838,10 @@
       flex-shrink: 0;
       transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
     }
-    .history-btn:hover { color: var(--c-brand); border-color: var(--c-brand); }
+    .history-btn:hover,
+    .new-chat-btn:hover:not(:disabled) { color: var(--c-brand); border-color: var(--c-brand); }
+    .new-chat-btn:hover:not(:disabled) { color: var(--c-brand); border-color: var(--c-brand); }
+    .new-chat-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
     .history-overlay {
       position: fixed;
@@ -976,6 +980,7 @@
   <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
 </button>
     <button class="history-btn" id="history-btn" type="button">历史</button>
+    <button class="new-chat-btn" id="new-chat-btn" type="button" hidden>开始新对话</button>
 <button class="logout-btn" onclick="logout()">退出</button>
     <span class="status" id="status"><span class="dot"></span><span id="status-text">连接中…</span></span>
   </header>
@@ -1053,6 +1058,7 @@
     const examplesEl = document.getElementById('examples');
     const statusEl = document.getElementById('status');
     const statusText = document.getElementById('status-text');
+    const newChatBtn = document.getElementById('new-chat-btn');
     const historyOverlay = document.getElementById('history-overlay');
     const historyListEl = document.getElementById('history-list');
     const historyLoadMoreEl = document.getElementById('history-load-more');
@@ -1139,6 +1145,18 @@
       chatEl.innerHTML = '';
       chatEl.appendChild(emptyEl);
       emptyEl.style.display = '';
+      updateNewConversationButton();
+    }
+
+    function updateNewConversationButton() {
+      newChatBtn.hidden = !currentConversationId;
+      newChatBtn.disabled = sendBtn.disabled;
+    }
+
+    function startNewConversation() {
+      if (sendBtn.disabled) return;
+      resetConversation();
+      inputEl.focus();
     }
 
     function scrollToBottom() {
@@ -1248,6 +1266,7 @@
     function renderHistoryConversation(data) {
       chatEl.innerHTML = '';
       currentConversationId = data.conversation_id;
+      updateNewConversationButton();
       data.messages.forEach(message => {
         if (message.role === 'user') {
           currentQuestion = message.content || '';
@@ -1648,10 +1667,11 @@
     document.getElementById('history-btn').addEventListener('click', openHistoryDrawer);
     document.getElementById('history-close').addEventListener('click', closeHistoryDrawer);
     document.getElementById('history-new').addEventListener('click', () => {
-      resetConversation();
+      if (sendBtn.disabled) return;
+      startNewConversation();
       closeHistoryDrawer();
-      inputEl.focus();
     });
+    newChatBtn.addEventListener('click', startNewConversation);
     historyListEl.addEventListener('click', async (event) => {
       const openButton = event.target.closest('.history-open');
       if (openButton) {
@@ -1691,6 +1711,7 @@
       inputEl.value = '';
       autoResize();
       sendBtn.disabled = true;
+      updateNewConversationButton();
       currentQuestion = q;
       const turn = addQuestion(q);
       const block = addAnswerPlaceholder(turn);
@@ -1711,6 +1732,7 @@
         }
         const data = await resp.json();
         if (data.conversation_id) currentConversationId = data.conversation_id;
+        updateNewConversationButton();
         const ms = Math.round(performance.now() - t0);
         renderAnswer(block, data);
         const status = block.querySelector('.feedback-status');
@@ -1719,6 +1741,7 @@
         renderError(block, err.message);
       } finally {
         sendBtn.disabled = false;
+        updateNewConversationButton();
         inputEl.focus();
       }
     });

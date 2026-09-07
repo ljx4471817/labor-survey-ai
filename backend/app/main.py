@@ -12,6 +12,7 @@ from loguru import logger
 from app.api.feedback_admin import router as feedback_admin_router
 from app.api.gaps_admin import router as gaps_admin_router
 from app.api.usage_admin import router as usage_admin_router
+from app.api.usage_trend_admin import router as usage_trend_admin_router
 from app.api.llm_admin import router as llm_admin_router
 from app.api.quiz import router as quiz_router
 from app.api.quiz_admin import router as quiz_admin_router
@@ -100,7 +101,16 @@ async def rate_limit_middleware(request: Request, call_next):
     return response
 
 
-for _r in (feedback_admin_router, gaps_admin_router, usage_admin_router, whitelist_admin_router, whitelist_regions_router, quiz_admin_router, llm_admin_router):
+for _r in (
+    feedback_admin_router,
+    gaps_admin_router,
+    usage_admin_router,
+    usage_trend_admin_router,
+    whitelist_admin_router,
+    whitelist_regions_router,
+    quiz_admin_router,
+    llm_admin_router,
+):
     app.include_router(
         _r,
         prefix="/api/admin",
