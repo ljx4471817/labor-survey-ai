@@ -37,8 +37,8 @@
 
 | 概念 | 定义 | 在哪里 |
 |------|------|------|
-| QA 条目 | KB 中结构化的人工整理条目（question + answer + indicators），当前 354 条 | `knowledge-base/qa/faq.json` |
-| Chunk 条目 | 制度文档 markdown 切片入库后的检索单元，当前 55 条 | `knowledge-base/chunks.jsonl`（构建产物） |
+| QA 条目 | KB 中结构化的人工整理条目（question + answer + indicators），当前 428 条 | `knowledge-base/qa/faq.json` |
+| Chunk 条目 | 制度文档 markdown 切片入库后的检索单元，当前 142 条 | `knowledge-base/chunks.jsonl`（构建产物） |
 | 双轨检索 | QA 与 chunk 双源同时入库，BM25 + Chroma 都覆盖 | `build_bm25.py` / `bm25.py` 同时加载两源 |
 | Hybrid 检索 | Chroma 向量检索 + BM25 关键词检索 + RRF 融合 | `rag/retriever.py` 的 `retrieve()` 函数 |
 | RRF | Reciprocal Rank Fusion，Cormack 2009 提出的排名融合算法，c=60 | `rag/pure.py::rrf_fuse()` |
@@ -71,7 +71,9 @@
 | 答案纠错反馈 | RAG 命中后选择“答案不正确，反馈”时必填的 `corrected_answer` + `evidence`；同一 `phone + request_id` 只能提交一次 | `POST /api/feedback` / `backend/data/feedback.jsonl` |
 | 反馈复核 | 管理员对负面反馈标记 `accepted` / `rejected`，可改判，最新事件生效 | `POST /api/admin/feedback/resolve` / `backend/data/feedback_resolved.jsonl` |
 | 复核状态 | `pending` / `accepted` / `rejected`；Dashboard 按状态分组展示 | `services/feedback_reviews.py` / `static/dashboard.html` |
-| Query 日志 | 每次 chat 请求的元数据（不含答案内容） | `backend/data/query_log.db`（SQLite） |
+| Query 日志 | 每次 chat 请求的元数据（不含答案内容），也是使用频率趋势的数据源 | `backend/data/query_log.db`（SQLite） |
+| 使用频率趋势 | 按 UTC+8 自然日聚合的每日对话次数；每次 `/api/chat` 算一次，支持 7/30 天窗口并补零 | `persistence/usage_trend.py` / `api/usage_trend_admin.py` / `static/dashboard.html` |
+| 开始新对话 | 前台加载历史会话后的显式出口；清空当前会话与会话 ID，保留输入内容 | `static/index.html` |
 | Dashboard | 数据看板：系统管理员全量（KB 复核队列 / 使用监测）；区县业务管理员登录直落「白名单管理」独立页，进入数据看板默认「使用监测」；顶部统一导航（数据看板 / 测验管理 / 白名单管理） | `backend/static/dashboard.html` |
 | KB 改进候选 | 现在仅来自用户提交的负面反馈修正建议，不再从高频 query 自动生成 | `services/feedback_reviews.py::build_improvement_candidates` |
 
