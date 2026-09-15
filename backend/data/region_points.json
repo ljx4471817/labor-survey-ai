@@ -408,6 +408,27 @@
   {
     "province": "贵州省",
     "city": "贵阳市",
+    "county": "贵安新区",
+    "township": "马场镇",
+    "community": "凯掌社区居民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "贵安新区",
+    "township": "马场镇",
+    "community": "刘家村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
+    "county": "贵安新区",
+    "township": "马场镇",
+    "community": "洋塘村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "贵阳市",
     "county": "花溪区",
     "township": "麦坪镇",
     "community": "场坝村"
@@ -1424,8 +1445,8 @@
     "province": "贵州省",
     "city": "遵义市",
     "county": "正安县",
-    "township": "桴?镇",
-    "community": "桴?社区居民委员会"
+    "township": "桴㯊镇",
+    "community": "桴㯊社区居民委员会"
   },
   {
     "province": "贵州省",
@@ -3083,7 +3104,7 @@
     "province": "贵州省",
     "city": "黔东南苗族侗族自治州",
     "county": "岑巩县",
-    "township": "?水街道",
+    "township": "㵲水街道",
     "community": "大园社区居民委员会"
   },
   {
@@ -3876,6 +3897,13 @@
     "county": "务川仡佬族苗族自治县",
     "township": "镇南镇",
     "community": "同心村村民委员会"
+  },
+  {
+    "province": "贵州省",
+    "city": "遵义市",
+    "county": "务川仡佬族苗族自治县",
+    "township": "柏村镇",
+    "community": "通木村村民委员会"
   },
   {
     "province": "贵州省",
