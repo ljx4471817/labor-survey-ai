@@ -2029,5 +2029,45 @@
     "expected_source_section": "贵阳调查队填报规范指引·包工头就业判定",
     "must_contain_any": ["系统在学习中，请咨询业务负责人。"],
     "should_not_contain": ["F10填'否'", "F10填\"否\"", "F10填「否」", "填'否'", "填\"否\"", "填「否」"]
+  },
+  {
+    "id": "eval-111",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "灵活就业人员，就业身份可以是雇员吗？",
+    "expected_keywords": ["灵活就业", "就业身份", "自营者", "雇员"],
+    "expected_source_section": "贵阳调查队填报规范指引·灵活就业人员就业身份判定",
+    "must_contain_any": ["不选“雇员”", "不应填“雇员”", "不应选“雇员”", "不填“雇员”", "不可以是雇员", "不得改选“雇员”"],
+    "should_not_contain": ["外卖骑手受雇", "需改填", "给别人干选雇员", "F21选'雇员'", "F21选\"雇员\"", "F21选「雇员」"]
+  },
+  {
+    "id": "eval-112",
+    "type": "in_kb",
+    "category": "就业状态判断",
+    "question": "灵活就业人员，就业身份应该怎么填？",
+    "expected_keywords": ["灵活就业", "就业身份", "自营者"],
+    "expected_source_section": "贵阳调查队填报规范指引·灵活就业人员就业身份判定",
+    "must_contain_any": ["就业身份选'自营者'", "就业身份选“自营者”", "就业身份是F21，应选'自营者'", "就业身份是F21，应选“自营者”", "就业身份为F21“自营者”", "应选就业身份为F21“自营者”", "就业身份为F21（自营者）", "F21（自营者）"],
+    "should_not_contain": ["F20（就业身份）", "F21选'雇员'", "F21选\"雇员\"", "F21选「雇员」", "需改填"]
+  },
+  {
+    "id": "eval-113",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "F18劳务派遣工的单位名称填第三方公司，还是填实际用工单位？",
+    "expected_keywords": ["F18", "劳务派遣", "实际用工单位"],
+    "expected_source_section": "劳动力调查制度填报要点 - 2026.8.28",
+    "must_contain_any": ["实际用工单位", "实际工作的单位"],
+    "should_not_contain": ["F18填第三方公司名称", "应填派遣公司名称", "按派遣公司填写"]
+  },
+  {
+    "id": "eval-114",
+    "type": "in_kb",
+    "category": "复杂场景案例",
+    "question": "F18劳务外包公司员工填外包公司，还是填实际用工单位？",
+    "expected_keywords": ["F18", "劳务外包", "外包公司"],
+    "expected_source_section": "劳动力调查制度填报要点 - 2026.8.28",
+    "must_contain_any": ["外包公司"],
+    "should_not_contain": ["F18填实际用工单位名称", "应填实际用工单位"]
   }
 ]
