@@ -26,6 +26,7 @@ def _logged_query(
     county: str = "南明区",
     mode: str = "rag",
     days_ago: int = 0,
+    now: datetime | None = None,
 ) -> dict:
     return {
         "phone": "13900000001",
@@ -35,7 +36,7 @@ def _logged_query(
         "county": county,
         "query": "F10 怎么填？",
         "mode": mode,
-        "ts": (NOW - timedelta(days=days_ago)).isoformat(timespec="seconds"),
+        "ts": ((now or NOW) - timedelta(days=days_ago)).isoformat(timespec="seconds"),
     }
 
 
@@ -95,9 +96,10 @@ def test_daily_usage_counts_filters_by_region_scope(query_log_db):
     assert result["series"][-1]["count"] == 1
 
 
-def test_usage_trend_endpoint_applies_admin_scope(query_log_db, monkeypatch):
-    query_log_module.insert(_logged_query(county="南明区"))
-    query_log_module.insert(_logged_query(county="云岩区"))
+def test_usage_trend_endpoint_applies_admin_scope(query_log_db):
+    now = datetime.now(UTC8)
+    query_log_module.insert(_logged_query(county="南明区", now=now))
+    query_log_module.insert(_logged_query(county="云岩区", now=now))
 
     result = usage_trend_admin.usage_trend(
         days=7,
