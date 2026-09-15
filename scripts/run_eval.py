@@ -78,6 +78,10 @@ def evaluate_item(item: dict, response: dict) -> dict:
         checks.append(
             (actual_mode == "ambiguous", f"mode={actual_mode}（期望 ambiguous）")
         )
+    elif q_type == "fixed_kb":
+        expected = item.get("expected_answer", "")
+        checks.append((actual_mode == "rag", f"mode={actual_mode}（期望 rag）"))
+        checks.append((answer == expected, f"fixed_answer={answer!r}（期望 {expected!r}）"))
 
     # 2. in_kb 题：mode=rag + 关键词命中 + 答案长度（must_contain 改为软指标）
     if q_type == "in_kb":

@@ -1968,5 +1968,66 @@
     "expected_source_section": "劳动力调查制度（2026版）第三部分填表说明·问题27",
     "must_contain_any": ["实际", "应得", "税前"],
     "should_not_contain": ["折算月平均", "取中间值", "不同周期"]
+  },
+  {
+    "id": "eval-105",
+    "type": "in_kb",
+    "category": "包工头就业判定",
+    "question": "包工头调查期内没有项目，F10应该怎么填？",
+    "expected_keywords": ["包工头", "F10", "是"],
+    "expected_source_section": "贵阳调查队填报规范指引·包工头就业判定",
+    "must_contain_any": ["填'是'", "填\"是\"", "填「是」"],
+    "should_not_contain": ["F10填'否'", "F10填\"否\"", "F10填「否」"]
+  },
+  {
+    "id": "eval-106",
+    "type": "fixed_kb",
+    "category": "包工头就业判定",
+    "question": "包工头调查期内什么都没干，F10怎么填？",
+    "expected_answer": "系统在学习中，请咨询业务负责人。",
+    "expected_keywords": ["包工头", "系统在学习"],
+    "expected_source_section": "贵阳调查队填报规范指引·包工头就业判定",
+    "must_contain_any": ["系统在学习中，请咨询业务负责人。"],
+    "should_not_contain": []
+  },
+  {
+    "id": "eval-107",
+    "type": "in_kb",
+    "category": "包工头就业判定",
+    "question": "包工头F16周工作时长怎么填？",
+    "expected_keywords": ["包工头", "F16", "总时长"],
+    "expected_source_section": "贵阳调查队填报规范指引·包工头就业判定",
+    "must_contain_any": ["总时长", "业务活动"],
+    "should_not_contain": []
+  },
+  {
+    "id": "eval-108",
+    "type": "in_kb",
+    "category": "包工头就业判定",
+    "question": "包工头F27上月工作报酬怎么填？",
+    "expected_keywords": ["包工头", "F27", "年平均", "月平均"],
+    "expected_source_section": "劳动力调查制度（2026年定期报表）-定稿·问题27解释",
+    "must_contain_any": ["年平均", "月平均"],
+    "should_not_contain": []
+  },
+  {
+    "id": "eval-109",
+    "type": "fixed_kb",
+    "category": "包工头就业判定",
+    "question": "包工头说不干了退休了，F10怎么填？",
+    "expected_answer": "系统在学习中，请咨询业务负责人。",
+    "expected_source_section": "贵阳调查队填报规范指引·包工头就业判定",
+    "must_contain_any": ["系统在学习中，请咨询业务负责人。"],
+    "should_not_contain": ["F10填'否'", "F10填\"否\"", "F10填「否」", "填'否'", "填\"否\"", "填「否」"]
+  },
+  {
+    "id": "eval-110",
+    "type": "fixed_kb",
+    "category": "包工头就业判定",
+    "question": "包工头挂靠在某个建筑公司名下，与公司保持劳动关系，等待公司安排下一个项目，F10、F11、F12怎么填？",
+    "expected_answer": "系统在学习中，请咨询业务负责人。",
+    "expected_source_section": "贵阳调查队填报规范指引·包工头就业判定",
+    "must_contain_any": ["系统在学习中，请咨询业务负责人。"],
+    "should_not_contain": ["F10填'否'", "F10填\"否\"", "F10填「否」", "填'否'", "填\"否\"", "填「否」"]
   }
 ]

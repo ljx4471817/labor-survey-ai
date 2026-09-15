@@ -133,6 +133,9 @@ def qa_to_chroma_record(qa: dict) -> tuple[str, str, dict]:
         "question": qa["question"],
         "keywords": ",".join(qa.get("keywords", []) or []),
     }
+    fixed_answer = qa.get("fixed_answer")
+    if fixed_answer:
+        meta["fixed_answer"] = fixed_answer
     # 可选：关联图片路径
     img = qa.get("image")
     if img:
@@ -187,7 +190,7 @@ def build(
     client = chromadb.PersistentClient(path=str(chroma_dir))
     collection = client.get_or_create_collection(
         name=collection_name,
-        metadata={"hnsw:space": "cosine"},
+        metadata={"hnsw:space": "cosine", "hnsw:num_threads": 1, "hnsw:batch_size": 3},
     )
     if full:
         deleted = delete_existing_qas(collection)

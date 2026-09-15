@@ -111,7 +111,8 @@ def upsert_chunks_to_chroma(
     chroma_dir.mkdir(parents=True, exist_ok=True)
     client = chromadb.PersistentClient(path=str(chroma_dir))
     collection = client.get_or_create_collection(
-        name=collection_name, metadata={"hnsw:space": "cosine"}
+        name=collection_name,
+        metadata={"hnsw:space": "cosine", "hnsw:num_threads": 1, "hnsw:batch_size": 3},
     )
 
     if full:
@@ -185,7 +186,8 @@ def upsert_qa_to_chroma(
     chroma_dir.mkdir(parents=True, exist_ok=True)
     client = chromadb.PersistentClient(path=str(chroma_dir))
     collection = client.get_or_create_collection(
-        name=collection_name, metadata={"hnsw:space": "cosine"}
+        name=collection_name,
+        metadata={"hnsw:space": "cosine", "hnsw:num_threads": 1, "hnsw:batch_size": 3},
     )
 
     if full:
@@ -227,6 +229,9 @@ def upsert_qa_to_chroma(
                 "keywords": ",".join(qa.get("keywords", []) or []),
                 "embed_hash": h,
             }
+            fixed_answer = qa.get("fixed_answer")
+            if fixed_answer:
+                meta["fixed_answer"] = fixed_answer
             ids.append(qa_id)
             docs.append(doc)
             metas.append(meta)

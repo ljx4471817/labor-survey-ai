@@ -57,7 +57,7 @@
 
 **迭代 1 已完成 ✅**：H5 + Cloudflare Tunnel + 视觉升级 + 吉祥物接入 + 推送 GitHub。
 **迭代 2 已完成 ✅**（2026-06-22 ~ 2026-06-26）：KB 质量优化（schema v1 indicators 字段 + 制度对齐机制）+ 反馈闭环 + 采购可行性预算 + 手机号白名单门禁 + Dashboard 看板 + 区域下钻 + KB 5 阶段入库流程。
-**迭代 3 进行中**：架构重构已完成（Phase 1-9，eval 104/100% 回归通过）+ KB schema v2 评估（`scenario` 字段）+ 采购落地（材料已就绪，待领导决策后启动域名备案）。
+**迭代 3 进行中**：架构重构已完成（Phase 1-9，eval 110/100% 回归通过）+ KB schema v2 评估（`scenario` 字段）+ 采购落地（材料已就绪，待领导决策后启动域名备案）。
 
 参见 `docs/02-可行性审核.md` 第四节「已确认的决策」和 ADR 索引。
 
@@ -87,6 +87,8 @@
 | `0020-服务端会话历史.md` | conversations + messages 永久会话 / 手机号隔离 / 最近 10 轮回看 | 对话 UX |
 | `0021-标准调查点选择与账号类型表单.md` | 标准调查点唯一数据源 + 管理范围/账号类型单选 + CSV 导入停用 | 白名单表单治理 |
 | `0022-使用频率趋势与前台新对话入口.md` | 每次 chat 算一次 + UTC+8 日聚合 + region_scope 范围；历史会话显式开新对话 | 使用监测 / 对话 UX |
+| `0023-包工头就业判定身份持续原则.md` | 总队口径：包工头身份持续即就业，负面无业务场景不自动判定 | KB 口径治理 |
+| `0024-包工头F10负面场景统一兜底.md` | 包工头 F10「否」建议统一走 fixed_answer 兜底话术 | 检索治理 |
 
 ## 目录约定
 
@@ -186,7 +188,7 @@ python scripts/migrate_whitelist_rbac.py --apply    # 真实迁移（自动备�
 python scripts/convert_region_points.py <调查点Excel路径>
 # 注意：sync_whitelist_xlsx.py 已 DEPRECATED（仅初始导入/恢复），日常禁止再跑，否则旧 xlsx 会覆盖线上名单
 # LLM：模型 A/B 评测 + 阿里云余额监控
-python scripts/compare_models.py --models minimax,qwen-flash --limit 25  # 模型 A/B（同检索同 prompt 同评分；全量 104 题加 --out 落盘）
+python scripts/compare_models.py --models minimax,qwen-flash --limit 25  # 模型 A/B（同检索同 prompt 同评分；全量 110 题加 --out 落盘）
 python scripts/check_qwen_balance.py             # 阿里云账户余额（qwen-flash 按量扣此）
 python scripts/check_qwen_balance.py --bill     # 本月百炼消费明细
 # 测验：本地测试（QUIZ_MOCK_LLM=1 跳过真实 LLM 调用）
@@ -223,7 +225,7 @@ cd backend && pip install -r requirements.txt
 - `index.html`：调查员对话主页面；已加载历史会话时显示「开始新对话」，清空当前会话但保留输入内容
 - `login.html`：手机号白名单登录页（门禁启用后所有页面必经）
 - `dashboard.html`：数据看板——系统管理员全量（KB 复核队列 / 使用监测，含 7/30 日使用频率折线图）；区县业务管理员登录直落「白名单管理」独立页，进入数据看板默认「使用监测」；顶部统一导航（数据看板 / 测验管理 / 白名单管理）+ 退出登录
-- `whitelist.html`：白名单管理独立页（角色化 CRUD / 批量停用 / 启用 / 导出 / 审计 / 标准调查点级联选择；CSV 导入已停用）
+- `whitelist.html`：白名单管理独立页（角色化 CRUD / 手机号姓名搜索 / 批量停用 / 启用 / 导出 / 审计 / 标准调查点级联选择；CSV 导入已停用；搜索跟随显示已禁用开关，导出不受搜索影响）
 - `quiz-admin.html`：测验管理页（侧边栏测验列表 + 工作台两栏，步骤条按数据状态自动打勾，完成率内嵌 tab）
 - `quiz-stats.html`：完成率看板独立页（带 `quiz_id` 参数，从测验管理打开）
 - 共享工具函数放 `common.js`（`$()`、`escapeHtml()`、token 管理）
