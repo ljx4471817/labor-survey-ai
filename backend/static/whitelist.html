@@ -183,7 +183,8 @@ tr.detail-row td { background: #fafbfc; padding: 10px 14px; white-space: normal;
 .empty-row { text-align: center; padding: 24px; color: var(--text-dim); font-size: 0.88rem; }
 
 .audit-filter { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-.audit-filter input { padding: 7px 10px; border: 1px solid var(--line); border-radius: 4px; font-size: 0.85rem; width: 220px; max-width: 100%; }
+.audit-filter input,
+.list-search input { padding: 7px 10px; border: 1px solid var(--line); border-radius: 4px; font-size: 0.85rem; width: 220px; max-width: 100%; }
 
 footer {
   text-align: center; font-size: 0.75rem; color: var(--text-dim);
@@ -216,8 +217,11 @@ footer {
       <button class="primary" id="addBtn">+ 新增条目</button>
       <button id="batchDisableBtn" class="danger" disabled>批量停用</button>
       <button id="exportBtn">导出</button>
+      <div class="list-search">
+        <input type="search" id="searchInput" placeholder="搜索手机号或姓名" aria-label="搜索手机号或姓名">
+      </div>
       <label style="font-size:0.82rem;display:flex;align-items:center;gap:4px;cursor:pointer">
-        <input type="checkbox" id="showInactive" onchange="currentPage=1;renderTable()"> 显示已禁用
+        <input type="checkbox" id="showInactive" onchange="currentPage=1;checkedSet.clear();renderTable()"> 显示已禁用
       </label>
       <span style="margin-left:auto;font-size:0.82rem;color:var(--text-dim)" id="countInfo">—</span>
     </div>
@@ -416,6 +420,16 @@ function showMsg(msg, type) {
   setTimeout(() => el.innerHTML = '', 5000);
 }
 
+function getFilteredItems() {
+  const showInactive = $('showInactive').checked;
+  const baseItems = showInactive ? allItems : allItems.filter(r => r.active);
+  const keywords = $('searchInput').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (!keywords.length) return baseItems;
+  return baseItems.filter(item => keywords.every(keyword =>
+    [item.phone, item.name].some(value => (value || '').toString().toLowerCase().includes(keyword))
+  ));
+}
+
 function switchTab(name) {
   $('tabListBtn').classList.toggle('active', name === 'list');
   $('tabAuditBtn').classList.toggle('active', name === 'audit');
@@ -424,8 +438,7 @@ function switchTab(name) {
 }
 
 function renderTable() {
-  const showInactive = $('showInactive').checked;
-  const filtered = showInactive ? allItems : allItems.filter(r => r.active);
+  const filtered = getFilteredItems();
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   if (currentPage > totalPages) currentPage = totalPages;
   const start = (currentPage - 1) * pageSize;
@@ -467,6 +480,8 @@ function renderTable() {
   }).join('');
   renderPager(totalPages, filtered.length);
   bindRowChecks();
+  const rowChecks = document.querySelectorAll('.row-check');
+  $('checkAll').checked = rowChecks.length > 0 && Array.from(rowChecks).every(x => x.checked);
   updateBatchBtn();
 }
 
@@ -591,8 +606,7 @@ function buildPageList(current, totalPages) {
 
 function goPage(n) {
   if (!Number.isFinite(n)) n = 1;
-  const showInactive = $('showInactive').checked;
-  const total = showInactive ? allItems.length : allItems.filter(function(r){ return r.active; }).length;
+  const total = getFilteredItems().length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   if (n < 1) n = 1;
   if (n > totalPages) n = totalPages;
@@ -687,6 +701,11 @@ $('addBtn').onclick = () => prepareEntryModal('新增条目');
 $('exportBtn').onclick = exportList;
 $('batchDisableBtn').onclick = batchDisable;
 $('auditBtn').onclick = loadAudit;
+$('searchInput').addEventListener('input', () => {
+  currentPage = 1;
+  checkedSet.clear();
+  renderTable();
+});
 $('editModal').addEventListener('click', (e) => {
   if (e.target === $('editModal')) closeModal();
 });

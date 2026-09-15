@@ -141,7 +141,31 @@ C. [eval 层] <具体改动>（必须和 A 或 B 同步上）
 
 **如果用户选了 3（自定义）**，列出所有候选让用户勾选。
 
-### Step 3 — 执行（用户拍板后）
+### Step 2.8 — 答案来源确认（入库门禁，必须）
+
+**在改 faq.json 之前必须过这一关**。前台已有答案反馈功能（用户提交正确答案 + 来源），
+本 skill 走同类逻辑：优化后的答案没有来源确认，不允许入库。
+
+流程：
+
+1. 展示优化后的 answer 完整草稿
+2. 问用户：「这个答案的来源是什么？」（制度原文章节 / 指标讲解编号 / 贵阳调查队填报规范指引）
+3. 用户回答后，确认两点：
+   - answer 文字是否准确
+   - source 标注是否符合要求
+4. 两点都确认后才允许写入 faq.json
+
+**如果用户给不出来源**：停在草稿，不入库。宁可不录，不编造。
+
+```
+□ answer 草稿用户确认了吗？
+□ source 用户提供了吗？
+□ source 用户确认了吗？
+```
+
+**任何一项没确认 → 停在草稿，不写 faq.json。**
+
+### Step 3 — 执行（用户拍板 + 来源确认后）
 
 按用户选的方案执行。**每次只选一个方案**，不要贪多。
 
@@ -155,6 +179,7 @@ for item in data:
     if item['id'] == 'TARGET_ID':
         print(json.dumps(item, ensure_ascii=False, indent=2))
 "
+# 前置：Step 2.8 来源确认已过（answer + source 双确认）
 # 改 answer / keywords / scope
 # 验证 JSON 合法
 python -c "import json; json.load(open('knowledge-base/qa/faq.json', encoding='utf-8')); print('JSON-OK')"
@@ -246,6 +271,7 @@ Query: <原始 query>
 - [ ] 跑了基线留存吗？（Step 1.5）
 - [ ] 给了候选方案让用户选，没直接动手？
 - [ ] 问了风险偏好吗？（Step 2.5）
+- [ ] answer + source 都确认后才写入了吗？（Step 2.8）
 - [ ] 选了超奥卡姆方案时给了回退机会吗？
 - [ ] 每次只选了一个方案？
 - [ ] 验证跑了吗（JSON + pytest）？

@@ -232,27 +232,33 @@ def chat_endpoint(
     top1_id = sources[0]["id"] if sources else "none"
     top1_score = sources[0]["score"] if sources else 0.0
     logger.info(f"chat: q={msg[:30]!r} top1={top1_id} score={top1_score:.3f} n_sources={len(sources)}")
-    kb_block = format_kb_results(sources)
-    history_context = _build_history_context(history)
-    try:
-        answer = llm_chat(
-            [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": USER_TEMPLATE.format(
-                    kb_results=kb_block,
-                    history_context=history_context,
-                    user_message=msg,
-                )},
-            ]
-        )
-    except Exception as e:
-        logger.exception("LLM 调用失败")
-        raise HTTPException(500, f"LLM 调用失败: {e}")
+    fixed_answer = (sources[0].get("metadata") or {}).get("fixed_answer") if sources else None
+    if fixed_answer:
+        answer = fixed_answer
+        mode = "rag"
+        logger.info(f"chat: fixed_answer top1={top1_id}")
+    else:
+        kb_block = format_kb_results(sources)
+        history_context = _build_history_context(history)
+        try:
+            answer = llm_chat(
+                [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": USER_TEMPLATE.format(
+                        kb_results=kb_block,
+                        history_context=history_context,
+                        user_message=msg,
+                    )},
+                ]
+            )
+        except Exception as e:
+            logger.exception("LLM 调用失败")
+            raise HTTPException(500, f"LLM 调用失败: {e}")
 
-    # 检测 LLM 是否触发了"未找到"模板，决定走 rag 还是 out_of_kb
-    mode = "out_of_kb" if _detect_refusal(answer) else "rag"
-    if mode == "rag":
-        answer = ensure_kb_anchors(answer, sources[0] if sources else None)
+        # 检测 LLM 是否触发了"未找到"模板，决定走 rag 还是 out_of_kb
+        mode = "out_of_kb" if _detect_refusal(answer) else "rag"
+        if mode == "rag":
+            answer = ensure_kb_anchors(answer, sources[0] if sources else None)
     latency_ms = int((time.perf_counter() - t_start) * 1000)
     sources_items = _to_source_items(sources)
     _log_query(
