@@ -34,7 +34,7 @@
 
 # 1) 备份（既有流程：4 个 SQLite 文件 + 快照）
 
-# 2) dry-run（默认模式，绝不写 PG，只读 SQLite）
+# 2) dry-run（默认模式；只读 SQLite，不写任何业务数据，但会在目标 PG 幂等建表 IF NOT EXISTS）
 python backend/scripts/migrate_sqlite_to_pg.py \
   --sqlite-dir backend/data \
   --dsn-map '{"whitelist": "postgresql://...", "conversations": "postgresql://...", "query_log": "postgresql://...", "quiz": "postgresql://..."}' \
@@ -50,12 +50,20 @@ python backend/scripts/migrate_sqlite_to_pg.py --apply \
 
 # 5) 重启服务
 
-# 6) 17 项验收（健康检查 / 登录 / chat / dashboard / 测验全链路）
+# 6) 切换后验收（实际跑过的命令；健康检查别只看 200，要确认 chroma_count>0）
+curl -s http://127.0.0.1:8001/health
+curl -s -o /dev/null -w '%{http_code}' https://laborforceai.xyz/login
+curl -s -X POST http://127.0.0.1:8001/api/auth/login -H 'Content-Type: application/json' -d '{"phone":"<管理员手机号>"}'
+# 带 token 再验：/api/admin/whitelist、/api/admin/whitelist/audit、/api/admin/whitelist/region-points、
+#   /api/admin/usage/search、/api/admin/usage/trend、/api/admin/usage/gaps、/api/admin/feedback/stats、
+#   /api/admin/quiz/scenes、/api/admin/quiz/list（quiz/stats 需要 quiz_id 参数）
+#   /api/chat/conversations、/api/chat/hot-questions、/api/quiz/current
+# 最后真跑一次 POST /api/chat，确认 PG 里 query_log 行数 +1
 ```
 
 迁移脚本特性：
 
-- **默认 dry-run**，不加 `--apply` 绝不写 PG
+- **默认 dry-run**：不加 `--apply` 不写任何业务数据（但会在目标 PG 创建表结构；表为幂等 `IF NOT EXISTS`，重复执行安全）
 - **只读打开 SQLite**（`mode=ro`），物理上不可能写坏源库
 - 表清单自动发现（`sqlite_master`，排除 `sqlite_%`），不写死表名
 - 逐表**行数 + 校验和**双比对（校验和顺序无关，NULL / 数值类型规范化），任一不一致退出码非 0
