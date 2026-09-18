@@ -13,20 +13,24 @@
 from __future__ import annotations
 
 import json
-import sqlite3
+import os
 from collections import defaultdict
 from datetime import datetime, timedelta
 
 from app.core.config import PROJECT_ROOT
+from app.persistence import db
 
 QUERY_LOG_DB = PROJECT_ROOT / "backend" / "data" / "query_log.db"
 FEEDBACK_PATH = PROJECT_ROOT / "backend" / "data" / "feedback.jsonl"
 
 
-def _connect() -> sqlite3.Connection:
-    conn = sqlite3.connect(str(QUERY_LOG_DB))
-    conn.row_factory = sqlite3.Row
-    return conn
+def _db_target() -> str:
+    """与 query_log 模块同源：LSX_DB_QUERY_LOG 优先，回落默认 SQLite 路径。"""
+    return os.environ.get("LSX_DB_QUERY_LOG") or str(QUERY_LOG_DB)
+
+
+def _connect() -> "db.Connection":
+    return db.connect(_db_target())
 
 
 def _since_clause(since_days: int) -> tuple[str, list]:
