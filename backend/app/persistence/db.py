@@ -255,12 +255,6 @@ class _PGConnection:
             conn.close()
         self._local.conn = None
 
-    @property
-    def raw_connection(self) -> Any:
-        """供迁移脚本取原始 psycopg 连接（COPY / setval 等运维操作）。"""
-        return self._conn()
-
-
 # --- SQLite 包装：逐字保留现有连接行为 ----------------------------------------
 
 
@@ -276,12 +270,16 @@ class _SQLiteConnection:
     def _conn(self) -> sqlite3.Connection:
         conn = getattr(self._local, "conn", None)
         if conn is None:
-            path = Path(self._target)
-            path.parent.mkdir(parents=True, exist_ok=True)
-            conn = sqlite3.connect(str(path), check_same_thread=False, timeout=10)
-            conn.row_factory = sqlite3.Row
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.execute("PRAGMA busy_timeout=5000")
+            try:
+                path = Path(self._target)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                conn = sqlite3.connect(str(path), check_same_thread=False, timeout=10)
+                conn.row_factory = sqlite3.Row
+                conn.execute("PRAGMA journal_mode=WAL")
+                conn.execute("PRAGMA busy_timeout=5000")
+            except sqlite3.Error as exc:
+                # 建连/PRAGMA 失败同样走统一异常，避免裸 sqlite3.OperationalError 泄漏
+                raise _translate_sqlite_error(exc) from exc
             self._local.conn = conn
         return conn
 
@@ -323,10 +321,6 @@ class _SQLiteConnection:
         finally:
             self._local.conn = None
 
-    @property
-    def raw_connection(self) -> sqlite3.Connection:
-        return self._conn()
-
 
 # 同一 target 复用同一个包装（内部已线程局部化），避免每线程重复建 wrapper。
 _registry: dict = {}
@@ -341,7 +335,7 @@ def is_pg_target(target: object) -> bool:
 
 def connect(target: object) -> "_SQLiteConnection | _PGConnection":
     """按 target 自动选择后端，返回可跨线程传递的连接包装。"""
-    key = str(target)
+    key = str(target).strip()  # 归一空白，防 DSN 带尾随空格被误判为文件路径
     with _registry_lock:
         conn = _registry.get(key)
         if conn is None:
