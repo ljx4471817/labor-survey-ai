@@ -46,7 +46,7 @@ def high_freq_out_of_scope(since_days: int, min_freq: int) -> list[dict]:
         f"SELECT query, COUNT(*) AS freq, "
         f"COUNT(DISTINCT phone) AS user_count, MAX(ts) AS last_seen "
         f"FROM query_log WHERE mode='out_of_scope' AND {where_ts} "
-        f"GROUP BY query HAVING freq >= ? ORDER BY freq DESC"
+        f"GROUP BY query HAVING COUNT(*) >= ? ORDER BY freq DESC"
     )
     rows = _connect().execute(sql, params + [min_freq]).fetchall()
     return [
