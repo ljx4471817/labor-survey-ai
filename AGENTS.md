@@ -58,6 +58,7 @@
 **迭代 1 已完成 ✅**：H5 + Cloudflare Tunnel + 视觉升级 + 吉祥物接入 + 推送 GitHub。
 **迭代 2 已完成 ✅**（2026-06-22 ~ 2026-06-26）：KB 质量优化（schema v1 indicators 字段 + 制度对齐机制）+ 反馈闭环 + 采购可行性预算 + 手机号白名单门禁 + Dashboard 看板 + 区域下钻 + KB 5 阶段入库流程。
 **迭代 3 进行中**：架构重构已完成（Phase 1-9，eval 110/100% 回归通过）+ KB schema v2 评估（`scenario` 字段）+ 采购落地（材料已就绪，待领导决策后启动域名备案）。
+**阶段 2 已完成 ✅**（2026-09-18，PR #12 已合并）：4 个持久化库（whitelist / conversations / query_log / quiz）接入 SQLite / PostgreSQL 双后端适配层 + 迁移脚本；切库 / 回滚 / 服务器窗口操作见 `docs/pg-migration.md`。
 
 参见 `docs/02-可行性审核.md` 第四节「已确认的决策」和 ADR 索引。
 
@@ -89,6 +90,7 @@
 | `0022-使用频率趋势与前台新对话入口.md` | 每次 chat 算一次 + UTC+8 日聚合 + region_scope 范围；历史会话显式开新对话 | 使用监测 / 对话 UX |
 | `0023-包工头就业判定身份持续原则.md` | 总队口径：包工头身份持续即就业，负面无业务场景不自动判定 | KB 口径治理 |
 | `0024-包工头F10负面场景统一兜底.md` | 包工头 F10「否」建议统一走 fixed_answer 兜底话术 | 检索治理 |
+| `0025-数据库双后端SQLite-PostgreSQL.md` | SQLite / PostgreSQL 双后端适配层 + 环境变量切库 + 一次性迁移 | 数据库 / 部署 |
 
 ## 目录约定
 
@@ -119,6 +121,7 @@
 | `backend/static/kb-images/` | 培训 PPT 结构化截图，按 `page_XX/` 供 KB 引用 | 自由修改 |
 | `backend/static/` | H5 前端（单页应用）+ 测验 3 页面（quiz.html / quiz_admin.html / quiz-stats.html） | 自由修改 |
 | `scripts/` | 跨子项目运维脚本 | 自由修改 |
+| `backend/scripts/` | 仅服务后端的运维脚本（如 `migrate_sqlite_to_pg.py` SQLite→PG 迁移，服务器停机窗口执行） | 自由修改 |
 | `scripts/archive/` | 已退役或仅用于历史复盘的脚本 | 只增不改 |
 | `deploy/` | 部署配置（含 ssl/ / systemd/ 占位） | 谨慎修改，影响线上 |
 | `.codex/skills/` | **项目级 Codex skill**（已 git 入仓），含 `regulations-migrate` / `kb-update-workflow` / `kb-optimize` / `kb-cleanup` / `whitelist-sync` / `pptx-structured-ocr` | 自由修改 |
@@ -173,6 +176,9 @@ python scripts/extract_qa_pairs.py knowledge-base/raw/markdown/<stem>.md --mode 
 python scripts/detect_gaps.py --candidates reports/extracted-qa-<stem>.json
 python scripts/add_faq_entries.py reports/approved-<stem>.json
 
+# 数据库：SQLite/PG 双后端迁移（默认 dry-run；--apply 前必看 docs/pg-migration.md）
+python backend/scripts/migrate_sqlite_to_pg.py --sqlite-dir backend/data --dsn-map '{...}'   # dry-run
+python backend/scripts/migrate_sqlite_to_pg.py --apply --sqlite-dir backend/data --dsn-map '{...}' --report-out reports/migration-apply.md
 # 报告：成本预算（采购可行性 / 领导汇报）
 python scripts/generate_cost_report.py
 # 报告：项目介绍（向上级汇报 Word）

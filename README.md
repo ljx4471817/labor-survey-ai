@@ -16,6 +16,7 @@
 - ✅ 鉴权：手机号白名单 + HMAC token（`whitelist.db` 实时唯一事实源）；双维度权限 admin_level × sys_role + 写操作审计
 - ✅ 后台：统一数据看板 dashboard（KB 复核队列 / 使用监测 + 7/30 日使用频率趋势）+ 区域 5 级下钻；顶部导航进入白名单管理与月度测验系统（出题 / 下发 / 完成率）
 - ✅ 内网穿透：Cloudflare Tunnel quick 模式
+- ✅ 数据库：SQLite / PostgreSQL 双后端（`LSX_DB_*` 环境变量一条配置切换，可随时切回；切换与迁移见 `docs/pg-migration.md`）
 - ✅ 质量门禁：单元测试 + 104 项 RAG 全量评测
 - ⏳ 迭代 3 材料已就绪，待领导决策后启动（域名备案 15-20 工作日）
 
