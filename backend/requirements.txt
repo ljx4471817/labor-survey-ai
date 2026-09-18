@@ -16,5 +16,8 @@ python-multipart>=0.0.9
 loguru>=0.7
 websocket-client>=1.6
 
+# 阶段二：双后端数据库适配（PostgreSQL 分支用；纯 SQLite 部署可不装）
+psycopg[binary]>=3.2
+
 # 测试（可选：QA/反馈/检索改完后跑）
 pytest>=8.0
