@@ -179,6 +179,9 @@ python scripts/add_faq_entries.py reports/approved-<stem>.json
 # 数据库：SQLite/PG 双后端迁移（默认 dry-run；--apply 前必看 docs/pg-migration.md）
 python backend/scripts/migrate_sqlite_to_pg.py --sqlite-dir backend/data --dsn-map '{...}'   # dry-run
 python backend/scripts/migrate_sqlite_to_pg.py --apply --sqlite-dir backend/data --dsn-map '{...}' --report-out reports/migration-apply.md
+# 数据库：PG 只读查询（绝不改 PG 密码）/ 密码轮换（会停服）
+bash scripts/pg_query.sh '<command>'    # 只读查询：直接读 .env 密码，绝不 ALTER USER（详见 docs/runbooks/20260920-pg-ops-scripts.md）
+bash scripts/pg_touch.sh --rotate       # 仅密码轮换/凭据修复：备份 .env 到仓库外 → 停服 → 改密 → 同步 .env → 重启 → 验证
 # 报告：成本预算（采购可行性 / 领导汇报）
 python scripts/generate_cost_report.py
 # 报告：项目介绍（向上级汇报 Word）
@@ -247,6 +250,7 @@ cd backend && pip install -r requirements.txt
 - 不收集居民个人信息（H5 不接触调查数据）
 - 不把 API Key、token 写进代码或 commit
 - 任何会话**不打印、不复述 `.env` 真实值**；如出现在日志里，事后必须轮换所有相关 Key
+- 日志不得回显密钥：loguru 默认 `LOGURU_DIAGNOSE=True` 会打印出错帧的局部变量（实测会带出 `api_key`），新增日志 sink 必须显式 `diagnose=False`
 - 修改 `.env`、CI/CD 配置、部署脚本前先问我
 - 单位主体备案流程启动前先确认
 - **删除文件/目录/git 历史前先问我**
@@ -272,7 +276,7 @@ cd backend && pip install -r requirements.txt
 1. 查 `knowledge-base/raw/markdown/` 对应章节原文
 2. 按场景拆成独立条目（每条聚焦一个 corner case）
 3. 跑 `python scripts/validate_faq.py`（字段完整性）+ `python scripts/build_bm25.py --full`（索引重建）
-4. 在 `eval_set.json` 加 eval 锁定（`must_contain_any` 列表任一命中 → 硬指标；`should_not_contain` 拦截典型错误措辞；多轮场景可配 `history` 字段）
+4. 在 `eval_set.json` 加 eval 锁定（`must_contain_any` 列表任一命中 → 硬指标；`should_not_contain` 拦截典型错误措辞；多轮场景可配 `history` 字段）。**断言必须写在「结论句」层面**：`run_eval.py` 是纯子串匹配、无文本归一化，同一结论要覆盖不同句式与引号（如「就业身份选/填/为 X」× 直引号/全角引号），否则模型换个说法就被误判成缺失
 
 **每年 12 月初**：用 `git diff` 对比新旧《劳动力调查制度》文档，列出可能受影响的 KB 条目，业务人员 + 开发人员 review。**优先走 `regulations-migrate` skill**（`.codex/skills/regulations-migrate/`），整条链路标准化。
 
@@ -293,12 +297,15 @@ cd backend && pip install -r requirements.txt
 - 用量检查连续失败 3 次沿链切下一级（MiniMax -> qwen-flash -> DeepSeek）。
 - 手动切换：POST /api/admin/llm/route {provider: minimax|dashscope|deepseek|auto}。
 - 查看当前模型/用量：GET /api/admin/llm/route（dashboard 使用监测 tab）。
+- **已知缺口**：连接级错误（如 MiniMax `WinError 10053` 连接被中断）不会触发降级，会直接冒泡成 500；当前路由只按用量阈值切换。
 
 ## 待办
 
 - ~~**迭代 3 / Stage 1：评估 KB schema v2**~~ —— 已完成 KB schema v1 全量落地（ADR 0008），v2 评估待领导决策后启动
 - **迭代 3 / Stage 2：成本预算省级档采购落地**——¥87/月档（阿里云 ECS 2核4G + 域名 + 备案），材料已就绪（`reports/cost-budget-20260622.md` + docx/pdf + 项目介绍），待领导决策后启动域名备案 15-20 工作日
 - **DeepSeek 提额申请结果待回**——用户已提交，参考 https://api-docs.deepseek.com/zh-cn/quick_start/rate_limit ；批下来第一时间重跑 `scripts/load_test.py --all` 验证新 QPS 上限。**未批前不做 kb_direct 等 LLM 优化**（优先级低于 DeepSeek 提额）
+- **LLM 路由兜住连接级错误**——MiniMax 连接中断当前会直接 500（见「LLM 三级路由约定」的已知缺口），应把连接级异常也纳入降级判据
+- **日志密钥外泄审计**——loguru 默认 `LOGURU_DIAGNOSE=True` 会把出错帧局部变量（含 `api_key`）打进日志；用户 2026-09-20 决定暂缓修复，仅记录待办
 - **新增测试覆盖**：chat.py 端到端（需 mock embedding + LLM）、auth.py HMAC 校验、bm25.py search 函数
 - **miniprogram/ 目录**：加 README.md 说明"ADR 0001 反转后的历史骨架" 
 

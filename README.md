@@ -12,7 +12,7 @@
 
 - ✅ 后端：FastAPI + chat / conversations / hot-questions / feedback / auth / admin / quiz / whitelist 分域 API（voice 2026-06-21 已停用）
 - ✅ 前端：H5 多页面（对话 / 登录 / 答题 / 测验管理 / 完成率 / 统一后台 / 白名单管理），支持服务端会话历史、开始新对话与近一月热点问题
-- ✅ 知识库：Vector + BM25 hybrid 双轨检索，576 条（434 QA + 142 制度 chunk）
+- ✅ 知识库：Vector + BM25 hybrid 双轨检索，577 条（435 QA + 142 制度 chunk）
 - ✅ 鉴权：手机号白名单 + HMAC token（`whitelist.db` 实时唯一事实源）；双维度权限 admin_level × sys_role + 写操作审计
 - ✅ 后台：统一数据看板 dashboard（KB 复核队列 / 使用监测 + 7/30 日使用频率趋势）+ 区域 5 级下钻；顶部导航进入白名单管理与月度测验系统（出题 / 下发 / 完成率）
 - ✅ 内网穿透：Cloudflare Tunnel quick 模式
