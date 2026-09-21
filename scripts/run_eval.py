@@ -44,6 +44,36 @@ _NEGATIONS = (
 )
 
 
+_MD_MARKS = ("**", "*", "`", "__")
+
+
+def _strip_md(text: str) -> str:
+    """去掉 markdown 强调标记后再做子串比对。
+
+    LLM 输出常带 **“自营者”** 这类加粗包裹，原文子串匹配会漏判（2026-09-20 eval-112 实测）。
+    仅影响 must_contain / must_contain_any（放松匹配，只会把假 FAIL 纠正为 PASS）。
+    """
+    for m in _MD_MARKS:
+        text = text.replace(m, "")
+    return text
+
+
+_QUOTE_CHARS = ("“", "”", "「", "」", "『", "』", "\"", "'", "‘", "’")
+
+
+def _norm_for_match(text: str) -> str:
+    """比对前归一化：去掉 markdown 标记 + 抹平引号风格差异。
+
+    引号风格（全角 / 直引号 / 「」）在 LLM 输出里随机变化，逐条枚举变体不可持续
+    —— 2026-09-20 eval-111 三连跑里两轮假失败（分别用了直引号与 "**不能**选"）。
+    仅用于 must_contain / must_contain_any 等「必含」检查；should_not_contain 仍比对原文。
+    """
+    text = _strip_md(text)
+    for q in _QUOTE_CHARS:
+        text = text.replace(q, "")
+    return text
+
+
 def _bad_word_hit(answer: str, bad: str) -> bool:
     """True if a forbidden word appears in a non-negated sentence.
 
@@ -91,7 +121,8 @@ def evaluate_item(item: dict, response: dict) -> dict:
         # 关键词命中率
         kws = item.get("expected_keywords", [])
         if kws:
-            hit = sum(1 for k in kws if k in answer)
+            _ans = _norm_for_match(answer)
+            hit = sum(1 for k in kws if k in _ans)
             ratio = hit / len(kws)
             ok = ratio >= 0.25
             detail = f"关键词命中 {hit}/{len(kws)} = {ratio:.0%}" + ("" if ok else "（< 25%）")
@@ -100,12 +131,13 @@ def evaluate_item(item: dict, response: dict) -> dict:
         if len(answer) < 30:
             checks.append((False, f"答案过短：{len(answer)} 字"))
         # 必含词（软指标：缺失不扣分，仅记录）
-        if item.get("must_contain") and item["must_contain"] not in answer:
+        if item.get("must_contain") and item["must_contain"] not in _norm_for_match(answer):
             checks.append((True, f"must_contain 措辞差异（不扣分）：{item['must_contain'][:20]}"))
         # 必含词列表（硬指标：任一命中才算过，用于 corner case 正面锁定）
         mca = item.get("must_contain_any")
         if isinstance(mca, list) and mca:
-            hit = next((s for s in mca if s in answer), None)
+            _ans = _norm_for_match(answer)
+            hit = next((s for s in mca if _norm_for_match(s) in _ans), None)
             if hit:
                 checks.append((True, f"must_contain_any 命中：{hit}"))
             else:
@@ -126,7 +158,7 @@ def evaluate_item(item: dict, response: dict) -> dict:
     # 4. trap / ambiguous 题：检查必含词（trap 只看 mode，跳过必含词）
     if q_type == "ambiguous" and item.get("must_contain"):
         target = item["must_contain"]
-        ok = target in answer
+        ok = _norm_for_match(target) in _norm_for_match(answer)
         detail = (
             f"must_contain 命中：{target[:20]}"
             if ok
