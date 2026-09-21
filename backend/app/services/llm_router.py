@@ -128,6 +128,22 @@ def next_provider(provider: str) -> str:
     return PRIORITY_ORDER[i + 1] if i + 1 < len(PRIORITY_ORDER) else provider
 
 
+def resolve_llm_chain() -> list[dict]:
+    """按「当前 active 优先、其余按优先级」返回全部已配置的 provider 配置。
+
+    供连接级失败时的同请求回退使用（见 app/rag/llm.chat）；只返回配了 api_key 的 provider，
+    一个都没有时抛 RuntimeError（与 resolve_llm_config 的报错文案一致）。
+    """
+    active = load_state()["active_provider"]
+    order = [active] + [p for p in PRIORITY_ORDER if p != active]
+    cfgs = [cfg for cfg in (provider_config(p) for p in order) if cfg is not None]
+    if not cfgs:
+        raise RuntimeError(
+            "No LLM API key configured (MINIMAX_API_KEY / DASHSCOPE_API_KEY / DEEPSEEK_API_KEY)"
+        )
+    return cfgs
+
+
 def decide_active_provider(
     current: str,
     used_5h_pct: int | None,

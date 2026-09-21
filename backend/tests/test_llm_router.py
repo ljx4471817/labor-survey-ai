@@ -500,3 +500,43 @@ def test_llm_route_post_manual_and_auto(monkeypatch, tmp_path):
     assert d3["manual_override"] is None
     assert calls["n"] == 1  # 恢复自动触发一次自动决策
     assert d3["active_provider"] == "minimax"
+
+
+# ---------- 回退链解析（连接级失败回退用，2026-09-21） ----------
+
+def test_resolve_llm_chain_active_first(monkeypatch, tmp_path):
+    monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
+    monkeypatch.setenv("MINIMAX_API_KEY", "k")
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "kq")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "kd")
+    chain = llm_router.resolve_llm_chain()
+    assert [c["provider"] for c in chain] == ["minimax", "dashscope", "deepseek"]
+
+
+def test_resolve_llm_chain_manual_deepseek_still_has_fallback(monkeypatch, tmp_path):
+    """手动锁定最后一个 provider 时，链里仍要带上其它已配置项，否则没有兜底。"""
+    monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
+    monkeypatch.setenv("MINIMAX_API_KEY", "k")
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "kd")
+    llm_router.set_manual_override("deepseek")
+    chain = llm_router.resolve_llm_chain()
+    assert [c["provider"] for c in chain] == ["deepseek", "minimax"]
+
+
+def test_resolve_llm_chain_skips_unconfigured(monkeypatch, tmp_path):
+    monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
+    monkeypatch.delenv("MINIMAX_API_KEY", raising=False)
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "kd")
+    chain = llm_router.resolve_llm_chain()
+    assert [c["provider"] for c in chain] == ["deepseek"]
+
+
+def test_resolve_llm_chain_raises_when_none(monkeypatch, tmp_path):
+    monkeypatch.setattr(llm_router, "STATE_FILE", tmp_path / "llm_route.json")
+    monkeypatch.delenv("MINIMAX_API_KEY", raising=False)
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    with pytest.raises(RuntimeError):
+        llm_router.resolve_llm_chain()
