@@ -38,6 +38,9 @@ def login(url: str, phone: str) -> str:
 _NEGATIONS = (
     "\u4e0d\u5f97", "\u4e0d\u80fd", "\u4e0d\u8981", "\u7981\u6b62", "\u8bf7\u52ff",
     "\u907f\u514d", "\u5207\u52ff", "\u4e0d\u5e94", "\u4e0d\u53ef", "\u522b",
+    # 2026-09-21 补：严禁/不准/不许/切忌/杜绝/拒绝
+    # （eval-103 的正确答案含"**严禁取中间值或折中估算**"，此前被判成含禁词）
+    "\u4e25\u7981", "\u4e0d\u51c6", "\u4e0d\u8bb8", "\u5207\u5fcc", "\u675c\u7edd", "\u62d2\u7edd",
 )
 
 
@@ -144,6 +147,34 @@ def evaluate_item(item: dict, response: dict) -> dict:
     }
 
 
+def _record_error(
+    results: list[dict],
+    type_stats: dict,
+    errors: list[dict],
+    item: dict,
+    exc: Exception,
+) -> None:
+    """HTTP 错误也要计入分母并留档，避免网络抖动让通过率虚高。
+
+    2026-09-21：一次全量评测里 114 题有 3 题报 500 被静默排除，
+    报告照样打印 100% 且退出码为 0 —— 等于"没考那几题"却算全绿。
+    """
+    detail = f"HTTP 错误：{exc}"
+    results.append(
+        {
+            "id": item["id"],
+            "type": item["type"],
+            "question": item["question"],
+            "passed": False,
+            "checks": [{"ok": False, "reason": detail}],
+            "answer": "",
+            "error": str(exc),
+        }
+    )
+    type_stats[item["type"]]["total"] += 1
+    errors.append({"id": item["id"], "type": item["type"], "error": str(exc)})
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--url", default=DEFAULT_URL)
@@ -171,6 +202,7 @@ def main() -> int:
     results: list[dict] = []
     type_stats: dict[str, dict[str, int]] = defaultdict(lambda: {"total": 0, "pass": 0})
     failures: list[dict] = []
+    errors: list[dict] = []
 
     for i, item in enumerate(items, start=1):
         t0 = time.time()
@@ -188,7 +220,7 @@ def main() -> int:
             resp = r.json()
         except Exception as e:
             print(f"[{i:3d}/{len(items)}] {item['id']} HTTP 错误: {e}")
-            results.append({"id": item["id"], "error": str(e)})
+            _record_error(results, type_stats, errors, item, e)
             continue
         dt = time.time() - t0
 
@@ -222,6 +254,11 @@ def main() -> int:
         rate = s["pass"] / s["total"] if s["total"] else 0
         print(f"  {t:12s}: {s['pass']:3d}/{s['total']:3d} = {rate:.0%}")
 
+    if errors:
+        print(f"\n=== HTTP 错误 {len(errors)} 道（已计入分母，视为失败）===")
+        for e in errors[:15]:
+            print(f"  {e['id']} [{e['type']}]: {e['error'][:120]}")
+
     if failures:
         print(f"\n=== 失败 {len(failures)} 道 ===")
         for f in failures[:15]:
@@ -235,7 +272,8 @@ def main() -> int:
         json.dumps(
             {"summary": {"total": total, "passed": passed, "by_type": dict(type_stats)},
              "results": results,
-             "failures": failures},
+             "failures": failures,
+             "errors": errors},
             ensure_ascii=False,
             indent=2,
         ),
