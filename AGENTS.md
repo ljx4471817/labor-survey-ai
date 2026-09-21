@@ -297,14 +297,13 @@ cd backend && pip install -r requirements.txt
 - 用量检查连续失败 3 次沿链切下一级（MiniMax -> qwen-flash -> DeepSeek）。
 - 手动切换：POST /api/admin/llm/route {provider: minimax|dashscope|deepseek|auto}。
 - 查看当前模型/用量：GET /api/admin/llm/route（dashboard 使用监测 tab）。
-- **已知缺口**：连接级错误（如 MiniMax `WinError 10053` 连接被中断）不会触发降级，会直接冒泡成 500；当前路由只按用量阈值切换。
+- 连接级失败（连不上 / 超时 / 429 / 5xx / 响应体不可解析）由 `llm.chat()` 在**同一次请求内**沿回退链重试（`resolve_llm_chain()`：当前 active 优先，其余按优先级）；失败的 provider 冷却 60s 后排到链尾。4xx 不回退（本项目自己的请求问题，不掩盖）；**全部 provider 都失败才抛错**（端点仍会 500）。路由状态文件仍只由用量调度器与手动切换写。
 
 ## 待办
 
 - ~~**迭代 3 / Stage 1：评估 KB schema v2**~~ —— 已完成 KB schema v1 全量落地（ADR 0008），v2 评估待领导决策后启动
 - **迭代 3 / Stage 2：成本预算省级档采购落地**——¥87/月档（阿里云 ECS 2核4G + 域名 + 备案），材料已就绪（`reports/cost-budget-20260622.md` + docx/pdf + 项目介绍），待领导决策后启动域名备案 15-20 工作日
 - **DeepSeek 提额申请结果待回**——用户已提交，参考 https://api-docs.deepseek.com/zh-cn/quick_start/rate_limit ；批下来第一时间重跑 `scripts/load_test.py --all` 验证新 QPS 上限。**未批前不做 kb_direct 等 LLM 优化**（优先级低于 DeepSeek 提额）
-- **LLM 路由兜住连接级错误**——MiniMax 连接中断当前会直接 500（见「LLM 三级路由约定」的已知缺口），应把连接级异常也纳入降级判据
 - **日志密钥外泄审计**——loguru 默认 `LOGURU_DIAGNOSE=True` 会把出错帧局部变量（含 `api_key`）打进日志；用户 2026-09-20 决定暂缓修复，仅记录待办
 - **新增测试覆盖**：chat.py 端到端（需 mock embedding + LLM）、auth.py HMAC 校验、bm25.py search 函数
 - **miniprogram/ 目录**：加 README.md 说明"ADR 0001 反转后的历史骨架" 
