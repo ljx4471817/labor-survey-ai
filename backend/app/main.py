@@ -36,6 +36,11 @@ from app.rag.retriever import count_by_doc_type
 import time
 from collections import defaultdict
 
+from app.infra.logging_setup import configure_logging
+
+# 关掉异常堆栈的变量内省：否则 api_key 等局部变量会被明文打进日志（见 infra/logging_setup.py）
+configure_logging()
+
 _RATE_LIMIT_PER_MINUTE = int(os.environ.get("LSX_RATE_LIMIT_PER_MINUTE", "30"))
 _rate_buckets: dict[str, list[float]] = defaultdict(list)
 

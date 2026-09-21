@@ -250,7 +250,7 @@ cd backend && pip install -r requirements.txt
 - 不收集居民个人信息（H5 不接触调查数据）
 - 不把 API Key、token 写进代码或 commit
 - 任何会话**不打印、不复述 `.env` 真实值**；如出现在日志里，事后必须轮换所有相关 Key
-- 日志不得回显密钥：loguru 默认 `LOGURU_DIAGNOSE=True` 会打印出错帧的局部变量（实测会带出 `api_key`），新增日志 sink 必须显式 `diagnose=False`
+- 日志不得回显密钥：loguru 默认 `LOGURU_DIAGNOSE=True` 会打印出错帧的局部变量（实测带出 `api_key`）。`app.main` 启动时已调 `app.infra.logging_setup.configure_logging()` 全局关掉变量内省（保留 backtrace）；新增日志 sink 仍必须显式 `diagnose=False`
 - 修改 `.env`、CI/CD 配置、部署脚本前先问我
 - 单位主体备案流程启动前先确认
 - **删除文件/目录/git 历史前先问我**
@@ -304,7 +304,6 @@ cd backend && pip install -r requirements.txt
 - ~~**迭代 3 / Stage 1：评估 KB schema v2**~~ —— 已完成 KB schema v1 全量落地（ADR 0008），v2 评估待领导决策后启动
 - **迭代 3 / Stage 2：成本预算省级档采购落地**——¥87/月档（阿里云 ECS 2核4G + 域名 + 备案），材料已就绪（`reports/cost-budget-20260622.md` + docx/pdf + 项目介绍），待领导决策后启动域名备案 15-20 工作日
 - **DeepSeek 提额申请结果待回**——用户已提交，参考 https://api-docs.deepseek.com/zh-cn/quick_start/rate_limit ；批下来第一时间重跑 `scripts/load_test.py --all` 验证新 QPS 上限。**未批前不做 kb_direct 等 LLM 优化**（优先级低于 DeepSeek 提额）
-- **日志密钥外泄审计**——loguru 默认 `LOGURU_DIAGNOSE=True` 会把出错帧局部变量（含 `api_key`）打进日志；用户 2026-09-20 决定暂缓修复，仅记录待办
 - **新增测试覆盖**：chat.py 端到端（需 mock embedding + LLM）、auth.py HMAC 校验、bm25.py search 函数
 - **miniprogram/ 目录**：加 README.md 说明"ADR 0001 反转后的历史骨架" 
 
