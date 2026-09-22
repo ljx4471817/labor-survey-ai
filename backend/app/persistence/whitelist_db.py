@@ -22,6 +22,7 @@ SQLite 在 Python 内部使用 WAL，连接跨线程安全。
 from __future__ import annotations
 
 import os
+import threading
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -165,13 +166,21 @@ def _db_target() -> str:
     return os.environ.get('LSX_DB_WHITELIST') or str(DB_PATH)
 
 
+# 建表/迁移 DDL 护栏：避免并发的首次调用各自重跑整套 schema + _migrate
+# （裸奔时会与并发写入互相等锁，机制同 conversations.py 2026-09-22 13:58 事故）。
+_schema_lock = threading.Lock()
+
+
 def _get_conn() -> "db.Connection":
     global _conn
     if _conn is None:
-        _conn = db.connect(_db_target())
-        schema = _SCHEMA_PG if _conn.backend == 'postgres' else _SCHEMA_SQLITE
-        _conn.executescript(schema)
-        _migrate(_conn)
+        with _schema_lock:
+            if _conn is None:
+                conn = db.connect(_db_target())
+                schema = _SCHEMA_PG if conn.backend == 'postgres' else _SCHEMA_SQLITE
+                conn.executescript(schema)
+                _migrate(conn)
+                _conn = conn
     return _conn
 
 

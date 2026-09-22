@@ -22,11 +22,31 @@ PG 侧不引入 ORM / SQLAlchemy / 连接池（阶段二边界）。
 """
 from __future__ import annotations
 
+import random
 import re
 import sqlite3
 import threading
+import time
 from pathlib import Path
 from typing import Any, Iterator, Sequence
+
+# --- PG 瞬时错误重试（死锁 / 序列化失败）------------------------------------
+# 并发下 PG 会主动挑一个事务当「死锁受害者」并报 40P01。这属于瞬时冲突、不是数据
+# 错误：回滚到 savepoint 后事务即可恢复，抖动重试同一语句通常立刻成功。
+# 兜底目的：不让一次并发碰撞冒泡成面向用户的 500。
+# （2026-09-22 13:58 /api/chat 事故的兜底层；根因修复见 conversations.py 的 DDL 护栏）
+_RETRYABLE_SQLSTATES = frozenset(
+    {"40P01", "40001"}  # deadlock_detected / serialization_failure
+)
+_RETRY_MAX_ATTEMPTS = 2
+_RETRY_BASE_DELAY_S = 0.05
+_RETRY_JITTER_S = 0.05
+
+
+def _is_retryable_pg_error(exc: Any) -> bool:
+    """死锁 / 序列化失败 → 可安全重试（回滚到 savepoint 后重放同一语句）。"""
+    code = str(getattr(exc, "sqlstate", None) or getattr(exc, "pgcode", "") or "")
+    return code in _RETRYABLE_SQLSTATES
 
 try:  # psycopg 为可选依赖：纯 SQLite 部署 / 测试环境无需安装
     import psycopg
@@ -217,14 +237,25 @@ class _PGConnection:
             conn.execute("SAVEPOINT " + sp)
         except psycopg.Error as exc:  # type: ignore[union-attr]
             raise _translate_pg_error(exc) from exc
-        try:
-            cur = conn.execute(_to_pg_sql(sql), params if params else None)
-        except psycopg.Error as exc:  # type: ignore[union-attr]
+        attempts = 0
+        while True:
             try:
-                conn.execute("ROLLBACK TO SAVEPOINT " + sp)
-            except psycopg.Error:  # pragma: no cover - 回滚失败则让事务自然中止
-                pass
-            raise _translate_pg_error(exc) from exc
+                cur = conn.execute(_to_pg_sql(sql), params if params else None)
+                break
+            except psycopg.Error as exc:  # type: ignore[union-attr]
+                try:
+                    conn.execute("ROLLBACK TO SAVEPOINT " + sp)
+                except psycopg.Error:  # type: ignore[union-attr]  # pragma: no cover - 回滚失败则让事务自然中止
+                    pass
+                # 死锁 / 序列化失败：回滚到 savepoint 后事务已恢复，抖动重试同一语句。
+                if _is_retryable_pg_error(exc) and attempts < _RETRY_MAX_ATTEMPTS:
+                    attempts += 1
+                    time.sleep(
+                        _RETRY_BASE_DELAY_S * attempts
+                        + random.random() * _RETRY_JITTER_S
+                    )
+                    continue
+                raise _translate_pg_error(exc) from exc
         try:
             conn.execute("RELEASE SAVEPOINT " + sp)
         except psycopg.Error as exc:  # type: ignore[union-attr]
