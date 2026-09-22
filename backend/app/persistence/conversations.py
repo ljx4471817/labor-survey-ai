@@ -81,6 +81,16 @@ CREATE INDEX IF NOT EXISTS idx_conversation_messages_conversation
 _local = threading.local()
 _WRITE_LOCK = threading.Lock()
 
+# 建表 DDL 护栏：进程级「每目标库只初始化一次」+ 串行化。
+# 反面教材（2026-09-22 13:58 线上 /api/chat 500 的根因）：裸奔时每个新线程首次
+# _get_conn() 都会重跑整套 CREATE TABLE/INDEX，且跑在 _WRITE_LOCK 之外 ——
+# 线程甲在 save_exchange 里持 conversation_messages 行写锁、等 conversations 写锁；
+# 线程乙正在跑 CREATE INDEX，持 conversations 的 ShareLock、等 conversation_messages
+# 的 ShareLock → AB-BA 互等 → PG 杀掉一个 → 500。
+# 与 quiz_db.py 的 _schema_lock / _schema_ready_for 同一模式。
+_schema_lock = threading.Lock()
+_schema_ready_for: str | None = None
+
 
 def _db_target() -> str:
     """LSX_DB_CONVERSATIONS 优先（PG DSN / SQLite 路径），回落 LSX_CONVERSATIONS_DB_PATH / 默认。"""
@@ -91,14 +101,24 @@ def _db_target() -> str:
 
 
 def _get_conn() -> "db.Connection":
-    """按线程复用连接包装（底层连接线程局部，由适配层管理）。"""
+    """按线程复用连接包装（底层连接线程局部，由适配层管理）。
+
+    双检锁保证 DDL 只在「本进程 + 本目标库」首次被调用时执行一次；任何线程
+    都必须等首次初始化完成才继续，因此不会出现 DDL 与并发 DML 同时持锁。
+    """
+    global _schema_ready_for
     conn = getattr(_local, "conn", None)
     if conn is None:
-        conn = db.connect(_db_target())
-        conn.executescript(
-            _SCHEMA_PG if conn.backend == "postgres" else _SCHEMA_SQLITE
-        )
-        conn.commit()
+        target = _db_target()
+        conn = db.connect(target)
+        if _schema_ready_for != target:
+            with _schema_lock:
+                if _schema_ready_for != target:
+                    conn.executescript(
+                        _SCHEMA_PG if conn.backend == "postgres" else _SCHEMA_SQLITE
+                    )
+                    conn.commit()
+                    _schema_ready_for = target
         _local.conn = conn
     return conn
 

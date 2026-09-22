@@ -9,6 +9,7 @@ schema：ts / phone / name / region 5 级 / query / mode / retrieval_score
 from __future__ import annotations
 
 import os
+import threading
 from datetime import datetime, timezone, timedelta
 
 from app.core.config import PROJECT_ROOT
@@ -93,18 +94,28 @@ def _db_target() -> str:
     return os.environ.get("LSX_DB_QUERY_LOG") or str(DB_PATH)
 
 
+# 建表 DDL 护栏：避免并发的首次调用各自重跑整套 DDL
+# （裸奔时会与并发写入互相等锁，机制同 conversations.py 2026-09-22 13:58 事故）。
+_schema_lock = threading.Lock()
+
+
 def _get_conn() -> "db.Connection":
     global _conn
     if _conn is None:
-        _conn = db.connect(_db_target())
-        _conn.executescript(_SCHEMA_PG if _conn.backend == "postgres" else _SCHEMA_SQLITE)
-        for sql in _MIGRATIONS:
-            try:
-                _conn.execute(sql)
-            except db.OperationalError:
-                # 字段已存在，跳过（幂等）
-                pass
-        _conn.commit()
+        with _schema_lock:
+            if _conn is None:
+                conn = db.connect(_db_target())
+                conn.executescript(
+                    _SCHEMA_PG if conn.backend == "postgres" else _SCHEMA_SQLITE
+                )
+                for sql in _MIGRATIONS:
+                    try:
+                        conn.execute(sql)
+                    except db.OperationalError:
+                        # 字段已存在，跳过（幂等）
+                        pass
+                conn.commit()
+                _conn = conn
     return _conn
 
 
