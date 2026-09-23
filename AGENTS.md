@@ -213,7 +213,7 @@ cd backend && uvicorn app.main:app --reload --port 8001
 scripts\start_tunnel.bat
 # 或：跑 start_tunnel.bat → 抓取 URL 用 extract_cf_url.py
 
-# 后端：测试
+# 后端：测试（若环境配置了 LSX_DB_* 变量，先移除再跑，见合规红线）
 cd backend && pytest tests/ -q
 
 # 后端：依赖安装
@@ -251,6 +251,7 @@ cd backend && pip install -r requirements.txt
 - 不把 API Key、token 写进代码或 commit
 - 任何会话**不打印、不复述 `.env` 真实值**；如出现在日志里，事后必须轮换所有相关 Key
 - 日志不得回显密钥：loguru 默认 `LOGURU_DIAGNOSE=True` 会打印出错帧的局部变量（实测带出 `api_key`）。`app.main` 启动时已调 `app.infra.logging_setup.configure_logging()` 全局关掉变量内省（保留 backtrace）；新增日志 sink 仍必须显式 `diagnose=False`
+- **跑 pytest 前必须隔离 LSX_DB_* 环境变量**：config.py 顶部 load_dotenv(.env) 会把 4 行 LSX_DB_*（指向生产 PG）注入 os.environ，且持久化模块 _db_target() 优先读环境变量——测试里 monkeypatch DB_PATH 拦不住，写操作会直落生产库（2026-09-22 实测造成 17 个真实答题请求 500，详见 docs/runbooks/20260922-pg-deadlock-fix.md）。配置了 LSX_DB_* 的机器上先移除这 4 个变量再跑测试。
 - 修改 `.env`、CI/CD 配置、部署脚本前先问我
 - 单位主体备案流程启动前先确认
 - **删除文件/目录/git 历史前先问我**
@@ -314,4 +315,3 @@ python scripts/migrate_whitelist_rbac.py --apply    # 迁移（先备份）
 # 从 faq.json + 4 个 markdown 源文件重建 Chroma + BM25 索引，避免漏跑
 python scripts/rebuild_all.py                    # 全量重建
 python scripts/rebuild_all.py --incremental      # 增量更新
-
