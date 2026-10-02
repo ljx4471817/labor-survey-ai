@@ -179,6 +179,7 @@ python scripts/add_faq_entries.py reports/approved-<stem>.json
 # 数据库：SQLite/PG 双后端迁移（默认 dry-run；--apply 前必看 docs/pg-migration.md）
 python backend/scripts/migrate_sqlite_to_pg.py --sqlite-dir backend/data --dsn-map '{...}'   # dry-run
 python backend/scripts/migrate_sqlite_to_pg.py --apply --sqlite-dir backend/data --dsn-map '{...}' --report-out reports/migration-apply.md
+# 切 PG 后白名单缓存靠 TTL 时间桶失效（LSX_WHITELIST_CACHE_TTL，默认 10s）；应急 touch backend/data/whitelist.db 热刷新，详见 docs/runbooks/20260929-whitelist-cache-invalidation-after-pg.md
 # 数据库：PG 只读查询（绝不改 PG 密码）/ 密码轮换（会停服）
 bash scripts/pg_query.sh '<command>'    # 只读查询：直接读 .env 密码，绝不 ALTER USER（详见 docs/runbooks/20260920-pg-ops-scripts.md）
 bash scripts/pg_touch.sh --rotate       # 仅密码轮换/凭据修复：备份 .env 到仓库外 → 停服 → 改密 → 同步 .env → 重启 → 验证
@@ -214,6 +215,7 @@ scripts\start_tunnel.bat
 # 或：跑 start_tunnel.bat → 抓取 URL 用 extract_cf_url.py
 
 # 后端：测试（若环境配置了 LSX_DB_* 变量，先移除再跑，见合规红线）
+# 测试文件统一 from app.xxx 导入（CI 在 backend/ 目录跑 pytest），不要用 backend.app 前缀
 cd backend && pytest tests/ -q
 
 # 后端：依赖安装

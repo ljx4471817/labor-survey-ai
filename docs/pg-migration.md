@@ -121,3 +121,11 @@ cd backend && pytest tests/ -q
 - pgbouncer 等连接池中间件、监控告警体系
 - ChromaDB 向量库迁移（与本次无关）
 - 双写 / 实时同步
+
+## 8. 白名单缓存失效（切 PG 后必读）
+
+白名单登录缓存（`backend/app/infra/auth.py` 的 `lru_cache`）以本地 SQLite 文件 mtime 为失效键。**切 PG 后本地 `whitelist.db` 不再被写，mtime 恒定，缓存键永不变化**——进程启动后新增/停用的白名单用户要等重启才生效（2026-09-29 事故，见 `docs/runbooks/20260929-whitelist-cache-invalidation-after-pg.md`）。
+
+- 现在缓存键末尾追加了时间桶 TTL（`LSX_WHITELIST_CACHE_TTL`，默认 10 秒），新增/停用 ≤10s 自动生效，无需重启；
+- 重启前如需立即生效：`touch backend/data/whitelist.db`（只改 mtime，不动内容，应急零中断）；
+- 验证白名单是否生效**不能只看 PG 里 `active=1`**，要打登录接口看是否 200。
