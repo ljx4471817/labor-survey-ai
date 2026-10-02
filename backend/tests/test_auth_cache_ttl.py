@@ -1,7 +1,7 @@
 """白名单缓存键时间桶单测（PG 模式 mtime 失灵兜底，见 runbook 20260929）。"""
 from __future__ import annotations
 
-import backend.app.infra.auth as auth
+from app.infra import auth
 
 
 def test_cache_key_advances_with_time_bucket(monkeypatch) -> None:
