@@ -98,14 +98,26 @@ def _cached_whitelist(cache_key: tuple[int, ...]) -> frozenset[str]:
     return frozenset(list_active_phones())
 
 
+# 缓存硬过期时间（秒）。SQLite 模式靠文件 mtime 失效；PG 模式下 mtime 永远不变，
+# 必须靠这个时间桶兜底，否则新增/停用白名单要等重启才生效。
+WHITELIST_CACHE_TTL = int(os.environ.get("LSX_WHITELIST_CACHE_TTL", "10"))
+
+
 def _whitelist_cache_key() -> tuple[int, ...]:
-    """DB + WAL + SHM 的 mtime 作为缓存键（WAL 提交只改 -wal，必须一起看）。"""
+    """DB + WAL + SHM 的 mtime 作为缓存键（WAL 提交只改 -wal，必须一起看）。
+
+    末尾附加时间桶：`.env` 切到 PG（`LSX_DB_WHITELIST=postgresql://…`）后，
+    本地 whitelist.db 不再被写 ⇒ mtime 三个键恒为定值 ⇒ lru_cache 永不失效，
+    新加的白名单手机号登录会一直 401「手机号未授权」，直到进程重启
+    （2026-09-29 邹美玲 桐梓县 业务管理员 真实案例）。时间桶保证 ≤TTL 秒自动刷新。
+    """
     keys: list[int] = []
     for suffix in ("", "-wal", "-shm"):
         try:
             keys.append(Path(str(DB_PATH) + suffix).stat().st_mtime_ns)
         except (FileNotFoundError, OSError):
             keys.append(0)
+    keys.append(int(time.time()) // max(WHITELIST_CACHE_TTL, 1))
     return tuple(keys)
 
 
