@@ -119,7 +119,7 @@
 | `backend/tests/` | 后端单元测试 | 自由修改 |
 | `scripts/watchdog*.ps1` | 本地 API 可用性监控与自动重启 | 自由修改 |
 | `backend/static/kb-images/` | 培训 PPT 结构化截图，按 `page_XX/` 供 KB 引用 | 自由修改 |
-| `backend/static/` | H5 前端（单页应用）+ 测验 3 页面（quiz.html / quiz_admin.html / quiz-stats.html） | 自由修改 |
+| `backend/static/` | H5 前端（单页应用）+ 测验 3 页面（quiz.html / quiz_admin.html / quiz-stats.html）；含 DESIGN.md 设计契约与 theme.css（token 唯一来源），改前端前必读 DESIGN.md | 自由修改 |
 | `scripts/` | 跨子项目运维脚本 | 自由修改 |
 | `backend/scripts/` | 仅服务后端的运维脚本（如 `migrate_sqlite_to_pg.py` SQLite→PG 迁移，服务器停机窗口执行） | 自由修改 |
 | `scripts/archive/` | 已退役或仅用于历史复盘的脚本 | 只增不改 |
@@ -233,6 +233,7 @@ cd backend && pip install -r requirements.txt
 - 公共函数加 docstring（一行说明 WHY）
 
 **H5 前端（`backend/static/`）**：
+- **改前端前先读 `backend/static/DESIGN.md`**（前端设计契约：token 体系 / 组件规范 / Agent 硬规则，与 theme.css 冲突时以代码为准）
 - `index.html`：调查员对话主页面；已加载历史会话时显示「开始新对话」，清空当前会话但保留输入内容
 - `login.html`：手机号白名单登录页（门禁启用后所有页面必经）
 - `dashboard.html`：数据看板——系统管理员全量（KB 复核队列 / 使用监测，含 7/30 日使用频率折线图）；区县业务管理员登录直落「白名单管理」独立页，进入数据看板默认「使用监测」；顶部统一导航（数据看板 / 测验管理 / 白名单管理）+ 退出登录
