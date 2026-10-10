@@ -3,8 +3,9 @@
 - 零外部依赖（只用 stdlib：hmac、hashlib、secrets、base64）
 - Token 格式：`<base64url(payload)>.<base64url(hmac_sig)>`
   payload = `f"{phone}|{exp_unix}|{nonce}"`
-- 白名单来源：`backend/data/whitelist.db`（按 DB / WAL 文件 mtime 热加载，
-  停用立即生效——WAL 模式下写提交只落 -wal 文件，必须把 wal/shm 的 mtime 也纳入缓存键）
+- 白名单来源：`LSX_DB_WHITELIST`（SQLite 文件或 PG DSN）。缓存键 = DB/WAL/SHM mtime
+  + TTL 时间桶（`LSX_WHITELIST_CACHE_TTL`，默认 10s）：SQLite 靠 mtime 立即失效；
+  PG 模式 mtime 恒定，靠时间桶 ≤10s 自动刷新（见 runbook 20260929）
 - 生产必须设 `LSX_AUTH_SECRET`；缺则启动时随机生成（每次重启 token 失效，仅供 dev）
 
 双维度权限（PRD 权限系统改造）：
