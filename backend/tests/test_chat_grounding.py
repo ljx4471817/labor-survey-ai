@@ -8,7 +8,7 @@ from app.main import app
 
 def test_chat_rag_answer_keeps_source_derived_anchors(monkeypatch):
     monkeypatch.setattr(
-        "app.api.chat.retrieve",
+        "app.services.kb_pack_runtime.retrieve",
         lambda *_, **__: [{
             "id": "qa-357",
             "score": 0.93,

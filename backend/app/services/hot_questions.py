@@ -25,8 +25,8 @@ MIN_DISTINCT_USERS = 2
 CACHE_TTL_SECONDS = 30 * 60
 
 _cache_lock = threading.Lock()
-_cache_items: list[dict[str, str]] | None = None
-_cached_at: float | None = None
+_cache_items: dict[str, list[dict[str, str]]] = {}
+_cached_at: dict[str, float] = {}
 
 
 def build_hot_questions(
@@ -90,14 +90,14 @@ def load_default_questions(
 
 def reset_hot_questions_cache() -> None:
     """清空进程内热点缓存，供配置变更和测试使用。"""
-    global _cache_items, _cached_at
     with _cache_lock:
-        _cache_items = None
-        _cached_at = None
+        _cache_items.clear()
+        _cached_at.clear()
 
 
 def get_hot_questions(
     *,
+    cache_key: str = "__global__",
     stats_fn: Callable[[], list[dict]] = lambda: top_qa_stats(
         excluded_phones=PROTECTED_PHONES
     ),
@@ -105,17 +105,18 @@ def get_hot_questions(
     default_loader: Callable[[], list[dict[str, str]]] = load_default_questions,
     clock: Callable[[], float] = time.monotonic,
 ) -> dict[str, list[dict[str, str]]]:
-    """读取热点；30 分钟内复用结果，无热点时返回默认问题。"""
-    global _cache_items, _cached_at
+    """读取热点；按省份隔离并 30 分钟内复用结果。"""
     with _cache_lock:
         now = clock()
-        if _cache_items is not None and _cached_at is not None:
-            if now - _cached_at < CACHE_TTL_SECONDS:
-                return {"items": _cache_items}
+        cached_at = _cached_at.get(cache_key)
+        cached_items = _cache_items.get(cache_key)
+        if cached_items is not None and cached_at is not None:
+            if now - cached_at < CACHE_TTL_SECONDS:
+                return {"items": cached_items}
 
         items = build_hot_questions(stats_fn(), faq_loader())
         if not items:
             items = default_loader()
-        _cache_items = items
-        _cached_at = now
+        _cache_items[cache_key] = items
+        _cached_at[cache_key] = now
         return {"items": items}

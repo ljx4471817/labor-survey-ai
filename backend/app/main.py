@@ -14,6 +14,7 @@ from app.api.gaps_admin import router as gaps_admin_router
 from app.api.usage_admin import router as usage_admin_router
 from app.api.usage_trend_admin import router as usage_trend_admin_router
 from app.api.llm_admin import router as llm_admin_router
+from app.api.kb_admin import router as kb_admin_router
 from app.api.quiz import router as quiz_router
 from app.api.quiz_admin import router as quiz_admin_router
 from app.api.whitelist_admin import router as whitelist_admin_router
@@ -115,6 +116,7 @@ for _r in (
     whitelist_regions_router,
     quiz_admin_router,
     llm_admin_router,
+    kb_admin_router,
 ):
     app.include_router(
         _r,
@@ -185,6 +187,12 @@ def dashboard() -> FileResponse:
 def whitelist_admin() -> FileResponse:
     """白名单管理页入口。"""
     return _serve_static_page("whitelist.html")
+
+
+@app.get("/kb-admin", include_in_schema=False)
+def kb_admin() -> FileResponse:
+    """知识包管理页入口。"""
+    return _serve_static_page("kb-admin.html")
 
 
 @app.on_event("startup")

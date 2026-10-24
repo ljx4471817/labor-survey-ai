@@ -25,6 +25,10 @@ class SourceItem(BaseModel):
     category: str
     score: float
     image: str | None = None
+    kb_id: str | None = None
+    release_id: str | None = None
+    global_entry_key: str | None = None
+    override_used: bool | None = None
 
 
 class ChatResponse(BaseModel):

@@ -155,7 +155,7 @@ def test_chat_creates_conversation_and_persists_full_turn(
             "community": "",
         },
     )
-    monkeypatch.setattr("app.api.chat.retrieve", lambda *_, **__: [])
+    monkeypatch.setattr("app.services.kb_pack_runtime.retrieve", lambda *_, **__: [])
     monkeypatch.setattr(
         "app.api.chat.llm_chat",
         lambda *_: "知识库中未找到相关内容。",
@@ -204,7 +204,7 @@ def test_chat_extends_conversation_after_out_of_scope_turn(
             "community": "",
         },
     )
-    monkeypatch.setattr("app.api.chat.retrieve", lambda *_, **__: [])
+    monkeypatch.setattr("app.services.kb_pack_runtime.retrieve", lambda *_, **__: [])
     monkeypatch.setattr(
         "app.api.chat.llm_chat",
         lambda *_: "知识库中未找到相关内容。",
