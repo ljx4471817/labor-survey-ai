@@ -43,7 +43,7 @@ except ImportError:  # pragma: no cover - 无 PG 时仅禁用 PG 分支
 
 __all__ = [
     "Error", "OperationalError", "IntegrityError", "ProgrammingError",
-    "connect", "is_pg_target", "table_columns", "Row",
+    "connect", "is_pg_target", "table_columns", "Row", "Connection",
 ]
 
 # --- 统一异常（两种后端都翻译到这一组，业务侧只 import 这里） ------------------
@@ -327,6 +327,9 @@ class _SQLiteConnection:
         finally:
             self._local.conn = None
 
+
+# 连接包装的公开类型别名：持久化模块注解 "db.Connection" 的真实指向。
+Connection = _PGConnection | _SQLiteConnection
 
 # 同一 target 复用同一个包装（内部已线程局部化），避免每线程重复建 wrapper。
 _registry: dict = {}
