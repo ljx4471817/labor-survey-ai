@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="stylesheet" href="/static/theme.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:,">
+<title>知识包管理 · 劳动力调查 AI 助手</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; line-height: 1.55; background: var(--paper); color: var(--text); }
+header.admin-header { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 10px 18px; background: var(--ink-blue); color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+header h1 { font-size: 1.05rem; font-weight: 650; white-space: nowrap; }
+header .spacer { flex: 1; }
+header .back, header .logout-btn { color: #fff; text-decoration: none; border: 0; background: transparent; font: inherit; cursor: pointer; opacity: .9; }
+header .back:hover, header .logout-btn:hover { opacity: 1; }
+.role-tag { font-size: .75rem; opacity: .9; white-space: nowrap; }
+main { max-width: 1280px; margin: 18px auto 40px; padding: 0 14px; }
+.notice { display: none; margin-bottom: 14px; padding: 10px 12px; border-radius: var(--radius-btn); font-size: .86rem; }
+.notice.ok { display: block; background: var(--good-soft, rgba(16,185,129,.12)); color: var(--good); }
+.notice.err { display: block; background: var(--bad-soft, rgba(239,68,68,.12)); color: var(--bad); }
+.grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.card { background: var(--c-bg-elev, #fff); border: 1px solid var(--line, #CBD5E1); border-radius: var(--radius-card); overflow: hidden; box-shadow: 0 6px 18px rgba(15,23,42,.06); }
+html body:not(.blue-bg) .card > h2 { margin: 0; padding: 12px 16px; background: var(--head-bg, #F1F5F9); color: var(--head-text, #334155); border-bottom: 1px solid var(--line, #CBD5E1); border-radius: 0; }
+.card-body { padding: 14px 16px 16px; }
+.table-wrap { overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+th, td { padding: 9px 10px; border-bottom: 1px solid var(--line, #CBD5E1); text-align: left; vertical-align: top; white-space: nowrap; }
+th { color: var(--head-text, #334155); background: var(--head-bg, #F1F5F9); font-weight: 600; }
+.muted { color: var(--text-dim); font-size: .78rem; }
+.mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-pill); font-size: .72rem; border: 1px solid var(--line, #CBD5E1); }
+.badge.active { color: var(--good); border-color: color-mix(in srgb, var(--good) 35%, transparent); }
+.badge.draft { color: var(--text-dim); }
+.badge.disabled { color: var(--bad); }
+.badge.passed { color: var(--good); }
+.badge.pending { color: var(--text-dim); }
+.badge.failed { color: var(--bad); }
+.badge.success { color: var(--good); }
+button, .btn { font: inherit; font-size: .8rem; padding: 7px 12px; border: 1px solid var(--line, #CBD5E1); border-radius: var(--radius-btn); background: var(--c-bg-elev, #fff); color: var(--text); cursor: pointer; transition: var(--t-fast) var(--ease); }
+button:hover { border-color: var(--ink-blue); color: var(--ink-blue); }
+button.primary { background: linear-gradient(135deg, var(--c-brand), #2FA8E0); border-color: transparent; color: #fff; font-weight: 600; }
+button.primary:hover { filter: brightness(.96); color: #fff; }
+button.danger { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 35%, transparent); }
+button.small { padding: 4px 8px; font-size: .74rem; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+form { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: .74rem; color: var(--text-dim); }
+input, select, textarea { font: inherit; font-size: .82rem; width: 100%; padding: 7px 9px; border: 1px solid var(--line, #CBD5E1); border-radius: var(--radius-btn); background: var(--c-bg-elev, #fff); color: var(--text); }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--ink-blue); }
+.form-actions { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; }
+.preview-result { border: 1px solid var(--line, #CBD5E1); border-radius: var(--radius-btn); padding: 10px; margin-top: 10px; font-size: .82rem; white-space: pre-wrap; max-height: 340px; overflow: auto; }
+.audit-item { border-bottom: 1px solid var(--line, #CBD5E1); padding: 8px 0; font-size: .8rem; }
+.audit-item:last-child { border-bottom: 0; }
+.audit-meta { color: var(--text-dim); font-size: .74rem; }
+.admin-only { display: none; }
+body.can-manage form.admin-only,
+body.can-manage section.admin-only { display: grid; }
+body.can-manage details.admin-only { display: block; }
+body.can-manage th.admin-only,
+body.can-manage td.admin-only { display: table-cell; }
+body.can-manage button.admin-action { display: inline-block; }
+button.admin-action { display: none; }
+.empty { color: var(--text-dim); font-size: .84rem; padding: 14px 0; text-align: center; }
+@media (max-width: 768px) {
+  header.admin-header { flex-wrap: wrap; gap: 8px; }
+  main { margin-top: 12px; }
+  .grid { gap: 12px; }
+  form { grid-template-columns: 1fr; }
+  .card-body { padding: 12px; }
+  .table-wrap { margin: 0 -12px; }
+  table, thead, tbody, tr, td, th { display: block; width: 100%; }
+  thead { display: none; }
+  tr { border-bottom: 1px solid var(--line, #CBD5E1); padding: 8px 12px; }
+  tr:last-child { border-bottom: 0; }
+  td { display: flex; gap: 8px; border: 0; padding: 4px 0; white-space: normal; }
+  body.can-manage td.admin-only { display: flex; }
+  td::before { content: attr(data-label); flex: 0 0 86px; color: var(--text-dim); font-size: .74rem; }
+  td.no-label::before { display: none; }
+}
+</style>
+</head>
+<body>
+<header class="admin-header">
+  <h1>知识包管理</h1>
+  <nav class="admin-nav" id="adminNav"></nav>
+  <span class="role-tag" id="roleTag">—</span>
+  <span class="spacer"></span>
+  <a class="back" href="/">← 对话</a>
+  <button class="logout-btn" onclick="logout()">退出登录</button>
+</header>
+
+<main>
+  <div class="notice" id="notice"></div>
+
+  <div class="grid">
+    <details class="card admin-only" style="padding: 12px 16px;">
+      <summary style="cursor: pointer; font-weight: 600; font-size: .95rem;">操作指引（备忘）</summary>
+      <div class="muted" style="margin-top: 10px; line-height: 1.8; white-space: normal;">
+        <strong>后台只做运营动作</strong>：发布 / 回滚 / 省份绑定 / 停用启用 / 查看。
+        建包、登记版本、改知识内容都在开发机脚本链路完成（构建成功用
+        <code>build_release_index.py --register</code> 自动登记，页面不再提供入口）。<br>
+        <strong>更新贵州包</strong>：改 KB → <code>rebuild_all.py</code>（双轨期线上仍走 flat 索引，不跑则线上回答不变）→
+        <code>split_knowledge_packs.py</code> → <code>build_release_index.py --register</code> → Eval 通过 → 回这里发布。<br>
+        <strong>新增省份</strong>：内容归类 → 扩展 split 脚本 → <code>build_release_index.py --register --based-on &lt;全国版本&gt;</code> → Eval → 回这里绑定 + 发布。<br>
+        <strong>注意</strong>：Eval 未通过的版本发布会直接被拒；回滚只换版本指针、不删数据，可随时再切回；
+        保存省份绑定后该省账号下次提问立即生效；release 目录不可重建，构建失败换新 release-id。<br>
+        完整流程与细节见 <code>docs/knowledge-packs.md</code>。
+      </div>
+    </details>
+
+    <section class="card">
+      <h2>知识包</h2>
+      <div class="card-body">
+        <div class="table-wrap"><table><thead>
+          <tr><th>ID</th><th>名称</th><th>类型</th><th>状态</th><th>当前版本</th><th>更新时间</th><th class="admin-only">操作</th></tr>
+        </thead><tbody id="packageRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>版本</h2>
+      <div class="card-body">
+        <div class="table-wrap"><table><thead>
+          <tr><th>Release</th><th>包</th><th>版本</th><th>构建</th><th>Eval</th><th>基于全国版本</th><th>发布时间</th><th class="admin-only">操作</th></tr>
+        </thead><tbody id="releaseRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>省份绑定</h2>
+      <div class="card-body">
+        <div class="table-wrap"><table><thead>
+          <tr><th>省份代码</th><th>知识包</th><th>更新时间</th><th>操作人</th><th class="admin-only">操作</th></tr>
+        </thead><tbody id="bindingRows"></tbody></table></div>
+        <form id="bindingForm" class="admin-only" style="margin-top: 14px;">
+          <div class="field"><label for="bindingProvince">省份代码</label><input id="bindingProvince" required placeholder="520000"></div>
+          <div class="field"><label for="bindingPackage">省级知识包</label><select id="bindingPackage"></select></div>
+          <div class="field"><label>&nbsp;</label><button type="submit" class="primary">保存绑定</button></div>
+        </form>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>知识包预览</h2>
+      <div class="card-body">
+        <form id="previewForm">
+          <div class="field"><label for="previewQuery">测试问题</label><input id="previewQuery" required placeholder="包工头暂时没有项目，F10怎么填？"></div>
+          <div class="field"><label for="previewProvince">省份</label><input id="previewProvince" value="贵州省"></div>
+          <div class="field"><label for="previewTopK">Top K</label><input id="previewTopK" type="number" min="1" max="20" value="5"></div>
+          <div class="field"><label>&nbsp;</label><button type="submit" class="primary">检索预览</button></div>
+        </form>
+        <div id="previewMeta" class="muted" style="margin-top: 10px;"></div>
+        <div id="previewResults" class="preview-result" hidden>暂无结果</div>
+      </div>
+    </section>
+
+    <section class="card admin-only">
+      <h2>审计</h2>
+      <div class="card-body"><div id="auditList"></div></div>
+    </section>
+  </div>
+</main>
+
+<script src="/static/common.js"></script>
+<script>
+let state = { packages: [], releases: [], bindings: {} };
+function showNotice(text, ok) {
+  const el = $('notice'); el.textContent = text; el.className = 'notice ' + (ok ? 'ok' : 'err');
+  clearTimeout(showNotice._t); showNotice._t = setTimeout(() => { el.className = 'notice'; }, 5000);
+}
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...authHeader(), ...(options.headers || {}) },
+  });
+  if (await handle401(res)) throw new Error('登录已失效');
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || ('HTTP ' + res.status));
+  return data;
+}
+function badge(value) { return '<span class="badge ' + escapeHtml(value || 'pending') + '">' + escapeHtml(value || 'pending') + '</span>'; }
+function provincialPackages() { return state.packages.filter(item => item.kind === 'provincial'); }
+function renderPackages() {
+  const rows = state.packages.map(item => {
+    const actions = item.kind === 'provincial'
+      ? (item.status === 'disabled'
+        ? '<button class="small admin-action" data-enable="' + escapeHtml(item.id) + '">启用</button>'
+        : '<button class="small admin-action" data-disable="' + escapeHtml(item.id) + '">停用</button>')
+      : '';
+    return '<tr>' +
+      '<td data-label="ID" class="mono">' + escapeHtml(item.id) + '</td>' +
+      '<td data-label="名称">' + escapeHtml(item.name) + '</td>' +
+      '<td data-label="类型">' + (item.kind === 'national' ? '全国' : '省级') + '</td>' +
+      '<td data-label="状态">' + badge(item.status) + '</td>' +
+      '<td data-label="当前版本" class="mono">' + escapeHtml(item.current_release_id || '—') + '</td>' +
+      '<td data-label="更新时间">' + escapeHtml(item.updated_at || '—') + '</td>' +
+      '<td class="admin-only no-label">' + actions + '</td></tr>';
+  }).join('');
+  $('packageRows').innerHTML = rows || '<tr><td colspan="7" class="empty">暂无知识包</td></tr>';
+}
+function packageById(id) { return state.packages.find(item => item.id === id) || {}; }
+function renderReleases() {
+  const rows = state.releases.map(item => {
+    const isCurrent = packageById(item.package_id).current_release_id === item.id;
+    const publishBtn = isCurrent
+      ? '<button class="small" disabled title="该版本已是当前发布版本">已发布</button>'
+      : '<button class="small admin-action" data-action="publish" data-package-id="' + escapeHtml(item.package_id) + '" data-release-id="' + escapeHtml(item.id) + '">发布</button>';
+    const rollbackBtn = isCurrent
+      ? '<button class="small" disabled title="已是当前版本，无需回滚">当前版本</button>'
+      : '<button class="small admin-action" data-action="rollback" data-package-id="' + escapeHtml(item.package_id) + '" data-release-id="' + escapeHtml(item.id) + '">回滚</button>';
+    return '<tr>' +
+      '<td data-label="Release" class="mono">' + escapeHtml(item.id) + '</td>' +
+      '<td data-label="包" class="mono">' + escapeHtml(item.package_id) + '</td>' +
+      '<td data-label="版本">' + escapeHtml(item.version) + '</td>' +
+      '<td data-label="构建">' + badge(item.build_status) + '</td>' +
+      '<td data-label="Eval">' + badge(item.eval_status) + '</td>' +
+      '<td data-label="基于全国版本" class="mono">' + escapeHtml(item.based_on_national_release_id || '—') + '</td>' +
+      '<td data-label="发布时间">' + escapeHtml(item.published_at || '—') + '</td>' +
+      '<td class="admin-only no-label">' + publishBtn + rollbackBtn + '</td></tr>';
+  }).join('');
+  $('releaseRows').innerHTML = rows || '<tr><td colspan="8" class="empty">暂无版本</td></tr>';
+}
+function renderBindings() {
+  const rows = Object.entries(state.bindings).map(([code, packageId]) => {
+    return '<tr><td data-label="省份代码" class="mono">' + escapeHtml(code) + '</td>' +
+      '<td data-label="知识包" class="mono">' + escapeHtml(packageId) + '</td>' +
+      '<td data-label="更新时间">—</td><td data-label="操作人">—</td>' +
+      '<td class="admin-only no-label"><button class="small admin-action danger" data-unbind="' + escapeHtml(code) + '">解绑</button></td></tr>';
+  }).join('');
+  $('bindingRows').innerHTML = rows || '<tr><td colspan="5" class="empty">暂无省份绑定</td></tr>';
+}
+function renderSelectors() {
+  const provincialOptions = provincialPackages().map(item => '<option value="' + escapeHtml(item.id) + '">' + escapeHtml(item.id + ' · ' + item.name) + '</option>').join('');
+  $('bindingPackage').innerHTML = provincialOptions;
+}
+function renderAudit(items) {
+  $('auditList').innerHTML = (items || []).map(item =>
+    '<div class="audit-item"><div><strong>' + escapeHtml(item.action) + '</strong> · <span class="mono">' + escapeHtml(item.target) + '</span></div>' +
+    '<div class="audit-meta">' + escapeHtml(item.created_at) + ' · 操作人 ' + escapeHtml(item.actor) + '</div></div>'
+  ).join('') || '<div class="empty">暂无审计</div>';
+}
+async function load() {
+  const data = await api('/api/admin/kb/packages');
+  state.packages = data.packages || []; state.releases = data.releases || []; state.bindings = data.bindings || {};
+  document.body.classList.toggle('can-manage', !!data.can_manage);
+  renderPackages(); renderReleases(); renderBindings(); renderSelectors();
+  if (data.can_manage) {
+    const audit = await api('/api/admin/kb/audit?limit=30');
+    renderAudit(audit.items);
+  }
+}
+document.getElementById('bindingForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  try {
+    await api('/api/admin/kb/bindings/' + encodeURIComponent($('bindingProvince').value.trim()), {
+      method: 'POST', body: JSON.stringify({ package_id: $('bindingPackage').value }),
+    });
+    showNotice('省份绑定已保存', true); await load();
+  } catch (e) { showNotice(e.message, false); }
+});
+document.getElementById('previewForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  try {
+    const params = new URLSearchParams({
+      query: $('previewQuery').value.trim(), province_name: $('previewProvince').value.trim(), top_k: $('previewTopK').value,
+    });
+    const data = await api('/api/admin/kb/preview?' + params.toString());
+    $('previewMeta').textContent = '模式：' + data.combination.mode +
+      ' · 全国：' + (data.combination.national_release_id || '—') +
+      ' · 省级：' + (data.combination.provincial_release_id || '—') +
+      ' · fallback：' + (data.combination.fallback_reason || '无');
+    $('previewResults').hidden = false;
+    $('previewResults').textContent = JSON.stringify(data.results, null, 2);
+  } catch (e) { showNotice(e.message, false); }
+});
+document.addEventListener('click', async event => {
+  const target = event.target.closest('button');
+  if (!target) return;
+  try {
+    if (target.dataset.disable) {
+      if (!confirm('确认停用该知识包？绑定它的省份将回退到全国基础包。')) return;
+      await api('/api/admin/kb/packages/' + encodeURIComponent(target.dataset.disable), {
+        method: 'PATCH', body: JSON.stringify({ status: 'disabled' }),
+      });
+      showNotice('知识包已停用', true); await load();
+    }
+    if (target.dataset.enable) {
+      await api('/api/admin/kb/packages/' + encodeURIComponent(target.dataset.enable), {
+        method: 'PATCH', body: JSON.stringify({ status: 'active' }),
+      });
+      showNotice('知识包已启用', true); await load();
+    }
+    if (target.dataset.action === 'publish' || target.dataset.action === 'rollback') {
+      const packageId = target.dataset.packageId;
+      const releaseId = target.dataset.releaseId;
+      const action = target.dataset.action;
+      if (action === 'rollback' && !confirm('确认回滚到该版本？当前版本将被替换。')) return;
+      await api('/api/admin/kb/packages/' + encodeURIComponent(packageId) + '/releases/' + encodeURIComponent(releaseId) + '/' + action, { method: 'POST' });
+      showNotice(action === 'publish' ? '版本已发布' : '已回滚到指定版本', true);
+      await load();
+    }
+    if (target.dataset.unbind) {
+      if (!confirm('确认解除该省份绑定？该省用户将回退到全国基础包。')) return;
+      await api('/api/admin/kb/bindings/' + encodeURIComponent(target.dataset.unbind), { method: 'DELETE' });
+      showNotice('省份绑定已解除', true); await load();
+    }
+  } catch (e) { showNotice(e.message, false); }
+});
+(async function init() {
+  if (!requireLoginOrRedirect()) return;
+  try {
+    const res = await fetch('/api/admin/whitelist/whoami', { headers: authHeader() });
+    if (await handle401(res)) return;
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const me = await res.json();
+    await initAdminNav('kb-admin', me);
+    await load();
+  } catch (e) { showNotice(e.message || '初始化失败', false); }
+})();
+</script>
+</body>
+</html>
