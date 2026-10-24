@@ -7,7 +7,7 @@
 
 DSN 来源（二选一，缺一报错）：
     --dsn-map '{"whitelist": "postgresql://...", ...}'
-    或环境变量 LSX_DB_WHITELIST / LSX_DB_CONVERSATIONS / LSX_DB_QUERY_LOG / LSX_DB_QUIZ
+    或环境变量 LSX_DB_WHITELIST / LSX_DB_CONVERSATIONS / LSX_DB_QUERY_LOG / LSX_DB_QUIZ / LSX_DB_KB_ADMIN
 
 硬约束：
 - 只读 SQLite（mode=ro 打开，绝不写入/删除/重命名任何 backend/data 文件）
@@ -34,29 +34,33 @@ if str(BACKEND_ROOT) not in sys.path:
 from app.persistence import (  # noqa: E402
     conversations,
     db,
+    knowledge_registry,
     query_log,
     quiz_db,
     whitelist_db,
 )
 
-DB_KEYS = ("whitelist", "conversations", "query_log", "quiz")
+DB_KEYS = ("whitelist", "conversations", "query_log", "quiz", "knowledge_admin")
 SQLITE_FILES = {
     "whitelist": "whitelist.db",
     "conversations": "conversations.db",
     "query_log": "query_log.db",
     "quiz": "quiz.db",
+    "knowledge_admin": "knowledge_admin.db",
 }
 ENV_VARS = {
     "whitelist": "LSX_DB_WHITELIST",
     "conversations": "LSX_DB_CONVERSATIONS",
     "query_log": "LSX_DB_QUERY_LOG",
     "quiz": "LSX_DB_QUIZ",
+    "knowledge_admin": "LSX_DB_KB_ADMIN",
 }
 PG_SCHEMAS = {
     "whitelist": [whitelist_db._SCHEMA_PG, whitelist_db._AUDIT_SCHEMA_PG],
     "conversations": [conversations._SCHEMA_PG],
     "query_log": [query_log._SCHEMA_PG],
     "quiz": [quiz_db._SCHEMA_PG],
+    "knowledge_admin": [knowledge_registry._SCHEMA_PG],
 }
 
 
@@ -248,8 +252,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--dsn-map",
-        help='4 个库的 PG DSN，JSON：{"whitelist": "...", "conversations": "...", '
-        '"query_log": "...", "quiz": "..."}；缺省回落 LSX_DB_* 环境变量',
+        help='5 个库的 PG DSN，JSON：{"whitelist": "...", "conversations": "...", '
+        '"query_log": "...", "quiz": "...", "knowledge_admin": "..."}；缺省回落 LSX_DB_* 环境变量',
     )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", default=True, help="只读预演（默认）")
