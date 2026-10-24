@@ -8,6 +8,7 @@ from __future__ import annotations
 import functools
 import math
 import threading
+from typing import Any
 from concurrent.futures import ThreadPoolExecutor
 
 import chromadb
@@ -15,9 +16,10 @@ import requests
 from loguru import logger
 
 from app.core.config import settings
+from app.rag import index_paths
 from app.rag.pure import rrf_fuse
 
-_CHROMA_COLLECTION = None
+_CHROMA_COLLECTIONS: dict[str, Any] = {}
 _COLLECTION_LOCK = threading.Lock()
 _EXECUTOR = ThreadPoolExecutor(max_workers=4)
 
@@ -25,42 +27,57 @@ _EXECUTOR = ThreadPoolExecutor(max_workers=4)
 _EMBED_QUERY_CACHE: dict[str, list[float]] = {}
 _EMBED_QUERY_CACHE_LOCK = threading.Lock()
 
-# 全量 embedding 缓存（用于精确余弦排序）
-# key: (doc_id) -> embedding；用 count 变化触发失效
-_FULL_EMBED_CACHE: dict[str, list[float]] = {}
-_FULL_EMBED_CACHE_IDS: list[str] = []
+# 全量 embedding 缓存（用于精确余弦排序）。
+# key 必须包含 release_id，避免两个 release 恰好同 count 时串包。
+_FULL_EMBED_CACHE: dict[str, dict[str, list[float]]] = {}
+_FULL_EMBED_CACHE_IDS: dict[str, list[str]] = {}
 _FULL_EMBED_CACHE_LOCK = threading.Lock()
-_FULL_EMBED_CACHE_COUNT: int | None = None
+_FULL_EMBED_CACHE_COUNT: dict[str, int | None] = {}
 
 
-def get_collection():
-    """懒加载 Chroma client/collection 模块级单例。"""
-    global _CHROMA_COLLECTION
-    if _CHROMA_COLLECTION is None:
-        with _COLLECTION_LOCK:
-            if _CHROMA_COLLECTION is None:
+def get_collection(release_id: str | None = None):
+    """按 release 懒加载 Chroma collection；None 保持旧 flat 索引行为。"""
+    cache_key = release_id or "__legacy__"
+    collection = _CHROMA_COLLECTIONS.get(cache_key)
+    if collection is not None:
+        return collection
+    with _COLLECTION_LOCK:
+        collection = _CHROMA_COLLECTIONS.get(cache_key)
+        if collection is None:
+            if release_id is None:
                 client = chromadb.PersistentClient(path=str(settings.chroma_dir))
-                _CHROMA_COLLECTION = client.get_collection(settings.chroma_collection)
-                logger.info(f"Chroma collection 初始化：{settings.chroma_collection}")
-    return _CHROMA_COLLECTION
+                collection_name = settings.chroma_collection
+            else:
+                client = chromadb.PersistentClient(
+                    path=str(index_paths.chroma_dir(release_id))
+                )
+                collection_name = settings.chroma_collection
+            collection = client.get_collection(collection_name)
+            _CHROMA_COLLECTIONS[cache_key] = collection
+            logger.info(f"Chroma collection 初始化：{cache_key}/{collection_name}")
+    return collection
 
 
-
-
-@functools.lru_cache(maxsize=1)
-def _cached_doc_type_counts(count: int) -> dict[str, int]:
-    """按 collection count 缓存 doc_type 分布（count 变化时自动失效）。"""
+def _doc_type_counts(collection) -> dict[str, int]:
+    """Compute the current QA/chunk distribution for one collection."""
     from collections import Counter
 
-    collection = get_collection()
     metas = collection.get(include=["metadatas"])["metadatas"] or []
-    c = Counter((m or {}).get("doc_type", "qa") for m in metas)
-    return {"qa": c.get("qa", 0), "chunk": c.get("chunk", 0), "total": len(metas)}
+    counts = Counter((m or {}).get("doc_type", "qa") for m in metas)
+    return {"qa": counts.get("qa", 0), "chunk": counts.get("chunk", 0), "total": len(metas)}
 
 
-def count_by_doc_type() -> dict[str, int]:
+@functools.lru_cache(maxsize=16)
+def _cached_doc_type_counts(cache_key: str, count: int) -> dict[str, int]:
+    """Cache immutable release counts; legacy still invalidates by count."""
+    release_id = None if cache_key == "__legacy__" else cache_key
+    return _doc_type_counts(get_collection(release_id))
+
+
+def count_by_doc_type(release_id: str | None = None) -> dict[str, int]:
     """返回 QA 与制度 chunk 的条数（首页分开显示用）。"""
-    return _cached_doc_type_counts(get_collection().count())
+    collection = get_collection(release_id)
+    return _cached_doc_type_counts(release_id or "__legacy__", collection.count())
 
 
 def shutdown_executor():
@@ -94,33 +111,39 @@ def _cosine(a: list[float], b: list[float]) -> float:
     return dot / (na * nb)
 
 
-def _get_all_embeddings(collection) -> tuple[list[str], list[list[float]]]:
-    """加载全量 embedding，带内存缓存。当 collection count 变化时失效。"""
-    global _FULL_EMBED_CACHE, _FULL_EMBED_CACHE_IDS, _FULL_EMBED_CACHE_COUNT
+def _get_all_embeddings(
+    collection,
+    release_id: str | None = None,
+) -> tuple[list[str], list[list[float]]]:
+    """Load all embeddings with a release-scoped cache key."""
+    cache_key = release_id or "__legacy__"
     with _FULL_EMBED_CACHE_LOCK:
         current_count = collection.count()
-        if _FULL_EMBED_CACHE_COUNT == current_count and _FULL_EMBED_CACHE:
-            return _FULL_EMBED_CACHE_IDS, list(_FULL_EMBED_CACHE.values())
-        # 缓存 miss — 拉取
+        if (
+            _FULL_EMBED_CACHE_COUNT.get(cache_key) == current_count
+            and _FULL_EMBED_CACHE.get(cache_key)
+        ):
+            return (
+                _FULL_EMBED_CACHE_IDS[cache_key],
+                list(_FULL_EMBED_CACHE[cache_key].values()),
+            )
         all_ids = collection.get(include=["metadatas"])["ids"]
         batch_size = 100
-        all_meta: list[dict] = []
         all_emb: list[list[float]] = []
         for i in range(0, len(all_ids), batch_size):
             batch_ids = all_ids[i : i + batch_size]
             got = collection.get(ids=batch_ids, include=["metadatas", "embeddings"])
-            all_meta.extend(got["metadatas"])
             all_emb.extend(got["embeddings"])
-        _FULL_EMBED_CACHE_IDS = all_ids
-        _FULL_EMBED_CACHE = dict(zip(all_ids, all_emb))
-        _FULL_EMBED_CACHE_COUNT = current_count
-        return _FULL_EMBED_CACHE_IDS, all_emb
+        _FULL_EMBED_CACHE_IDS[cache_key] = all_ids
+        _FULL_EMBED_CACHE[cache_key] = dict(zip(all_ids, all_emb))
+        _FULL_EMBED_CACHE_COUNT[cache_key] = current_count
+        return all_ids, all_emb
 
 
-def _exact_vector_search(query: str, top_k: int) -> list[dict]:
+def _exact_vector_search(query: str, top_k: int, release_id: str | None = None) -> list[dict]:
     """精确余弦相似度检索：内存排序，避免 HNSW 近似偏差。"""
-    collection = get_collection()
-    all_ids, all_emb = _get_all_embeddings(collection)
+    collection = get_collection(release_id)
+    all_ids, all_emb = _get_all_embeddings(collection, release_id)
     # 拉取完整 meta（仅 id -> question/source，轻量）
     all_meta = collection.get(ids=all_ids, include=["metadatas"])["metadatas"]
 
@@ -165,7 +188,24 @@ def _build_document_text(collection, doc_id: str, meta: dict | None) -> str:
     return f"{q}\n{a}".strip()
 
 
-def retrieve(query: str, top_k: int | None = None) -> list[dict]:
+def _annotate_release_metadata(item: dict, release_id: str | None, kb_id: str | None) -> dict:
+    """Attach release provenance while preserving the source QA id."""
+    if not release_id:
+        return item
+    metadata = dict(item.get("metadata") or {})
+    metadata["release_id"] = release_id
+    if kb_id:
+        metadata["kb_id"] = kb_id
+        metadata["global_entry_key"] = f"{kb_id}:{release_id}:{item.get('id')}"
+    return {**item, "metadata": metadata}
+
+
+def retrieve(
+    query: str,
+    top_k: int | None = None,
+    release_id: str | None = None,
+    kb_id: str | None = None,
+) -> list[dict]:
     """Hybrid 检索：精确余弦 + BM25 RRF 融合 + 高置信度直达命中。"""
     from app.rag.bm25 import search as bm25_search
 
@@ -175,8 +215,8 @@ def retrieve(query: str, top_k: int | None = None) -> list[dict]:
     )
 
     bm25_results: list[dict] = []
-    vec_fut = _EXECUTOR.submit(_exact_vector_search, query, k)
-    bm25_fut = _EXECUTOR.submit(bm25_search, query, max(k * 2, 10))
+    vec_fut = _EXECUTOR.submit(_exact_vector_search, query, k, release_id)
+    bm25_fut = _EXECUTOR.submit(bm25_search, query, max(k * 2, 10), release_id)
     try:
         vector_results = vec_fut.result()
     except Exception:
@@ -189,11 +229,16 @@ def retrieve(query: str, top_k: int | None = None) -> list[dict]:
 
     # 高置信度直达命中：top-1 cosine >= threshold 时直接返回
     if vector_results and vector_results[0]["score"] >= direct_hit_threshold:
-        top1 = vector_results[0]
+        top1 = _annotate_release_metadata(vector_results[0], release_id, kb_id)
         logger.info(f"direct-hit: id={top1['id']} score={top1['score']:.3f} query={query[:30]!r}")
         return [top1]
 
     fused = rrf_fuse(vector_results, bm25_results, k=k)
+    if release_id:
+        fused = [
+            _annotate_release_metadata(item, release_id, kb_id)
+            for item in fused
+        ]
     top1_vector = vector_results[0]["score"] if vector_results else 0.0
     top1_bm25 = bm25_results[0]["score"] if bm25_results else 0.0
     fused_top1 = fused[0]["rrf_score"] if fused else 0

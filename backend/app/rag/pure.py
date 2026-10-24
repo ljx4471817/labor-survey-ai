@@ -69,6 +69,21 @@ def merge_query_with_history(message: str, history: list[ChatMessage]) -> str:
     return f"{last_user} {msg}".strip() if last_user else msg
 
 
+def qualifies_for_direct_hit_override(
+    item_score: float | None,
+    national_top_score: float,
+    threshold: float,
+) -> bool:
+    """省级 direct-hit override 资格判定（纯函数）。
+
+    cosine 资格仅对向量命中生效：rrf_fuse 给 BM25-only 条目填的
+    score=0.0 是「无向量分数」哨兵，永远不够格——显式排除，
+    防止哨兵值被 cosine 语义误读。
+    """
+    score = float(item_score or 0.0)
+    return score > 0 and score >= threshold and score >= national_top_score
+
+
 def rrf_fuse(
     vector_results: list[dict],
     bm25_results: list[dict],

@@ -238,21 +238,40 @@ def main() -> int:
 
     for i, item in enumerate(items, start=1):
         t0 = time.time()
-        try:
-            payload: dict = {"message": item["question"]}
-            if item.get("history"):
-                payload["history"] = item["history"]
-            r = requests.post(
-                f"{args.url}/api/chat",
-                json=payload,
-                headers=headers,
-                timeout=60,
-            )
-            r.raise_for_status()
-            resp = r.json()
-        except Exception as e:
-            print(f"[{i:3d}/{len(items)}] {item['id']} HTTP 错误: {e}")
-            _record_error(results, type_stats, errors, item, e)
+        payload: dict = {"message": item["question"]}
+        if item.get("history"):
+            payload["history"] = item["history"]
+        resp = None
+        for attempt in range(1, 4):
+            try:
+                r = requests.post(
+                    f"{args.url}/api/chat",
+                    json=payload,
+                    headers=headers,
+                    timeout=60,
+                )
+                if r.status_code == 429 and attempt < 3:
+                    wait = 30 * attempt  # 限流退避：30s / 60s
+                    print(
+                        f"[{i:3d}/{len(items)}] {item['id']} "
+                        f"429 限流，{wait}s 后重试（{attempt}/2）"
+                    )
+                    time.sleep(wait)
+                    continue
+                r.raise_for_status()
+                resp = r.json()
+                break
+            except Exception as e:
+                if attempt >= 3:
+                    print(f"[{i:3d}/{len(items)}] {item['id']} HTTP 错误: {e}")
+                    _record_error(results, type_stats, errors, item, e)
+                else:
+                    print(
+                        f"[{i:3d}/{len(items)}] {item['id']} "
+                        f"请求异常，重试（{attempt}/2）：{e}"
+                    )
+                    time.sleep(5 * attempt)
+        if resp is None:
             continue
         dt = time.time() - t0
 

@@ -20,7 +20,11 @@ from app.rag.grounding import ensure_kb_anchors
 from app.rag.llm import chat as llm_chat
 from app.rag.prompts import SYSTEM_PROMPT, USER_TEMPLATE, format_kb_results
 from app.rag.pure import is_ambiguous, is_in_scope, merge_query_with_history
-from app.rag.retriever import retrieve
+from app.services.kb_pack_runtime import (
+    get_request_combination,
+    pack_log_fields,
+    retrieve_for_context,
+)
 
 router = APIRouter()
 _VALID_ROLES = {"user", "assistant"}
@@ -48,17 +52,24 @@ REFUSAL_PATTERNS = (
 
 
 def _to_source_items(sources: list[dict]) -> list[SourceItem]:
-    return [
-        SourceItem(
-            qa_id=s["id"],
-            question=s["metadata"].get("question", ""),
-            source=s["metadata"].get("source", ""),
-            category=s["metadata"].get("category", ""),
-            score=s["score"],
-            image=s["metadata"].get("image") or None,
+    items: list[SourceItem] = []
+    for source in sources:
+        metadata = source.get("metadata") or {}
+        items.append(
+            SourceItem(
+                qa_id=str(metadata.get("qa_id") or source["id"]),
+                question=metadata.get("question", ""),
+                source=metadata.get("source", ""),
+                category=metadata.get("category", ""),
+                score=source["score"],
+                image=metadata.get("image") or None,
+                kb_id=metadata.get("kb_id"),
+                release_id=metadata.get("release_id"),
+                global_entry_key=metadata.get("global_entry_key"),
+                override_used=metadata.get("override_used"),
+            )
         )
-        for s in sources
-    ]
+    return items
 
 
 def _extract_top_qa_id(sources: list[dict]) -> str | None:
@@ -82,6 +93,7 @@ def _log_query(
     hits: int | None = None,
     latency_ms: int | None = None,
     top_qa_id: str | None = None,
+    pack_fields: dict | None = None,
 ) -> None:
     user = get_current_user(phone)
     if not user:
@@ -102,6 +114,7 @@ def _log_query(
             "hits": hits,
             "latency_ms": latency_ms,
             "top_qa_id": top_qa_id,
+            **(pack_fields or {}),
         })
     except Exception:
         logger.exception("query_log 写入失败")
@@ -216,9 +229,15 @@ def chat_endpoint(
         )
 
     # 检索（merged_query 让历史 user 消息也参与 KB 召回）
+    # legacy / 单包 / 组合分派统一在 kb_pack_runtime.retrieve_for_context。
     merged_query = merge_query_with_history(msg, history)
     try:
-        sources = retrieve(merged_query, top_k=req.top_k)
+        kb_combination = get_request_combination(phone)
+        sources = retrieve_for_context(
+            merged_query,
+            top_k=req.top_k,
+            combination=kb_combination,
+        )
     except Exception as e:
         logger.exception("检索失败")
         raise HTTPException(500, f"检索失败: {e}")
@@ -265,6 +284,7 @@ def chat_endpoint(
         phone, msg, mode, top_score,
         request_id=request_id, hits=hits, latency_ms=latency_ms,
         top_qa_id=top_qa_id,
+        pack_fields=pack_log_fields(sources, kb_combination),
     )
 
     conversation = save_exchange(

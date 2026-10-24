@@ -1,9 +1,12 @@
-"""查询日志 SQLite 封装。
+"""查询日志封装（SQLite / PostgreSQL 双后端）。
 
 每条 chat 请求一条记录（即使 mode=out_of_scope/out_of_kb 也记）。
 用于 dashboard 用量统计与 region 5 级下钻。
 
-schema：ts / phone / name / region 5 级 / query / mode / retrieval_score
+基础 schema：ts / phone / name / region 5 级 / query / mode / retrieval_score。
+多知识包字段（province_code / pack_mode / kb_id / release_id /
+global_entry_key / override_used / fallback_reason / national+provincial
+package-release 对）由 chat 的 _pack_log_fields 写入，legacy 模式为 NULL。
 不存 answer 完整内容；用户表态后的答案由 feedback.jsonl 落盘。
 """
 from __future__ import annotations
@@ -37,7 +40,18 @@ CREATE TABLE IF NOT EXISTS query_log (
     request_id      TEXT,
     hits            INTEGER,
     latency_ms      INTEGER,
-    top_qa_id       TEXT
+    top_qa_id       TEXT,
+    province_code   TEXT,
+    pack_mode       TEXT,
+    kb_id           TEXT,
+    release_id      TEXT,
+    global_entry_key TEXT,
+    override_used   INTEGER,
+    fallback_reason TEXT,
+    national_package_id TEXT,
+    national_release_id TEXT,
+    provincial_package_id TEXT,
+    provincial_release_id TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_query_log_region
     ON query_log(province, city, county, township, community);
@@ -64,7 +78,18 @@ CREATE TABLE IF NOT EXISTS query_log (
     request_id      TEXT,
     hits            INTEGER,
     latency_ms      INTEGER,
-    top_qa_id       TEXT
+    top_qa_id       TEXT,
+    province_code   TEXT,
+    pack_mode       TEXT,
+    kb_id           TEXT,
+    release_id      TEXT,
+    global_entry_key TEXT,
+    override_used   INTEGER,
+    fallback_reason TEXT,
+    national_package_id TEXT,
+    national_release_id TEXT,
+    provincial_package_id TEXT,
+    provincial_release_id TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_query_log_region
     ON query_log(province, city, county, township, community);
@@ -83,6 +108,17 @@ _MIGRATIONS = (
     "ALTER TABLE query_log ADD COLUMN hits INTEGER",
     "ALTER TABLE query_log ADD COLUMN latency_ms INTEGER",
     "ALTER TABLE query_log ADD COLUMN top_qa_id TEXT",
+    "ALTER TABLE query_log ADD COLUMN province_code TEXT",
+    "ALTER TABLE query_log ADD COLUMN pack_mode TEXT",
+    "ALTER TABLE query_log ADD COLUMN kb_id TEXT",
+    "ALTER TABLE query_log ADD COLUMN release_id TEXT",
+    "ALTER TABLE query_log ADD COLUMN global_entry_key TEXT",
+    "ALTER TABLE query_log ADD COLUMN override_used INTEGER",
+    "ALTER TABLE query_log ADD COLUMN fallback_reason TEXT",
+    "ALTER TABLE query_log ADD COLUMN national_package_id TEXT",
+    "ALTER TABLE query_log ADD COLUMN national_release_id TEXT",
+    "ALTER TABLE query_log ADD COLUMN provincial_package_id TEXT",
+    "ALTER TABLE query_log ADD COLUMN provincial_release_id TEXT",
     "CREATE INDEX IF NOT EXISTS idx_query_log_request_id ON query_log(request_id)",
 )
 
@@ -139,8 +175,11 @@ def insert(entry: dict) -> None:
         INSERT INTO query_log
             (ts, phone, name, province, city, county, township, community,
              query, mode, retrieval_score, request_id, hits, latency_ms,
-             top_qa_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             top_qa_id, province_code, pack_mode, kb_id, release_id,
+             global_entry_key, override_used, fallback_reason,
+             national_package_id, national_release_id,
+             provincial_package_id, provincial_release_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             entry.get("ts") or datetime.now(UTC8).isoformat(timespec="seconds"),
@@ -158,6 +197,17 @@ def insert(entry: dict) -> None:
             entry.get("hits"),
             entry.get("latency_ms"),
             entry.get("top_qa_id"),
+            entry.get("province_code"),
+            entry.get("pack_mode"),
+            entry.get("kb_id"),
+            entry.get("release_id"),
+            entry.get("global_entry_key"),
+            entry.get("override_used"),
+            entry.get("fallback_reason"),
+            entry.get("national_package_id"),
+            entry.get("national_release_id"),
+            entry.get("provincial_package_id"),
+            entry.get("provincial_release_id"),
         ),
     )
     conn.commit()
@@ -237,8 +287,13 @@ def top_qa_stats(
     days: int = 30,
     now: datetime | None = None,
     excluded_phones: frozenset[str] | set[str] = frozenset(),
+    province: str | None = None,
+    province_code: str | None = None,
 ) -> list[dict]:
-    """按 top-1 QA 聚合近 N 天的成功 RAG 查询。"""
+    """按 top-1 QA 聚合近 N 天的成功 RAG 查询。
+
+    province_code 优先用于多知识包隔离；province 兼容老日志。
+    """
     reference_time = now or datetime.now(UTC8)
     if reference_time.tzinfo is None:
         reference_time = reference_time.replace(tzinfo=UTC8)
@@ -257,6 +312,15 @@ def top_qa_stats(
     if phones:
         sql += f" AND phone NOT IN ({phone_placeholders})"
         params.extend(phones)
+    province_clauses: list[str] = []
+    if province_code:
+        province_clauses.append("province_code = ?")
+        params.append(province_code)
+    if province:
+        province_clauses.append("(province_code IS NULL AND province = ?)")
+        params.append(province)
+    if province_clauses:
+        sql += " AND (" + " OR ".join(province_clauses) + ")"
     sql += " GROUP BY top_qa_id"
 
     rows = _get_conn().execute(sql, params).fetchall()

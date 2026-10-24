@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "kb_id": "national-base",
+  "name": "全国基础知识包",
+  "kind": "national",
+  "status": "draft",
+  "province_codes": [],
+  "entry_count": 324,
+  "eval_count": 106,
+  "chunk_count": 104,
+  "sources": [
+    "raw/markdown/劳动力调查制度（2026年定期报表）-定稿.md",
+    "raw/markdown/劳动力调查及指标讲解.md",
+    "raw/markdown/劳动力调查专业题库（24年8月）.md"
+  ],
+  "qa_sha256": "86f2192015b75954c73207107259321fc973fbfb278163d47271f8d5b071e92f",
+  "eval_sha256": "b87dc2ffce41953af0641b743d843721bdb4053ba70ea951f73e7d5061421b06",
+  "rule_key_count": 0,
+  "binding_status": "always_active",
+  "eval_status": "pending"
+}

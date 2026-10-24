@@ -1,0 +1,164 @@
+{
+  "generated_at": "2026-10-19",
+  "flat_summary": {
+    "total": 114,
+    "passed": 114,
+    "by_type": {
+      "in_kb": {
+        "total": 81,
+        "pass": 81
+      },
+      "out_of_kb": {
+        "total": 15,
+        "pass": 15
+      },
+      "trap": {
+        "total": 10,
+        "pass": 10
+      },
+      "ambiguous": {
+        "total": 5,
+        "pass": 5
+      },
+      "fixed_kb": {
+        "total": 3,
+        "pass": 3
+      }
+    }
+  },
+  "pack_summary": {
+    "total": 114,
+    "passed": 114,
+    "by_type": {
+      "in_kb": {
+        "total": 81,
+        "pass": 81
+      },
+      "out_of_kb": {
+        "total": 15,
+        "pass": 15
+      },
+      "trap": {
+        "total": 10,
+        "pass": 10
+      },
+      "ambiguous": {
+        "total": 5,
+        "pass": 5
+      },
+      "fixed_kb": {
+        "total": 3,
+        "pass": 3
+      }
+    }
+  },
+  "total_latency_ms": {
+    "flat": 738226,
+    "pack": 633899
+  },
+  "answer_diff_count": 95,
+  "answer_diff_ids": [
+    "eval-001",
+    "eval-002",
+    "eval-003",
+    "eval-004",
+    "eval-005",
+    "eval-006",
+    "eval-007",
+    "eval-008",
+    "eval-009",
+    "eval-010",
+    "eval-011",
+    "eval-012",
+    "eval-013",
+    "eval-014",
+    "eval-015",
+    "eval-016",
+    "eval-017",
+    "eval-018",
+    "eval-019",
+    "eval-020",
+    "eval-022",
+    "eval-023",
+    "eval-024",
+    "eval-025",
+    "eval-026",
+    "eval-027",
+    "eval-028",
+    "eval-029",
+    "eval-030",
+    "eval-031",
+    "eval-032",
+    "eval-033",
+    "eval-034",
+    "eval-035",
+    "eval-036",
+    "eval-037",
+    "eval-038",
+    "eval-039",
+    "eval-040",
+    "eval-041",
+    "eval-042",
+    "eval-043",
+    "eval-044",
+    "eval-045",
+    "eval-046",
+    "eval-047",
+    "eval-048",
+    "eval-049",
+    "eval-050",
+    "eval-051",
+    "eval-052",
+    "eval-053",
+    "eval-054",
+    "eval-055",
+    "eval-056",
+    "eval-057",
+    "eval-058",
+    "eval-059",
+    "eval-060",
+    "eval-061",
+    "eval-062",
+    "eval-063",
+    "eval-064",
+    "eval-065",
+    "eval-066",
+    "eval-067",
+    "eval-068",
+    "eval-069",
+    "eval-070",
+    "eval-071",
+    "eval-072",
+    "eval-073",
+    "eval-074",
+    "eval-075",
+    "eval-076",
+    "eval-077",
+    "eval-078",
+    "eval-079",
+    "eval-080",
+    "eval-081",
+    "eval-082",
+    "eval-083",
+    "eval-084",
+    "eval-085",
+    "eval-101",
+    "eval-102",
+    "eval-103",
+    "eval-104",
+    "eval-105",
+    "eval-107",
+    "eval-108",
+    "eval-111",
+    "eval-112",
+    "eval-113",
+    "eval-114"
+  ],
+  "mode_diffs": [
+    {
+      "id": "eval-082",
+      "flat": "rag",
+      "pack": "out_of_kb"
+    }
+  ]
+}

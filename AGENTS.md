@@ -57,8 +57,9 @@
 
 **迭代 1 已完成 ✅**：H5 + Cloudflare Tunnel + 视觉升级 + 吉祥物接入 + 推送 GitHub。
 **迭代 2 已完成 ✅**（2026-06-22 ~ 2026-06-26）：KB 质量优化（schema v1 indicators 字段 + 制度对齐机制）+ 反馈闭环 + 采购可行性预算 + 手机号白名单门禁 + Dashboard 看板 + 区域下钻 + KB 5 阶段入库流程。
-**迭代 3 进行中**：架构重构已完成（Phase 1-9，eval 110/100% 回归通过）+ KB schema v2 评估（`scenario` 字段）+ 采购落地（材料已就绪，待领导决策后启动域名备案）。
+**迭代 3 进行中**：架构重构已完成（Phase 1-9，eval 114/100% 回归通过）+ KB schema v2 评估（`scenario` 字段）+ 采购落地（材料已就绪，待领导决策后启动域名备案）。
 **阶段 2 已完成 ✅**（2026-09-18，PR #12 已合并）：4 个持久化库（whitelist / conversations / query_log / quiz）接入 SQLite / PostgreSQL 双后端适配层 + 迁移脚本；切库 / 回滚 / 服务器窗口操作见 `docs/pg-migration.md`。
+**多知识包 Phase 0-3 已完成 ✅**：全国基础包 + 贵州包、独立 release 索引、`rule_key` 覆盖、注册库与 `/kb-admin` 已落地；`LSX_KB_PACK_ENABLED` 默认关闭，生产检索仍走旧 flat 链路。运维见 `docs/knowledge-packs.md`；Phase 4 灰度未开始。
 
 参见 `docs/02-可行性审核.md` 第四节「已确认的决策」和 ADR 索引。
 
@@ -91,6 +92,9 @@
 | `0023-包工头就业判定身份持续原则.md` | 总队口径：包工头身份持续即就业，负面无业务场景不自动判定 | KB 口径治理 |
 | `0024-包工头F10负面场景统一兜底.md` | 包工头 F10「否」建议统一走 fixed_answer 兜底话术 | 检索治理 |
 | `0025-数据库双后端SQLite-PostgreSQL.md` | SQLite / PostgreSQL 双后端适配层 + 环境变量切库 + 一次性迁移 | 数据库 / 部署 |
+| `0026-多知识包与省级口径覆盖.md` | 全国基础包 + 省级覆盖包、rule_key 覆盖、独立索引、版本兼容与省级绑定 | 多知识库 / 全国扩展 |
+| `0027-知识包按适用范围归类.md` | 知识包按内容适用范围归类，来源出处独立保留；采纳的外省资料不自动生成外省适用包 | 多知识库 / 内容治理 |
+| `0028-知识包管理职责分离.md` | 后台只做运营动作（发布/回滚/绑定/查看），建包登记收敛到开发机 `--register` 链路 | 知识包管理 / 职责分离 |
 
 ## 目录约定
 
@@ -105,21 +109,23 @@
 | `knowledge-base/chunks.jsonl` | **构建产物**（markdown→chunk），不入 git | `build_chunks.py` 管理 |
 | `knowledge-base/indicator_catalog.json` | **制度指标目录**（按模块组织的 F/H 编号 + 名称），schema v1 核心 | 制度变更时改 |
 | `knowledge-base/migration_map.json` | **迁移映射**（renamed/removed/added），每次制度变更生成一份 | 自由修改（按需） |
+| `knowledge-base/packs/` | 全国 / 省级知识包内容源（QA、eval、manifest、来源 markdown） | 自由修改，改后重建索引 |
+| `knowledge-base/shared/` | 跨包共享目录（省级行政区划、制度指标目录） | 自由修改，改后人工复核 |
 | `backend/app/` | FastAPI 应用代码 | 自由修改 |
-| `backend/app/api/` | 各业务模块路由（chat / conversations / feedback / feedback_admin / hot_questions / usage_admin / usage_trend_admin / whitelist_admin / whitelist_regions / gaps_admin / auth / voice / **quiz / quiz_admin** / llm_admin） | 自由修改 |
+| `backend/app/api/` | 各业务模块路由（chat / conversations / feedback / feedback_admin / hot_questions / usage_admin / usage_trend_admin / whitelist_admin / whitelist_regions / gaps_admin / auth / voice / **quiz / quiz_admin** / llm_admin / **kb_admin**） | 自由修改 |
 | `backend/app/core/` | 配置 + 枚举常量（config.py / constants.py） | 自由修改 |
 | `backend/app/models/schemas/` | Pydantic 请求/响应模型子包（common / chat / admin） | 自由修改 |
 | `backend/app/rag/` | 检索算法（pure.py = 纯函数 / retriever.py = IO 层 / bm25 / llm / prompts / grounding = 输出锚点） | 自由修改 |
 | `backend/app/infra/` | 基础设施（auth.py = HMAC 签名 + 白名单校验） | 自由修改 |
-| `backend/app/persistence/` | SQLite 持久化（whitelist_db / query_log / usage_trend / conversations / **quiz_db**） | 自由修改 |
+| `backend/app/persistence/` | SQLite 持久化（whitelist_db / query_log / usage_trend / conversations / **quiz_db** / **knowledge_registry**） | 自由修改 |
 | `backend/app/analytics/` | 使用侧分析（gaps.py = KB 闭环检测） | 自由修改 |
 | `backend/app/services/` | 业务服务（feedback_analytics / feedback_reviews / hot_questions / jsonl_utils / **region_points / quiz_extract / quiz_generator / quiz_llm / aliyun_balance**） | 自由修改 |
 | `backend/app/api/_xunfei_auth.py` | DISABLED（讯飞语音鉴权，代码完整保留） | 不修改 |
-| `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json / **llm_route.json / quiz_llm_config.json**） | 自由修改 |
+| `backend/data/` | 运行时数据（SQLite / JSONL / scope_keywords.json / **llm_route.json / quiz_llm_config.json / kb_releases**） | 自由修改；`kb_releases` 与 SQLite 不入仓 |
 | `backend/tests/` | 后端单元测试 | 自由修改 |
 | `scripts/watchdog*.ps1` | 本地 API 可用性监控与自动重启 | 自由修改 |
 | `backend/static/kb-images/` | 培训 PPT 结构化截图，按 `page_XX/` 供 KB 引用 | 自由修改 |
-| `backend/static/` | H5 前端（单页应用）+ 测验 3 页面（quiz.html / quiz_admin.html / quiz-stats.html）；含 DESIGN.md 设计契约与 theme.css（token 唯一来源），改前端前必读 DESIGN.md | 自由修改 |
+| `backend/static/` | H5 前端（对话 / 登录 / 测验 / 后台 / 知识包页面）；含 DESIGN.md 设计契约与 theme.css（token 唯一来源），改前端前必读 DESIGN.md | 自由修改 |
 | `scripts/` | 跨子项目运维脚本 | 自由修改 |
 | `backend/scripts/` | 仅服务后端的运维脚本（如 `migrate_sqlite_to_pg.py` SQLite→PG 迁移，服务器停机窗口执行） | 自由修改 |
 | `scripts/archive/` | 已退役或仅用于历史复盘的脚本 | 只增不改 |
@@ -170,6 +176,13 @@ python scripts/compare_retrieval.py
 python scripts/patch_faq_from_eval.py
 python scripts/patch2_faq_retrieval.py
 python scripts/rewrite_docx.py
+# 多知识包：拆分与独立 release 索引（详见 docs/knowledge-packs.md）
+python scripts/split_knowledge_packs.py --dry-run  # 拆分 dry-run，校验数量守恒
+python scripts/split_knowledge_packs.py           # 生成 / 更新 packs（原 flat 文件保留）
+python scripts/build_release_index.py --release-id <release_id> --pack-root knowledge-base/packs/<kb_id> --register --actor <phone>  # 构建并自动登记（包不存在自动建 draft；content_hash 绑定 manifest）；同 release 禁止重建
+# 发布 / 回滚 / 绑定走 /kb-admin 或 /api/admin/kb/*；建包与登记在开发机脚本链路（ADR 0028 职责分离）；发布前必须 Eval 通过
+# 多知识包检索开关：LSX_KB_PACK_ENABLED=1；默认 0 时生产继续用旧 flat 索引
+
 # 知识库：新题库入库流程（4 阶段；详见 kb-update-workflow skill）
 python scripts/ingest_source.py knowledge-base/raw/<new>.docx
 python scripts/extract_qa_pairs.py knowledge-base/raw/markdown/<stem>.md --mode llm
@@ -240,8 +253,9 @@ cd backend && pip install -r requirements.txt
 - `whitelist.html`：白名单管理独立页（角色化 CRUD / 手机号姓名搜索 / 批量停用 / 启用 / 导出 / 审计 / 标准调查点级联选择；CSV 导入已停用；搜索跟随显示已禁用开关，导出不受搜索影响）
 - `quiz-admin.html`：测验管理页（侧边栏测验列表 + 工作台两栏，步骤条按数据状态自动打勾，完成率内嵌 tab）
 - `quiz-stats.html`：完成率看板独立页（带 `quiz_id` 参数，从测验管理打开）
+- `kb-admin.html`：知识包管理页（包 / 版本 / 绑定 / 审计 / 检索预览；写操作仅系统管理员，省级业务管理员只读本省绑定）
 - 共享工具函数放 `common.js`（`$()`、`escapeHtml()`、token 管理）
-- **后台四页统一顶部导航**：`dashboard` / `quiz-admin` / `whitelist-admin` / `quiz-stats` 的 header 统一挂 `admin-header` + `adminNav` + `roleTag`，页面初始化调用 `common.js` 的 `initAdminNav(current)`（current ∈ dashboard｜quiz-admin｜whitelist-admin｜quiz-stats）渲染「数据看板 / 测验管理 / 白名单管理」入口（测验管理仅系统管理员和市级/省级业务管理员可见）、当前页高亮与角色标签；白名单 `?embed=1` 时隐藏 header；**新增后台页面必须沿用这套导航**
+- **后台页统一顶部导航**：`dashboard` / `quiz-admin` / `whitelist-admin` / `quiz-stats` / `kb-admin` 的 header 统一挂 `admin-header` + `adminNav` + `roleTag`，页面初始化调用 `common.js` 的 `initAdminNav(current)`（current ∈ dashboard｜quiz-admin｜whitelist-admin｜quiz-stats｜kb-admin）渲染「数据看板 / 测验管理 / 白名单管理 / 知识包」入口（测验管理仅系统管理员和市级/省级业务管理员可见；知识包仅系统管理员和省级业务管理员可见）、当前页高亮与角色标签；白名单 `?embed=1` 时隐藏 header；**新增后台页面必须沿用这套导航**
 - 工具函数 / API 调用就近写，不强求模块化
 - 浏览器原生 API 优先，不引入框架
 - 后台 UI 约定：表格用「核心列 + 详情展开 + 窄屏（≤768px）卡片化」，弹窗限高 `calc(100vh - 32px)` + body 内滚动
@@ -254,11 +268,12 @@ cd backend && pip install -r requirements.txt
 - 不把 API Key、token 写进代码或 commit
 - 任何会话**不打印、不复述 `.env` 真实值**；如出现在日志里，事后必须轮换所有相关 Key
 - 日志不得回显密钥：loguru 默认 `LOGURU_DIAGNOSE=True` 会打印出错帧的局部变量（实测带出 `api_key`）。`app.main` 启动时已调 `app.infra.logging_setup.configure_logging()` 全局关掉变量内省（保留 backtrace）；新增日志 sink 仍必须显式 `diagnose=False`
-- **跑 pytest 前必须隔离 LSX_DB_* 环境变量**：config.py 顶部 load_dotenv(.env) 会把 4 行 LSX_DB_*（指向生产 PG）注入 os.environ，且持久化模块 _db_target() 优先读环境变量——测试里 monkeypatch DB_PATH 拦不住，写操作会直落生产库（2026-09-22 实测造成 17 个真实答题请求 500，详见 docs/runbooks/20260922-pg-deadlock-fix.md）。配置了 LSX_DB_* 的机器上先移除这 4 个变量再跑测试。
+- **跑 pytest 前必须隔离 LSX_DB_* 环境变量**：config.py 顶部 load_dotenv(.env) 会把 `.env` 中所有 `LSX_DB_*`（如指向生产 PG 的 DSN）注入 os.environ，且持久化模块 `_db_target()` 优先读环境变量——测试里 monkeypatch DB_PATH 拦不住，写操作会直落生产库（2026-09-22 实测造成 17 个真实答题请求 500，详见 docs/runbooks/20260922-pg-deadlock-fix.md）。配置了 `LSX_DB_*` 的机器上先移除这些变量再跑测试。
 - 修改 `.env`、CI/CD 配置、部署脚本前先问我
 - 单位主体备案流程启动前先确认
 - **删除文件/目录/git 历史前先问我**
 - **数据库 schema 变更/数据迁移前先问我**
+- **CLI 脚本禁止在模块 import 阶段调用 `load_dotenv()`**：必须放到 `main()`；否则 pytest 导入脚本会把 `.env` 的 `LSX_DB_*` 注入进程并可能直落生产库
 - 未经明确要求不 push 到 main / 默认分支
 
 **当前 API Key 配置**：MiniMax（对话 Token Plan，在 .env）、DeepSeek（对话，系统环境变量）、DashScope（向量 Embedding，在 .env）；讯飞 2026-06-21 起停用，环境变量保留供未来恢复。
@@ -308,7 +323,11 @@ cd backend && pip install -r requirements.txt
 - ~~**迭代 3 / Stage 1：评估 KB schema v2**~~ —— 已完成 KB schema v1 全量落地（ADR 0008），v2 评估待领导决策后启动
 - **迭代 3 / Stage 2：成本预算省级档采购落地**——¥87/月档（阿里云 ECS 2核4G + 域名 + 备案），材料已就绪（`reports/cost-budget-20260622.md` + docx/pdf + 项目介绍），待领导决策后启动域名备案 15-20 工作日
 - **DeepSeek 提额申请结果待回**——用户已提交，参考 https://api-docs.deepseek.com/zh-cn/quick_start/rate_limit ；批下来第一时间重跑 `scripts/load_test.py --all` 验证新 QPS 上限。**未批前不做 kb_direct 等 LLM 优化**（优先级低于 DeepSeek 提额）
-- **新增测试覆盖**：chat.py 端到端（需 mock embedding + LLM）、auth.py HMAC 校验、bm25.py search 函数
+- **多知识包 Phase 4**：贵州真实账号灰度、生产影子对比、反馈复核与回退演练；详见 `docs/PRD-多知识包与省级口径.md`
+- **架构回顾延后项（2026-10-24 架构回顾结论，勿重复建议）**：
+  - 检索结果 metadata schema 单源化（4 处消费收敛）——**KB schema v2 启动前必做第一步**（v2 新字段经 4 处手工同步是最大翻车面），详见 docs/knowledge-packs.md 与架构回顾候选 5
+  - 持久化模块自举样板收敛（5 库 4 种并发模型变体）——**加第 6 个持久化库之前**或 Phase 4 灰度稳定后作独立专项，分模块小步迁移
+- **新增测试覆盖**：auth.py HMAC 全矩阵、PG 双后端注册库 / query_log 包字段参数化用例
 - **miniprogram/ 目录**：加 README.md 说明"ADR 0001 反转后的历史骨架" 
 
 # 数据维护：白名单（whitelist.db 实时唯一事实源；xlsx 仅初始导入/恢复，sync 脚本已 DEPRECATED）

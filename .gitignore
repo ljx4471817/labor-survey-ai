@@ -37,6 +37,7 @@ backend/data/chroma/
 backend/data/*.db
 backend/data/*.sqlite
 backend/data/bm25_index.json
+backend/data/kb_releases/
 backend/data/feedback.jsonl
 backend/data/feedback_resolved.jsonl
 backend/data/quizzes/

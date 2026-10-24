@@ -31,6 +31,22 @@
 |------|------|------|
 | 区域五级 | 省 / 市 / 县 / 乡 / 社区 五个层级的行政区划 | `query_log._REGION_LEVELS`、`feedback_analytics.REGION_LEVELS` |
 | 区域下钻 | Dashboard 从 province 逐级下钻到 community | `GET /api/admin/feedback/stats/region`（支持 cascading 过滤） |
+| 省级行政区划代码 | 稳定识别省级行政区划的标准代码，省级知识包绑定使用它作为主键；名称和简称仅用于显示与兼容 | ADR 0026 |
+| 省级行政区划目录 | 仅维护省级行政区划代码、规范名称和兼容别名的全国目录；它与按省逐步补充的标准调查点目录相互独立 | ADR 0026 |
+| `province_catalog.json` | 34 个省级行政区划代码、规范名称和兼容别名的唯一数据源；账号省名先经它归一为代码 | `knowledge-base/shared/province_catalog.json` |
+| 知识包版本兼容解析 | 选择当前全国发布版本，并为已绑定省份选择基于该全国版本的省级发布版本；不兼容时保留最后一个兼容组合，没有可用省级版本时显式失败 | `backend/app/services/kb_pack_resolver.py` |
+| `LSX_KB_PACK_ENABLED` | 多知识包运行时总开关；默认 0，关闭时完全绕过注册库、省份目录和独立索引 | `.env` / `kb_pack_runtime.py` |
+| 独立 release 检索 | 每个 release 使用隔离的 Chroma 目录和 BM25 文件；缓存 key 包含 release_id，避免同条数串包 | `rag/index_paths.py` / `rag/retriever.py` / `rag/bm25.py` |
+| `rule_key` 覆盖 | 全国包与省级包同时检索后，省级条目按 rule_key 确定性优先，被覆盖的全国条目不作为并列结论 | `rag/combination_retriever.py` |
+| `global_entry_key` | `kb_id:release_id:entry_id` 的全局唯一知识条目键；避免跨包三位 QA ID 冲突并进入日志/来源快照 | `rag/combination_retriever.py` / `models/schemas/chat.py` |
+| 省份热点隔离 | 热点按账号省份缓存和过滤；`province_code` 优先，老日志按 `province` 兼容 | `persistence/query_log.py` / `services/hot_questions.py` |
+| 知识包注册库 | 独立于白名单/会话/日志/测验的知识包管理库；保存知识包、不可变版本、省份绑定和管理审计 | `backend/data/knowledge_admin.db` / `knowledge_registry.py` |
+| `LSX_DB_KB_ADMIN` | 知识包注册库后端选择变量；PG DSN 或 SQLite 路径，未设置时使用默认 SQLite 文件 | `.env`（可选） / `knowledge_registry.py` |
+| 知识包发布 | 只有 `build_status=success` 且 `eval_status=passed` 的不可变版本能移动包的 `current_release_id`；回滚同样复用已通过版本 | `knowledge_registry.py::publish_release / rollback_release` |
+| `artifact_manifest.json` | release 产物清单，记录语义产物（bm25 / chunks / chroma.sqlite3）的大小和 SHA-256；chroma 派生段文件打开即重写、不参与校验 | `release_artifacts.py` |
+| `/kb-admin` | 知识包管理页，展示包 / 版本 / 省份绑定 / 审计 / 检索预览；写操作仅系统管理员，省级业务管理员只读本省组合 | `backend/static/kb-admin.html` / `backend/app/api/kb_admin.py` |
+| `adopted_sources` | 省级包已采纳的外部参考资料；来源 `source` 原样保留，适用范围由包归属决定 | `knowledge-base/packs/*/manifest.json` |
+| 标准调查点目录 | 供白名单表单选择的省 / 市 / 县 / 乡 / 社区标准调查点集合；它不是账号数据或知识内容 | `backend/data/region_points.json` |
 
 > **注意**：`query_log` 和 `feedback_analytics` 各自维护一份区域层级元组，修改层级时要同步两处。
 
@@ -38,15 +54,23 @@
 
 | 概念 | 定义 | 在哪里 |
 |------|------|------|
-| QA 条目 | KB 中结构化的人工整理条目（question + answer + indicators），当前 428 条 | `knowledge-base/qa/faq.json` |
+| QA 条目 | KB 中结构化的人工整理条目（question + answer + indicators），当前 435 条 | `knowledge-base/qa/faq.json` |
 | Chunk 条目 | 制度文档 markdown 切片入库后的检索单元，当前 142 条 | `knowledge-base/chunks.jsonl`（构建产物） |
 | 双轨检索 | QA 与 chunk 双源同时入库，BM25 + Chroma 都覆盖 | `build_bm25.py` / `bm25.py` 同时加载两源 |
 | Hybrid 检索 | Chroma 向量检索 + BM25 关键词检索 + RRF 融合 | `rag/retriever.py` 的 `retrieve()` 函数 |
 | RRF | Reciprocal Rank Fusion，Cormack 2009 提出的排名融合算法，c=60 | `rag/pure.py::rrf_fuse()` |
 | `doc_type` | 元数据字段，区分 QA 条目和 chunk 条目 | `rag/prompts.py.format_kb_results` 据此分别渲染 |
+| 全国基础知识包 | 承载全国统一制度、指标定义和通用填报指导的知识内容 | ADR 0026 |
+| 知识包 | 可独立构建、发布和回滚的知识内容单元，包含知识条目、来源内容、检索索引和评估集；不包含账号、调查点目录或模型配置 | ADR 0026 |
+| 内容适用范围 | 决定一条知识内容归入全国包还是省级包的业务边界；由人工按实际服务对象确定，不按资料标题自动推断 | ADR 0027 |
+| 来源出处 | 知识内容原始资料的名称，保存在 QA/chunk 的 `source`，与内容适用范围分离且不得为了归包而篡改 | ADR 0027 |
+| 采纳来源 | 某省已经实际采用的外省参考资料；可归入省级包，但保留原始 `source` 并在 manifest 记录 `adopted_sources` | ADR 0027 |
+| 省级知识包 | 承载某省特有解释、操作口径和差异规则的知识内容；检索时优先于全国基础知识包 | ADR 0026 |
 | Embedding | 将 QA、chunk 和用户问题映射为语义向量；当前模型为 DashScope `text-embedding-v4` | `DASHSCOPE_MODEL` / `rag/retriever.py::embed_query` |
-| 近一月热点问题 | 对话前台展示的滚动 30 天全局热门 QA；仅统计有 top1 QA 的成功 RAG 请求，最多展示 5 条标准问法 | `services/hot_questions.py` / `api/hot_questions.py` / `static/index.html` |
+| 近一月热点问题 | 对话前台展示的滚动 30 天热门 QA；调查员只看当前省份有效知识包范围内的热点，管理端支持按知识包 / 省份下钻；仅统计有 top1 QA 的成功 RAG 请求，最多展示 5 条标准问法 | `services/hot_questions.py` / `api/hot_questions.py` / `static/index.html` |
 | `top_qa_id` | chat 命中 QA 时记录的 top1 QA 条目 ID；不回填历史数据 | `query_log.db` 的 `query_log` 表 / `api/chat.py` |
+| 全局知识条目键 | 跨知识包唯一标识一个知识条目的复合键，由知识包标识和包内条目标识组成；用于日志、热点和反馈归因 | ADR 0026 |
+| 业务规则键 | 知识内容覆盖和迁移时使用的稳定业务规则标识；同一规则的不同问法共享该键，省级同键内容覆盖全国同键内容 | ADR 0026 |
 | Grounding 锚点 | RAG 回答缺失 top1 QA 关键词、场景词或指标编号时，追加的知识库内要点提示 | `rag/grounding.py` / `api/chat.py` |
 | 历史会话 | 服务端按手机号永久保存的连续问答；用户可跨设备继续，管理端不可直接查看完整内容 | `persistence/conversations.py` / `api/conversations.py` |
 | 会话轮次 | 一条用户消息 + 一条成功助手回复；失败轮次不进入会话 | `api/chat.py` / `persistence/conversations.py` |
@@ -120,8 +144,8 @@
 
 | 概念 | 定义 | 在哪里 |
 |------|------|------|
-| 双后端适配层 | 4 个持久化库经 `db.connect(target)` 建连；`postgres://`/`postgresql://` 开头 → PG（psycopg 3），其余 → SQLite 路径；不引入 ORM | `backend/app/persistence/db.py`（唯一连接创建点） |
-| `LSX_DB_*` 环境变量 | 4 库各自独立选后端：`LSX_DB_WHITELIST` / `LSX_DB_CONVERSATIONS` / `LSX_DB_QUERY_LOG` / `LSX_DB_QUIZ`；未设置回落 SQLite 默认路径 | `.env.example` + `docs/pg-migration.md` |
+| 双后端适配层 | 5 个持久化库经 `db.connect(target)` 建连；`postgres://`/`postgresql://` 开头 → PG（psycopg 3），其余 → SQLite 路径；不引入 ORM | `backend/app/persistence/db.py`（唯一连接创建点） |
+| `LSX_DB_*` 环境变量 | 5 库各自独立选后端：`LSX_DB_WHITELIST` / `LSX_DB_CONVERSATIONS` / `LSX_DB_QUERY_LOG` / `LSX_DB_QUIZ` / `LSX_DB_KB_ADMIN`；未设置回落 SQLite 默认路径 | `.env.example` + `docs/pg-migration.md` |
 | `GENERATED BY DEFAULT AS IDENTITY` | PG 自增主键策略（非 ALWAYS）：迁移脚本需显式写入 SQLite 的 id，迁移后由脚本 setval 重置序列 | 各模块 `_SCHEMA_PG` |
 | 语句级 SAVEPOINT | PG 侧每条语句包 SAVEPOINT，失败只回滚该语句，对齐 SQLite 幂等迁移语义 | `db.py` `_PGConnection.execute` |
 

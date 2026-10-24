@@ -10,14 +10,15 @@
 
 **迭代 3 进行中 · 内测服务可用**
 
-- ✅ 后端：FastAPI + chat / conversations / hot-questions / feedback / auth / admin / quiz / whitelist 分域 API（voice 2026-06-21 已停用）
-- ✅ 前端：H5 多页面（对话 / 登录 / 答题 / 测验管理 / 完成率 / 统一后台 / 白名单管理），支持服务端会话历史、开始新对话与近一月热点问题
+- ✅ 后端：FastAPI + chat / conversations / hot-questions / feedback / auth / admin / quiz / whitelist / knowledge-admin 分域 API（voice 2026-06-21 已停用）
+- ✅ 前端：H5 多页面（对话 / 登录 / 答题 / 测验管理 / 完成率 / 统一后台 / 白名单管理 / 知识包管理），支持服务端会话历史、开始新对话与近一月热点问题
 - ✅ 知识库：Vector + BM25 hybrid 双轨检索，577 条（435 QA + 142 制度 chunk）
 - ✅ 鉴权：手机号白名单 + HMAC token（`whitelist.db` 实时唯一事实源）；双维度权限 admin_level × sys_role + 写操作审计
-- ✅ 后台：统一数据看板 dashboard（KB 复核队列 / 使用监测 + 7/30 日使用频率趋势）+ 区域 5 级下钻；顶部导航进入白名单管理与月度测验系统（出题 / 下发 / 完成率）
+- ✅ 后台：统一数据看板 dashboard（KB 复核队列 / 使用监测 + 7/30 日使用频率趋势）+ 区域 5 级下钻；顶部导航进入白名单管理、月度测验系统（出题 / 下发 / 完成率）与知识包管理
+- ✅ 多知识包：全国基础包 + 省级覆盖包、独立 release 索引、`rule_key` 覆盖与省份绑定已完成；生产检索默认仍走旧 flat 链路（`LSX_KB_PACK_ENABLED=0`）
 - ✅ 内网穿透：Cloudflare Tunnel quick 模式
 - ✅ 数据库：SQLite / PostgreSQL 双后端（`LSX_DB_*` 环境变量一条配置切换，可随时切回；切换与迁移见 `docs/pg-migration.md`）
-- ✅ 质量门禁：单元测试 + 104 项 RAG 全量评测
+- ✅ 质量门禁：单元测试 + 114 项 RAG 全量评测
 - ⏳ 迭代 3 材料已就绪，待领导决策后启动（域名备案 15-20 工作日）
 
 ## 快速开始
@@ -52,20 +53,22 @@ uvicorn app.main:app --reload --port 8001
 
 ```
 labor-survey-ai/
-├── docs/                       # 文档（方案、审核、架构、ADR）
-├── knowledge-base/             # 知识库（原始素材 + QA + 构建脚本）
+├── docs/                       # 文档（方案、审核、架构、ADR、PRD、运维手册）
+├── knowledge-base/             # 知识库（原始素材 + QA + packs + shared + 构建脚本）
 ├── backend/
 │   ├── app/                    # FastAPI 应用代码
-│   │   ├── api/                # chat / conversations / hot-questions / feedback / admin 子路由
+│   │   ├── api/                # chat / conversations / hot-questions / feedback / admin / kb-admin 子路由
 │   │   ├── core/               # config
 │   │   ├── models/schemas/     # 按领域拆分的 Pydantic schemas
 │   │   └── rag/                # bm25 / llm / prompts / retriever
-│   ├── data/                   # chroma 持久化 + bm25 索引（不入仓）
+│   ├── data/                   # chroma / bm25 / kb_releases / SQLite 运行库（不入仓）
 │   ├── static/                 # H5 前端（单页应用）
 │   └── tests/                  # 单元测试
 ├── scripts/
 │   ├── build_kb.py             # 向量库构建
 │   ├── build_bm25.py           # BM25 索引构建
+│   ├── split_knowledge_packs.py # 全国 / 省级知识包拆分
+│   ├── build_release_index.py   # 独立 release 索引构建
 │   ├── start_tunnel.bat        # 一键启动后端 + Cloudflare Tunnel
 │   └── ...                     # 评估 / 验证 / 修补脚本
 └── reports/                    # 评估报告

@@ -1,7 +1,7 @@
 // H5 共享工具：DOM 查询 + HTML 转义 + 手机号白名单鉴权。
 function $(id) { return document.getElementById(id); }
 function escapeHtml(s) {
-  return (s || '').replace(/[&<>"']/g, c => ({
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[c]));
 }
@@ -98,14 +98,15 @@ function toggleTheme() {
 document.addEventListener("DOMContentLoaded", applyTheme);
 
 
-// ---- admin unified top nav (dashboard / quiz-admin / whitelist / quiz-stats) ----
+// ---- admin unified top nav (dashboard / quiz-admin / whitelist / quiz-stats / kb-admin) ----
 var ADMIN_NAV = [
   { key: 'dashboard', href: '/dashboard', label: '数据看板', quizOnly: false },
   { key: 'quiz-admin', href: '/quiz-admin', label: '测验管理', quizOnly: true },
   { key: 'whitelist-admin', href: '/whitelist-admin', label: '白名单管理', quizOnly: false },
+  { key: 'kb-admin', href: '/kb-admin', label: '知识包', quizOnly: false },
 ];
 
-// current: 'dashboard' | 'quiz-admin' | 'whitelist-admin' | 'quiz-stats'
+// current: 'dashboard' | 'quiz-admin' | 'whitelist-admin' | 'quiz-stats' | 'kb-admin'
 // me: optional whoami object (whitelist version includes city/county); auto-fetch when omitted
 async function initAdminNav(current, me) {
   var nav = document.getElementById('adminNav');
@@ -126,8 +127,10 @@ async function initAdminNav(current, me) {
       (me.city ? ' · ' + me.city : '') + (me.county ? ' · ' + me.county : '');
   }
   var canQuiz = me.sys_role === '系统管理员' || ['市级', '省级'].indexOf(me.admin_level) !== -1;
+  var canKb = me.sys_role === '系统管理员' || me.admin_level === '省级';
   var activeKey = current === 'quiz-stats' ? 'quiz-admin' : current;
   nav.innerHTML = ADMIN_NAV.filter(function (item) {
+    if (item.key === 'kb-admin') return canKb;
     return !item.quizOnly || canQuiz;
   }).map(function (item) {
     if (item.key === activeKey) {

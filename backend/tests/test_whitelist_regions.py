@@ -59,8 +59,15 @@ def _entry(phone="13800000001", name="测试", admin_level=AdminLevel.ENUMERATOR
 
 def test_standard_region_file_loads_and_is_unique():
     points = rp.load_region_points()
-    assert len(points) == 723
-    assert all(point["province"] == "贵州省" for point in points)
+    assert len(points) == 724
+    assert {point["province"] for point in points} == {"贵州省", "新疆"}
+    assert (
+        "新疆",
+        "喀什地区",
+        "麦盖提县",
+        "麦盖提镇",
+        "城南社区",
+    ) in {tuple(point[field] for field in rp.REGION_FIELDS) for point in points}
     assert len({tuple(point[field] for field in rp.REGION_FIELDS) for point in points}) == len(points)
 
 
@@ -189,7 +196,7 @@ def test_import_csv_endpoint_is_disabled(tmp_db):
 
 
 def test_region_points_endpoint_scopes_catalog():
-    assert region_api.list_region_points(user=_user())["count"] == 723
+    assert region_api.list_region_points(user=_user())["count"] == 724
     district_user = _user(SysRole.BUSINESS_ADMIN.value, AdminLevel.DISTRICT.value, "贵阳市", "南明区")
     scoped = region_api.list_region_points(user=district_user)
     assert scoped["count"] > 0

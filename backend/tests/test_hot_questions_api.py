@@ -7,7 +7,7 @@ def test_hot_questions_endpoint_returns_service_items(monkeypatch):
     monkeypatch.setattr(
         hot_questions_api,
         "get_hot_questions",
-        lambda: {"items": [{"question": "热点问法"}]},
+        lambda **kwargs: {"items": [{"question": "热点问法"}]},
     )
 
     assert hot_questions_api.hot_questions_endpoint(phone="13900000001") == {
