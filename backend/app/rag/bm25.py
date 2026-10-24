@@ -15,23 +15,25 @@ import jieba
 from loguru import logger
 
 from app.core.config import PROJECT_ROOT
+from app.rag import index_paths
 
 INDEX_PATH = PROJECT_ROOT / "backend" / "data" / "bm25_index.json"
 
 
-@lru_cache(maxsize=1)
-def _load_index() -> tuple[list[str], "BM25Okapi", dict[str, dict]]:
-    """加载 BM25 索引 + 元数据 + BM25Okapi 对象。启动时调用一次，之后走缓存。"""
+@lru_cache(maxsize=8)
+def _load_index(index_path: Path | None = None) -> tuple[list[str], "BM25Okapi", dict[str, dict]]:
+    """加载指定 release 的 BM25 索引；None 保持旧 flat 索引行为。"""
     try:
         from rank_bm25 import BM25Okapi
     except ImportError:
         raise RuntimeError("未安装 rank-bm25，先 pip install rank-bm25")
 
-    if not INDEX_PATH.exists():
+    resolved_path = index_path or INDEX_PATH
+    if not resolved_path.exists():
         raise FileNotFoundError(
-            f"BM25 索引不存在：{INDEX_PATH}\n请先跑 python scripts/build_bm25.py --full"
+            f"BM25 索引不存在：{resolved_path}\n请先跑 python scripts/build_bm25.py --full"
         )
-    payload = json.loads(INDEX_PATH.read_text(encoding="utf-8"))
+    payload = json.loads(resolved_path.read_text(encoding="utf-8"))
     ids: list[str] = payload.get("ids", payload.get("qa_ids", []))
     tokenized_corpus: list[list[str]] = payload["tokenized_corpus"]
     bm25 = BM25Okapi(tokenized_corpus)
@@ -51,12 +53,13 @@ def tokenize(text: str) -> list[str]:
 _tokenize = tokenize  # 保持兼容
 
 
-def search(query: str, top_k: int) -> list[dict]:
+def search(query: str, top_k: int, release_id: str | None = None) -> list[dict]:
     """BM25 检索 Top-K。返回 [{id, document, metadata, score}, ...]
 
     score 是 BM25 原始分数（不是相似度），越大越相关。0 表示无命中。
     """
-    ids, bm25, meta_by_id = _load_index()
+    index_path = index_paths.bm25_path(release_id) if release_id else None
+    ids, bm25, meta_by_id = _load_index(index_path)
     scores = bm25.get_scores(_tokenize(query))
     ranked = sorted(enumerate(scores), key=lambda x: x[1], reverse=True)[:top_k]
 
@@ -76,6 +79,7 @@ def search(query: str, top_k: int) -> list[dict]:
                 "source": meta.get("source", ""),
                 "keywords": meta.get("keywords", ""),
                 "doc_type": "qa",
+                "rule_key": meta.get("rule_key", ""),
             }
             if meta.get("image"):
                 result_meta["image"] = meta["image"]
@@ -87,6 +91,7 @@ def search(query: str, top_k: int) -> list[dict]:
                 "source": meta.get("source", ""),
                 "section": meta.get("section", ""),
                 "doc_type": doc_type,
+                "rule_key": meta.get("rule_key", ""),
             }
 
         results.append({

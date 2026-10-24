@@ -11,6 +11,13 @@ from enum import Enum
 
 # --- 检索模式 (chat.py / admin.py / query_log.py 都用) -------------------
 
+# --- 多知识包模式 (kb_pack_runtime / chat.py / query_log pack_mode 列) ------
+# 只有 legacy（旧 flat 单库）与 packs（全国+省级包）两种；用纯 str 常量单源，
+# 不用 Enum：as_dict() 需直落 query_log 与 JSON 响应，零序列化心智负担。
+PACK_MODE_LEGACY = "legacy"
+PACK_MODE_PACKS = "packs"
+
+
 class RetrievalMode(str, Enum):
     """chat 检索的四条结果分支。
 
