@@ -45,6 +45,8 @@ def _load_qa_items(faq_path: Path) -> list[dict]:
             "source": qa.get("source", ""),
             "keywords": ",".join(qa.get("keywords", []) or []),
         }
+        if qa.get("rule_key"):
+            meta["rule_key"] = qa["rule_key"]
         if qa.get("image"):
             meta["image"] = qa["image"]
         items.append({

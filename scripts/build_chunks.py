@@ -224,6 +224,7 @@ def upsert_chunks(
     collection_name: str,
     provider: str,
     full: bool,
+    release_id: str | None = None,
 ) -> dict:
     if chromadb is None:
         raise SystemExit("未安装 chromadb，先 pip install chromadb")
@@ -288,6 +289,8 @@ def upsert_chunks(
                 "category": "",
                 "embed_hash": c["text_hash"],
             }
+            if release_id:
+                meta["release_id"] = release_id
             ids.append(c["chunk_id"])
             docs.append(doc)
             metas.append(meta)

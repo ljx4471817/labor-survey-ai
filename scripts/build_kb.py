@@ -121,7 +121,7 @@ def chunked(seq: list, size: int) -> Iterable[list]:
         yield seq[i : i + size]
 
 
-def qa_to_chroma_record(qa: dict) -> tuple[str, str, dict]:
+def qa_to_chroma_record(qa: dict, release_id: str | None = None) -> tuple[str, str, dict]:
     """把一条 QA 转成 Chroma 需要的 (id, document, metadata)。"""
     qa_id = str(qa["id"]).zfill(3)
     doc = f"{qa['question']}\n{qa['answer']}"
@@ -133,6 +133,10 @@ def qa_to_chroma_record(qa: dict) -> tuple[str, str, dict]:
         "question": qa["question"],
         "keywords": ",".join(qa.get("keywords", []) or []),
     }
+    if qa.get("rule_key"):
+        meta["rule_key"] = qa["rule_key"]
+    if release_id:
+        meta["release_id"] = release_id
     fixed_answer = qa.get("fixed_answer")
     if fixed_answer:
         meta["fixed_answer"] = fixed_answer
@@ -179,6 +183,7 @@ def build(
     collection_name: str,
     provider: str,
     full: bool,
+    release_id: str | None = None,
 ) -> dict:
     if chromadb is None:
         raise SystemExit("未安装 chromadb，先 `pip install chromadb`")
@@ -208,7 +213,7 @@ def build(
         metas: list[dict] = []
         inputs: list[str] = []
         for qa in batch:
-            qa_id, doc, meta = qa_to_chroma_record(qa)
+            qa_id, doc, meta = qa_to_chroma_record(qa, release_id)
             h = embedding_hash(doc)
             if h in existing_hashes:
                 skipped += 1
@@ -289,7 +294,7 @@ def main() -> int:
         query(args.collection, args.chroma_dir, args.provider, args.query, args.k)
         return 0
     summary = build(
-        args.faq, args.chroma_dir, args.collection, args.provider, args.full
+        args.faq, args.chroma_dir, args.collection, args.provider, args.full, args.release_id
     )
     print(
         f"\n完成：total={summary['total']} added={summary['added']} "
