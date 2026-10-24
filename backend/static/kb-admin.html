@@ -210,6 +210,9 @@ function renderReleases() {
     const rollbackBtn = isCurrent
       ? '<button class="small" disabled title="已是当前版本，无需回滚">当前版本</button>'
       : '<button class="small admin-action" data-action="rollback" data-package-id="' + escapeHtml(item.package_id) + '" data-release-id="' + escapeHtml(item.id) + '">回滚</button>';
+    const evalBtn = item.eval_status === 'pending'
+      ? '<button class="small admin-action" data-eval-pass="' + escapeHtml(item.id) + '" title="Eval 实际通过后才能标记；发布门禁将放行">标记 Eval 通过</button>'
+      : '';
     return '<tr>' +
       '<td data-label="Release" class="mono">' + escapeHtml(item.id) + '</td>' +
       '<td data-label="包" class="mono">' + escapeHtml(item.package_id) + '</td>' +
@@ -218,7 +221,7 @@ function renderReleases() {
       '<td data-label="Eval">' + badge(item.eval_status) + '</td>' +
       '<td data-label="基于全国版本" class="mono">' + escapeHtml(item.based_on_national_release_id || '—') + '</td>' +
       '<td data-label="发布时间">' + escapeHtml(item.published_at || '—') + '</td>' +
-      '<td class="admin-only no-label">' + publishBtn + rollbackBtn + '</td></tr>';
+      '<td class="admin-only no-label">' + publishBtn + rollbackBtn + evalBtn + '</td></tr>';
   }).join('');
   $('releaseRows').innerHTML = rows || '<tr><td colspan="8" class="empty">暂无版本</td></tr>';
 }
@@ -300,6 +303,13 @@ document.addEventListener('click', async event => {
       await api('/api/admin/kb/packages/' + encodeURIComponent(packageId) + '/releases/' + encodeURIComponent(releaseId) + '/' + action, { method: 'POST' });
       showNotice(action === 'publish' ? '版本已发布' : '已回滚到指定版本', true);
       await load();
+    }
+    if (target.dataset.evalPass) {
+      if (!confirm('确认将该版本 Eval 标记为通过？请确认评测实际已通过，发布门禁将放行。')) return;
+      await api('/api/admin/kb/releases/' + encodeURIComponent(target.dataset.evalPass) + '/status', {
+        method: 'PATCH', body: JSON.stringify({ eval_status: 'passed' }),
+      });
+      showNotice('Eval 已标记通过', true); await load();
     }
     if (target.dataset.unbind) {
       if (!confirm('确认解除该省份绑定？该省用户将回退到全国基础包。')) return;
