@@ -1,6 +1,6 @@
 # PostgreSQL 迁移指南（阶段二）
 
-> 目标：4 个持久化库从 SQLite 切到 PostgreSQL，**保留一条配置切回 SQLite 的能力**。
+> 目标：5 个持久化库从 SQLite 切到 PostgreSQL，**保留一条配置切回 SQLite 的能力**。
 > 数据搬家由服务器侧在本停机窗口内执行；本指南覆盖切换、验证、回滚全流程。
 
 ## 1. 原理
@@ -16,6 +16,7 @@
 | 会话 | `LSX_DB_CONVERSATIONS` | `backend/data/conversations.db` |
 | 问答日志 | `LSX_DB_QUERY_LOG` | `backend/data/query_log.db` |
 | 测验 | `LSX_DB_QUIZ` | `backend/data/quiz.db` |
+| 知识包注册库 | `LSX_DB_KB_ADMIN` | `backend/data/knowledge_admin.db`（阶段二搬家脚本暂不覆盖） |
 
 - **切库 = 改 `.env` + 重启；回滚 = 改回 `.env` + 重启。不回滚代码。**
 - 未设置任何变量时行为与切换前完全一致（本地开发零影响）。
@@ -32,12 +33,12 @@
 ```bash
 # 0) 停服
 
-# 1) 备份（既有流程：4 个 SQLite 文件 + 快照）
+# 1) 备份（当前流程：5 个 SQLite 文件 + 快照；多知识包启用后另需备份 backend/data/kb_releases/）
 
 # 2) dry-run（默认模式；只读 SQLite，不写任何业务数据，但会在目标 PG 幂等建表 IF NOT EXISTS）
 python backend/scripts/migrate_sqlite_to_pg.py \
   --sqlite-dir backend/data \
-  --dsn-map '{"whitelist": "postgresql://...", "conversations": "postgresql://...", "query_log": "postgresql://...", "quiz": "postgresql://..."}' \
+  --dsn-map '{"whitelist": "postgresql://...", "conversations": "postgresql://...", "query_log": "postgresql://...", "quiz": "postgresql://...", "knowledge_admin": "postgresql://..."}' \
   --report-out reports/migration-dry-run.md
 
 # 3) 确认 dry-run 报告全部"一致"后，正式迁移
@@ -46,7 +47,7 @@ python backend/scripts/migrate_sqlite_to_pg.py --apply \
   --dsn-map '{...}' \
   --report-out reports/migration-apply.md
 
-# 4) 改 .env：加 4 个 LSX_DB_* 变量（值 = PG DSN）
+# 4) 改 .env：加 5 个 LSX_DB_* 变量（值 = PG DSN）
 
 # 5) 重启服务
 
@@ -75,7 +76,7 @@ curl -s -X POST http://127.0.0.1:8001/api/auth/login -H 'Content-Type: applicati
 
 ```bash
 # 1) 停服
-# 2) .env 删掉（或注释）4 个 LSX_DB_* 变量 —— 回落默认 SQLite 路径
+# 2) .env 删掉（或注释）5 个 LSX_DB_* 变量 —— 回落默认 SQLite 路径
 #    （原 SQLite 文件全程未被删除/修改，直接可用）
 # 3) 起服 → 验健康
 ```
