@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "kb_id": "guizhou",
+  "name": "贵州知识包",
+  "kind": "provincial",
+  "status": "draft",
+  "province_codes": [
+    "520000"
+  ],
+  "entry_count": 111,
+  "eval_count": 8,
+  "chunk_count": 38,
+  "sources": [
+    "raw/markdown/统计云系统培训课件.md",
+    "raw/统计云系统培训课件.json",
+    "raw/markdown/四川劳动力调查技能测试题题库2026.md"
+  ],
+  "qa_sha256": "e96f58ffa821dc4cf7b6b45927cb44a2e5f4253d67a373ab9dec060b91be5af4",
+  "eval_sha256": "a1506a1ccd94081c71b075de5123f3506456746be7c8f8b147132506ece05920",
+  "rule_key_count": 8,
+  "binding_status": "planned",
+  "eval_status": "pending",
+  "content_scope": "guizhou",
+  "adopted_sources": [
+    "四川劳动力调查技能测试题题库2026"
+  ],
+  "superseded_draft_packs": [
+    "sichuan"
+  ],
+  "rule_key_review": {
+    "status": "pending_national_match_review",
+    "note": "地方规则键已分配；全国同键条目需业务复核后再启用确定性覆盖。"
+  }
+}
