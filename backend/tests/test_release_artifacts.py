@@ -44,6 +44,23 @@ def test_validate_release_artifacts_passes_complete_release(tmp_path):
     release_artifacts.validate_release_dir(root)
 
 
+def test_validate_release_artifacts_tolerates_chroma_sqlite_rewrite(tmp_path):
+    """Chroma 打开库就会重写 chroma.sqlite3，字节 hash 变化不代表产物被篡改。"""
+    root = tmp_path / "gz-2026-01"
+    _build_release(root)
+    (root / "chroma" / "chroma.sqlite3").write_bytes(b"rewritten-by-chroma")
+    release_artifacts.validate_release_dir(root)  # 不抛即通过
+
+
+def test_validate_release_artifacts_still_requires_chroma_sqlite_file(tmp_path):
+    """跳过 hash 校验不等于跳过存在性校验：文件被删仍必须报错。"""
+    root = tmp_path / "gz-2026-01"
+    _build_release(root)
+    (root / "chroma" / "chroma.sqlite3").unlink()
+    with pytest.raises(ValueError, match="missing required artifact"):
+        release_artifacts.validate_release_dir(root)
+
+
 def test_validate_release_artifacts_detects_modified_file(tmp_path):
     root = tmp_path / "gz-2026-01"
     _build_release(root)

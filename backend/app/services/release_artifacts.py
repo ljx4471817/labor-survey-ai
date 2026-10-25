@@ -16,10 +16,27 @@ REQUIRED_FILES = (
 )
 
 
+CHROMA_SQLITE = "chroma/chroma.sqlite3"
+
+
 def _is_volatile_chroma_file(relative: str) -> bool:
     """chroma/<uuid>/* 是 HNSW 派生文件，客户端打开就会被重写，不参与 hash。"""
     parts = PurePosixPath(relative).parts
-    return len(parts) >= 2 and parts[0] == "chroma" and relative != "chroma/chroma.sqlite3"
+    return len(parts) >= 2 and parts[0] == "chroma" and relative != CHROMA_SQLITE
+
+
+def _is_hash_volatile(relative: str) -> bool:
+    """hash 校验时跳过的易变文件（存在性仍然强制）。
+
+    chroma/<uuid>/* 与 chroma/chroma.sqlite3 都会被 Chroma 打开时重写：
+    2026-10-24 生产实测，恢复演练后 chroma.sqlite3 被重写、字节 hash 变化，
+    但内容与基线一致（nat 428 / gz 149 条向量不变），
+    字节 hash 门禁却把发布/回滚误判成"产物被篡改"而卡死。
+
+    产物完整性仍由"必需文件必须存在"+"manifest canonical hash 与注册库
+    content_hash 强绑定"保证，manifest 本身仍是构建期指纹。
+    """
+    return _is_volatile_chroma_file(relative) or relative == CHROMA_SQLITE
 
 
 def _sha256(path: Path) -> str:
@@ -104,11 +121,11 @@ def validate_release_dir(root: Path, *, release_id: str | None = None) -> dict[s
         entry = PurePosixPath(relative)
         if entry.is_absolute() or ".." in entry.parts:
             raise ValueError(f"invalid manifest entry: {relative}")
-        if _is_volatile_chroma_file(relative):
-            continue  # chroma 派生文件打开即重写，跳过 hash 校验
         path = root / relative
         if not path.is_file():
             raise ValueError(f"missing required artifact: {relative}")
+        if _is_hash_volatile(relative):
+            continue  # chroma 派生文件打开即重写，跳过 hash 校验（存在性仍强制）
         if not isinstance(meta, dict) or not meta.get("sha256"):
             raise ValueError(f"invalid manifest entry: {relative}")
         actual = _sha256(path)
