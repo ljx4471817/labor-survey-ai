@@ -327,6 +327,7 @@ cd backend && pip install -r requirements.txt
 - **架构回顾延后项（2026-10-24 架构回顾结论，勿重复建议）**：
   - 检索结果 metadata schema 单源化（4 处消费收敛）——**KB schema v2 启动前必做第一步**（v2 新字段经 4 处手工同步是最大翻车面），详见 docs/knowledge-packs.md 与架构回顾候选 5
   - 持久化模块自举样板收敛（5 库 4 种并发模型变体）——**加第 6 个持久化库之前**或 Phase 4 灰度稳定后作独立专项，分模块小步迁移
+- **chroma.sqlite3 逻辑指纹（2026-10-24 生产侧提议，已采纳方向、延后实施）**：字节 hash 对「打开即重写」的文件从设计上不成立；下个 release 构建窗口或 Phase 4 灰度稳定后，把 manifest 对 chroma.sqlite3 改记逻辑指纹（向量条数 + collection 名 + bm25/chunks hash），当前以「存在性强制 + 其余语义产物字节 hash」过渡
 - **新增测试覆盖**：auth.py HMAC 全矩阵、PG 双后端注册库 / query_log 包字段参数化用例
 - **miniprogram/ 目录**：加 README.md 说明"ADR 0001 反转后的历史骨架" 
 

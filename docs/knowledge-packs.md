@@ -73,7 +73,7 @@ python scripts/build_release_index.py --release-id gz-2026-02 --pack-root knowle
 `/kb-admin`（职责见 ADR 0028：后台只做运营动作，建包 / 登记在开发机脚本完成）：
 
 1. 确认目标 release 的构建 = success、Eval = passed（未通过直接发布会 422）。
-2. 发布 release；接口校验 `artifact_manifest.json`、语义产物 hash（`bm25_index.json` / `chunks.jsonl` / `chroma.sqlite3`）和 content_hash 绑定。`chroma/<uuid>/*` 是 HNSW 派生文件，客户端打开（如检索预览）即被 Chroma 重写，不参与 hash 校验。
+2. 发布 release；接口校验 `artifact_manifest.json`、语义产物 hash（`bm25_index.json` / `chunks.jsonl`）和 content_hash 绑定。chroma 目录下所有文件（含 `chroma.sqlite3` 本体）客户端打开即可能被 Chroma 重写——2026-10-24 生产实测（恢复演练后字节 hash 变化、向量条数不变）——因此 chroma 文件只强制存在性、不参与字节 hash；篡改 `bm25_index.json` / `chunks.jsonl` / 删除任一必需文件仍会被门禁拦截。
 3. 绑定省级代码到省级包（保存后该省账号下次提问立即生效）。
 4. 回滚 = 将 `current_release_id` 切回历史 release，不删数据，可随时再切回。
 
